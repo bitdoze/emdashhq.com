@@ -113,6 +113,7 @@ const isLoggedIn = !!Astro.locals.user;
 				var theme = i >= 0 ? c.slice(i + 6).split(";")[0] : null;
 				if (theme === "dark" || theme === "light") {
 					document.documentElement.classList.add(theme);
+					document.documentElement.dataset.mode = theme;
 				}
 			})();
 		</script>
@@ -164,7 +165,7 @@ const isLoggedIn = !!Astro.locals.user;
 						}
 					</div>
 					<div class="nav-actions">
-						{isLoggedIn && <a href="/_emdash/admin" class="nav-admin">Admin</a>}
+						{isLoggedIn && <a href="/_emdash/admin" class="nav-admin" data-astro-prefetch="false">Admin</a>}
 						{
 							headerCta && headerCtaLink && (
 								<a
@@ -301,10 +302,12 @@ const isLoggedIn = !!Astro.locals.user;
 				if (theme === "system") {
 					document.cookie = `theme=; path=/; max-age=0; SameSite=Lax${secure}`;
 					root.classList.remove("light", "dark");
+					delete root.dataset.mode;
 				} else {
 					document.cookie = `theme=${theme}; path=/; max-age=31536000; SameSite=Lax${secure}`;
 					root.classList.remove("light", "dark");
 					root.classList.add(theme);
+					root.dataset.mode = theme;
 				}
 				updateActiveBtn(theme);
 			}
@@ -359,11 +362,13 @@ const isLoggedIn = !!Astro.locals.user;
 				 * controls on browsers stuck on the plain-light fallback.
 				 */
 				@supports (color: light-dark(#000, #fff)) {
-					:root.light {
+					:root.light,
+					:root[data-mode="light"] {
 						color-scheme: light;
 					}
 
-					:root.dark {
+					:root.dark,
+					:root[data-mode="dark"] {
 						color-scheme: dark;
 					}
 				}

@@ -19,6 +19,12 @@
 			"bucket_name": "emdashhq-media",
 		},
 	],
+	"kv_namespaces": [
+		{
+			"binding": "CACHE",
+			"id": "415f01d2b42c4740b56818ff28e7eaa6",
+		},
+	],
 	// Sandboxed plugins require Worker Loader, available on Workers paid plans.
 	"worker_loaders": [
 		{

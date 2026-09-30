@@ -12,6 +12,14 @@
   dark value second.
 */
 
+/* The bundled EmDash admin stylesheet pins :root { color-scheme: light },
+   which would lock light-dark() to the light values in system mode. The
+   toggle sets .light/.dark (and data-mode) on <html>; when neither is
+   present, follow the OS. Specificity beats the admin rule's :root. */
+html:not(.light):not(.dark) {
+	color-scheme: light dark;
+}
+
 :root {
 	/* Paper and ink */
 	--color-bg: light-dark(#f6f8fb, #0d2340);

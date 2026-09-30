@@ -1,7 +1,7 @@
 import cloudflare from "@astrojs/cloudflare";
 import { cacheCloudflare } from "@astrojs/cloudflare/cache";
 import react from "@astrojs/react";
-import { d1, r2 } from "@emdash-cms/cloudflare";
+import { d1, kvCache, r2 } from "@emdash-cms/cloudflare";
 import icon from "astro-iconset";
 import { defineConfig, fontProviders } from "astro/config";
 import emdash from "emdash/astro";
@@ -10,7 +10,10 @@ import { siteScriptsPlugin } from "@emdashhq/plugin-site-scripts";
 export default defineConfig({
 	output: "server",
 	adapter: cloudflare(),
-	trailingSlash: "always",
+	prefetch: {
+		prefetchAll: true,
+		defaultStrategy: "viewport",
+	},
 	cache: {
 		provider: cacheCloudflare(),
 	},
@@ -28,6 +31,12 @@ export default defineConfig({
 		responsiveStyles: true,
 	},
 	vite: {
+		build: {
+			// Keep light-dark() native in the shipped CSS. Below this line
+			// LightningCSS transpiles it into a [data-mode] variable fallback
+			// that ignores the theme toggle and pins :root to light.
+			cssTarget: ["chrome123", "edge123", "safari18", "firefox136", "opera109"],
+		},
 		ssr: {
 			optimizeDeps: {
 				// Pre-bundle so it isn't discovered mid-render, which would trigger
@@ -82,6 +91,7 @@ export default defineConfig({
 		emdash({
 			database: d1({ binding: "DB", session: "auto" }),
 			storage: r2({ binding: "MEDIA" }),
+			objectCache: kvCache({ binding: "CACHE" }),
 			toolbar: "client",
 			plugins: [siteScriptsPlugin()],
 		}),

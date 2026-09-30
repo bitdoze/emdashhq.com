@@ -1,0 +1,35 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "emdashhq",
+	"main": "./src/worker.ts",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "emdashhq",
+			"database_id": "4382d6e6-9503-41cd-b393-cd04d73bdb94",
+		},
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "emdashhq-media",
+		},
+	],
+	// Sandboxed plugins require Worker Loader, available on Workers paid plans.
+	"worker_loaders": [
+		{
+			"binding": "LOADER"
+		}
+	],
+	// General maintenance cron trigger
+	"triggers": {
+		"crons": [
+			"* * * * *"
+		],
+	},
+	"routes": [{ "pattern": "emdashhq.com", "custom_domain": true }],
+}

@@ -1,0 +1,52 @@
+---
+import { Icon } from "astro-iconset/components";
+import type { BlockComponentProps } from "emdash/ui";
+import type { PageContentBlock } from "../../../emdash-env";
+import { iconFor } from "../../lib/icons";
+import SectionHeader from "./SectionHeader.astro";
+
+type FeaturesBlock = Extract<PageContentBlock, { _type: "marketing_features" }>;
+type Props = BlockComponentProps<FeaturesBlock>;
+
+const { value } = Astro.props;
+const { anchor_id, headline, subheadline, features } = value;
+---
+
+<section class="features section" id={anchor_id || undefined}>
+	<div class="container">
+		<SectionHeader headline={headline} subheadline={subheadline} meta="Specifications" />
+		<div class="card-grid">
+			{features.map((feature) => (
+				<div class="hub-card feature-card">
+					<div class="icon-tile feature-icon">
+						<Icon name={iconFor(feature.icon)} aria-hidden="true" />
+					</div>
+					<h3 class="feature-title">{feature.title}</h3>
+					<p class="feature-description">{feature.description}</p>
+				</div>
+			))}
+		</div>
+	</div>
+</section>
+
+<style>
+	.feature-card {
+		padding: var(--spacing-xl);
+	}
+
+	.feature-icon {
+		margin-bottom: var(--spacing-lg);
+	}
+
+	.feature-title {
+		font-size: var(--font-size-lg);
+		font-weight: var(--font-weight-heading);
+		margin-bottom: var(--spacing-sm);
+	}
+
+	.feature-description {
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		line-height: var(--leading-normal);
+	}
+</style>

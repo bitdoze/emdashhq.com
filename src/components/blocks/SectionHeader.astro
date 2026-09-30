@@ -1,0 +1,20 @@
+---
+interface Props {
+	headline?: string | null;
+	subheadline?: string | null;
+	/** Short annotation shown in the title-block strip above the headline. */
+	meta?: string | null;
+}
+
+const { headline, subheadline, meta } = Astro.props;
+---
+
+{
+	(headline || subheadline) && (
+		<header class="section-header">
+			{meta && <p class="section-meta">{meta}</p>}
+			{headline && <h2 class="section-headline">{headline}</h2>}
+			{subheadline && <p class="section-subheadline">{subheadline}</p>}
+		</header>
+	)
+}

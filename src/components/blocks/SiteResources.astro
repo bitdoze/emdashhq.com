@@ -1,0 +1,130 @@
+---
+import { getEmDashCollection } from "emdash";
+import { Image, type BlockComponentProps } from "emdash/ui";
+import type { PageContentBlock } from "../../../emdash-env";
+import { labelize } from "../../lib/format";
+import { linkAttrs } from "../../lib/links";
+import FilterBar from "./FilterBar.astro";
+import SectionHeader from "./SectionHeader.astro";
+import SectionLink from "./SectionLink.astro";
+
+type ResourcesBlock = Extract<PageContentBlock, { _type: "site_resources" }>;
+type Props = BlockComponentProps<ResourcesBlock>;
+
+const { value } = Astro.props;
+const { anchor_id, headline, subheadline, featured_only, show_filters } = value;
+const kind = value.kind ?? "all";
+const price = value.price ?? "all";
+const limit = value.limit ?? 6;
+
+const { entries } = await getEmDashCollection("resources", {
+	status: "published",
+	orderBy: { published_at: "desc" },
+	limit: 100,
+});
+
+let resources = entries.filter(
+	(entry) =>
+		(kind === "all" || entry.data.kind === kind) &&
+		(price === "all" || entry.data.price_type === price) &&
+		(!featured_only || entry.data.featured),
+);
+if (limit > 0) resources = resources.slice(0, limit);
+
+const priceOptions = [...new Set(resources.map((entry) => entry.data.price_type))].map((type) => ({
+	value: type,
+	label: labelize(type),
+}));
+---
+
+<section class="section" id={anchor_id || undefined}>
+	<div class="container" data-filter-root>
+		<SectionHeader headline={headline} subheadline={subheadline} meta="Parts list" />
+		{show_filters && <FilterBar options={priceOptions} label="Filter by price" />}
+
+		{
+			resources.length > 0 ? (
+				<div class="card-grid">
+					{resources.map((entry) => {
+						const link = linkAttrs(entry.data.url);
+						const demo = entry.data.demo_url ? linkAttrs(entry.data.demo_url) : undefined;
+						const isPaid = entry.data.price_type === "paid";
+						return (
+							<article class="hub-card resource-card" data-filter-item data-filter-value={entry.data.price_type}>
+								{entry.data.image && <Image image={entry.data.image} class="resource-shot" />}
+								<div class="resource-body">
+									<div class="badges">
+										<span class="badge badge-muted">{labelize(entry.data.kind)}</span>
+										<span class:list={["badge", isPaid ? "badge-paid" : "badge-free"]}>
+											{isPaid && entry.data.price ? `Paid, ${entry.data.price}` : labelize(entry.data.price_type)}
+										</span>
+									</div>
+									<h3 class="resource-title">{entry.data.title}</h3>
+									{entry.data.summary && <p class="resource-summary">{entry.data.summary}</p>}
+									<div class="resource-actions">
+										<a href={link.href} target={link.target} rel={link.rel} class="btn btn-secondary">
+											{entry.data.cta_label || "View"}
+										</a>
+										{demo && (
+											<a href={demo.href} target={demo.target} rel={demo.rel} class="btn btn-secondary">
+												Demo
+											</a>
+										)}
+									</div>
+								</div>
+							</article>
+						);
+					})}
+				</div>
+			) : (
+				<p class="empty-note">Nothing listed here yet.</p>
+			)
+		}
+
+		<SectionLink label={value.section_cta_label} url={value.section_cta_url} />
+	</div>
+</section>
+
+<style>
+	.resource-card {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		border-radius: var(--radius-lg);
+	}
+
+	.resource-card :global(.resource-shot) {
+		width: 100%;
+		aspect-ratio: 16 / 10;
+		object-fit: cover;
+		border-bottom: var(--line-hair) solid var(--color-border);
+	}
+
+	.resource-body {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: var(--spacing-sm);
+		padding: var(--spacing-xl);
+	}
+
+	.resource-title {
+		font-family: var(--font-heading);
+		font-size: var(--font-size-xl);
+		line-height: 1.3;
+		text-wrap: pretty;
+	}
+
+	.resource-summary {
+		flex: 1;
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+	}
+
+	.resource-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-sm);
+		margin-top: var(--spacing-md);
+	}
+</style>

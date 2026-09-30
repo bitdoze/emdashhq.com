@@ -1,0 +1,14 @@
+{
+  "name": "@emdashhq/plugin-site-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Analytics and custom head/body code for EmDash HQ, editable in the EmDash admin.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "peerDependencies": {
+    "emdash": "*"
+  }
+}

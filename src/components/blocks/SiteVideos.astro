@@ -1,0 +1,202 @@
+---
+import { getEmDashCollection } from "emdash";
+import type { BlockComponentProps } from "emdash/ui";
+import type { PageContentBlock } from "../../../emdash-env";
+import { linkAttrs } from "../../lib/links";
+import { parseYouTubeId } from "../../lib/youtube";
+import VideoFacade from "../VideoFacade.astro";
+import SectionHeader from "./SectionHeader.astro";
+import SectionLink from "./SectionLink.astro";
+
+type VideosBlock = Extract<PageContentBlock, { _type: "site_videos" }>;
+type Props = BlockComponentProps<VideosBlock>;
+
+const { value } = Astro.props;
+const { anchor_id, headline, subheadline, featured_only } = value;
+const limit = value.limit ?? 3;
+const spotlight = value.spotlight ?? true;
+
+const { entries } = await getEmDashCollection("videos", {
+	status: "published",
+	orderBy: { published_at: "desc" },
+	limit: 100,
+});
+
+const playable = entries.flatMap((entry) => {
+	const id = parseYouTubeId(entry.data.youtube_url);
+	return id && (!featured_only || entry.data.featured) ? [{ entry, id }] : [];
+});
+
+const videos = limit > 0 ? playable.slice(0, limit) : playable;
+const first = spotlight ? videos[0] : undefined;
+const grid = spotlight ? videos.slice(1) : videos;
+const firstArticle = first ? linkAttrs(first.entry.data.article_url) : undefined;
+---
+
+<section class="section" id={anchor_id || undefined}>
+	<div class="container">
+		<SectionHeader headline={headline} subheadline={subheadline} meta="Screenings" />
+
+		{
+			videos.length === 0 && <p class="empty-note">No videos published yet.</p>
+		}
+
+		{
+			first && (
+				<article class="spotlight">
+					<VideoFacade
+						videoId={first.id}
+						title={first.entry.data.title}
+						watchUrl={`https://www.youtube.com/watch?v=${first.id}`}
+						thumbnail={first.entry.data.thumbnail}
+						priority
+					/>
+					<div class="spotlight-text">
+						<div class="badges">
+							<span class="badge">Latest video</span>
+							{first.entry.data.duration && (
+								<span class="badge badge-muted">{first.entry.data.duration}</span>
+							)}
+						</div>
+						<h3 class="spotlight-title">{first.entry.data.title}</h3>
+						{first.entry.data.summary && <p class="video-summary">{first.entry.data.summary}</p>}
+						{first.entry.data.article_url && firstArticle && (
+							<a class="btn btn-secondary" href={firstArticle.href} target={firstArticle.target} rel={firstArticle.rel}>
+								Read the companion article
+							</a>
+						)}
+					</div>
+				</article>
+			)
+		}
+
+		{
+			grid.length > 0 ? (
+				<div class="card-grid">
+					{grid.map(({ entry, id }) => (
+						<article class="hub-card video-card">
+							<VideoFacade
+								videoId={id}
+								title={entry.data.title}
+								watchUrl={`https://www.youtube.com/watch?v=${id}`}
+								thumbnail={entry.data.thumbnail}
+							/>
+							<div class="video-body">
+								<div class="badges">
+									{entry.data.duration && <span class="badge badge-muted">{entry.data.duration}</span>}
+								</div>
+								<h3 class="video-title">{entry.data.title}</h3>
+								{entry.data.summary && <p class="video-summary">{entry.data.summary}</p>}
+							</div>
+						</article>
+					))}
+				</div>
+			) : first ? (
+				<p class="empty-note">End of reel. The full back catalogue lives on YouTube.</p>
+			) : null
+		}
+
+		<SectionLink label={value.section_cta_label} url={value.section_cta_url} />
+	</div>
+</section>
+
+<style>
+	.spotlight {
+		display: grid;
+		grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+		gap: var(--spacing-2xl);
+		align-items: center;
+		margin-bottom: var(--spacing-2xl);
+		padding: var(--spacing-xl);
+		color: #cdddf5;
+		background:
+			linear-gradient(rgba(219, 231, 251, 0.035) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(219, 231, 251, 0.035) 1px, transparent 1px),
+			light-dark(#0d2340, #081a33);
+		background-size: 28px 28px, 28px 28px, auto;
+		border: var(--line-ink) solid var(--color-brand-strong);
+		border-radius: var(--radius-lg);
+	}
+
+	.spotlight-text {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--spacing-md);
+	}
+
+	.spotlight-title {
+		font-family: var(--font-heading);
+		font-size: var(--font-size-2xl);
+		line-height: 1.25;
+		text-wrap: balance;
+	}
+
+	.spotlight .video-summary {
+		color: rgb(219 231 251 / 0.82);
+	}
+
+	.spotlight .badge-muted {
+		color: #cdddf5;
+		background: rgb(219 231 251 / 0.12);
+		border-color: rgb(219 231 251 / 0.3);
+	}
+
+	.spotlight .badge {
+		color: #0d2340;
+		background: #cdddf5;
+		border-color: transparent;
+	}
+
+	.spotlight .badge::before,
+	.spotlight .badge::after {
+		opacity: 0.4;
+	}
+
+	.spotlight .btn-secondary {
+		color: #fff;
+		background: transparent;
+		border-color: rgb(219 231 251 / 0.5);
+	}
+
+	.spotlight .btn-secondary:hover {
+		background: rgb(219 231 251 / 0.12);
+		border-color: #fff;
+	}
+
+	.video-summary {
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+	}
+
+	.video-card {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		border-radius: var(--radius-lg);
+	}
+
+	.video-card :global(.video-facade) {
+		border-radius: 0;
+	}
+
+	.video-body {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-sm);
+		padding: var(--spacing-lg);
+	}
+
+	.video-title {
+		font-family: var(--font-heading);
+		font-size: var(--font-size-lg);
+		line-height: 1.35;
+		text-wrap: pretty;
+	}
+
+	@media (max-width: 900px) {
+		.spotlight {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

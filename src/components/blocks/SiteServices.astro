@@ -1,0 +1,168 @@
+---
+import { getEmDashCollection } from "emdash";
+import { Icon } from "astro-iconset/components";
+import type { BlockComponentProps } from "emdash/ui";
+import type { PageContentBlock } from "../../../emdash-env";
+import { lines } from "../../lib/format";
+import { iconFor } from "../../lib/icons";
+import { optionalLink } from "../../lib/links";
+import SectionHeader from "./SectionHeader.astro";
+import SectionLink from "./SectionLink.astro";
+
+type ServicesBlock = Extract<PageContentBlock, { _type: "site_services" }>;
+type Props = BlockComponentProps<ServicesBlock>;
+
+const { value } = Astro.props;
+const { anchor_id, headline, subheadline, featured_only } = value;
+const limit = value.limit ?? 3;
+
+const { entries } = await getEmDashCollection("services", { status: "published", limit: 100 });
+
+let services = entries
+	.filter((entry) => !featured_only || entry.data.featured)
+	.sort((a, b) => (a.data.sort_order ?? 100) - (b.data.sort_order ?? 100));
+if (limit > 0) services = services.slice(0, limit);
+---
+
+<section class="section" id={anchor_id || undefined}>
+	<div class="container">
+		<SectionHeader headline={headline} subheadline={subheadline} meta="Scope of work" />
+
+		{
+			services.length > 0 ? (
+				<div class="card-grid">
+					{services.map((entry, index) => {
+						const cta = optionalLink(entry.data.cta_label, entry.data.cta_url);
+						const included = lines(entry.data.features);
+						return (
+							<article class="hub-card service-card">
+								<div class="service-top">
+									<span class="icon-tile">
+										<Icon name={iconFor(entry.data.icon)} aria-hidden="true" />
+									</span>
+									{entry.data.price_label && <span class="service-price">{entry.data.price_label}</span>}
+								</div>
+								<p class="service-no">Scope {String(index + 1).padStart(2, "0")}</p>
+								<h3 class="service-title">{entry.data.title}</h3>
+								<p class="service-summary">{entry.data.summary}</p>
+								{included.length > 0 && (
+									<ul class="service-features">
+										{included.map((line) => (
+											<li>
+												<Icon name="ph:check" aria-hidden="true" />
+												<span>{line}</span>
+											</li>
+										))}
+									</ul>
+								)}
+								{cta && (
+									<a href={cta.href} target={cta.target} rel={cta.rel} class="btn btn-secondary service-cta">
+										{cta.label}
+										<Icon name="ph:arrow-right" aria-hidden="true" class="service-cta-arrow" />
+									</a>
+								)}
+							</article>
+						);
+					})}
+				</div>
+			) : (
+				<p class="empty-note">No services listed yet.</p>
+			)
+		}
+
+		<SectionLink label={value.section_cta_label} url={value.section_cta_url} />
+	</div>
+</section>
+
+<style>
+	.service-card {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-sm);
+		padding: var(--spacing-xl);
+	}
+
+	.service-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--spacing-md);
+		margin-bottom: var(--spacing-sm);
+	}
+
+	.service-price {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--color-brand-strong);
+		text-align: right;
+		text-wrap: balance;
+	}
+
+	.service-no {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-muted);
+	}
+
+	.service-title {
+		font-family: var(--font-heading);
+		font-size: var(--font-size-xl);
+		line-height: 1.25;
+		text-wrap: pretty;
+	}
+
+	.service-summary {
+		font-size: var(--font-size-sm);
+		line-height: var(--leading-normal);
+		color: var(--color-muted);
+		text-wrap: pretty;
+	}
+
+	.service-features {
+		display: flex;
+		flex-direction: column;
+		gap: 0.625rem;
+		margin: var(--spacing-md) 0 var(--spacing-lg);
+		padding-top: var(--spacing-md);
+		border-top: 1px solid var(--color-border);
+		list-style: none;
+		font-size: var(--font-size-sm);
+		flex: 1;
+	}
+
+	.service-features li {
+		display: flex;
+		gap: 0.625rem;
+		align-items: flex-start;
+		color: var(--color-text);
+	}
+
+	.service-features li :global(svg) {
+		flex-shrink: 0;
+		margin-top: 0.15em;
+		color: var(--color-brand-strong);
+	}
+
+	.service-cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--spacing-sm);
+		width: 100%;
+		margin-top: auto;
+	}
+
+	.service-cta :global(.service-cta-arrow) {
+		transition: transform var(--transition-base);
+	}
+
+	.service-card:hover .service-cta :global(.service-cta-arrow) {
+		transform: translateX(3px);
+	}
+</style>

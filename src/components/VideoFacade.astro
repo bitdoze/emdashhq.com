@@ -1,0 +1,122 @@
+---
+import type { ComponentProps } from "astro/types";
+import { Icon } from "astro-iconset/components";
+import { Image } from "emdash/ui";
+import { youTubeThumbnail } from "../lib/youtube";
+
+interface Props {
+	videoId: string;
+	title: string;
+	watchUrl: string;
+	thumbnail?: ComponentProps<typeof Image>["image"];
+	priority?: boolean;
+}
+
+const { videoId, title, watchUrl, thumbnail, priority = false } = Astro.props;
+---
+
+<a
+	href={watchUrl}
+	class="video-facade"
+	data-video-id={videoId}
+	data-video-title={title}
+	target="_blank"
+	rel="noopener noreferrer"
+	aria-label={`Play video: ${title}`}
+>
+	{
+		thumbnail ? (
+			<Image image={thumbnail} class="video-thumb" alt="" priority={priority} />
+		) : (
+			<img
+				src={youTubeThumbnail(videoId)}
+				class="video-thumb"
+				alt=""
+				width="480"
+				height="360"
+				loading={priority ? "eager" : "lazy"}
+			/>
+		)
+	}
+	<span class="video-play" aria-hidden="true">
+		<Icon name="ph:play" />
+	</span>
+</a>
+
+<script>
+	// The embed loads on click, so YouTube sets no cookies until the visitor
+	// asks to play. Without JavaScript the link opens the video on YouTube.
+	document.addEventListener("click", (event) => {
+		const facade = (event.target as HTMLElement).closest<HTMLAnchorElement>("a.video-facade");
+		if (!facade || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+		const id = facade.dataset.videoId;
+		if (!id) return;
+		event.preventDefault();
+		const frame = document.createElement("iframe");
+		frame.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
+		frame.title = facade.dataset.videoTitle ?? "YouTube video";
+		frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+		frame.allowFullscreen = true;
+		frame.className = "video-frame";
+		facade.replaceWith(frame);
+	});
+</script>
+
+<style>
+	.video-facade {
+		position: relative;
+		display: block;
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
+		background: #000;
+		border-radius: var(--radius-lg);
+	}
+
+	.video-facade :global(.video-thumb) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.video-play {
+		position: absolute;
+		inset: 0;
+		margin: auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 64px;
+		height: 64px;
+		font-size: 1.75rem;
+		color: #fff;
+		background: var(--color-brand-strong);
+		border: 2px solid rgb(255 255 255 / 0.85);
+		border-radius: var(--radius-full);
+		transition: background var(--transition-base);
+	}
+
+	/* A static registration ring frames the button; hover answers with the lighter ink. */
+	.video-play::after {
+		content: "";
+		position: absolute;
+		inset: -6px;
+		border: var(--line-ink) solid color-mix(in srgb, #fff 55%, transparent);
+		border-radius: var(--radius-full);
+		pointer-events: none;
+	}
+
+	.video-facade:hover .video-play,
+	.video-facade:focus-visible .video-play {
+		background: var(--color-brand);
+	}
+</style>
+
+<style is:global>
+	.video-frame {
+		display: block;
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		border: 0;
+		border-radius: var(--radius-lg);
+	}
+</style>

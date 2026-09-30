@@ -1,0 +1,106 @@
+---
+import { Icon } from "astro-iconset/components";
+import type { BlockComponentProps } from "emdash/ui";
+import type { PageContentBlock } from "../../../emdash-env";
+import { iconFor } from "../../lib/icons";
+import { linkAttrs } from "../../lib/links";
+import SectionHeader from "./SectionHeader.astro";
+
+type ContactBlock = Extract<PageContentBlock, { _type: "site_contact" }>;
+type Props = BlockComponentProps<ContactBlock>;
+
+const { value } = Astro.props;
+const { anchor_id, headline, subheadline, methods } = value;
+---
+
+<section class="section" id={anchor_id || undefined}>
+	<div class="container">
+		<SectionHeader headline={headline} subheadline={subheadline} meta="Transmittal" />
+		<ul class="card-grid contact-grid">
+			{
+				methods.map((method) => {
+					const link = linkAttrs(method.url);
+					return (
+						<li>
+							<a class="hub-card contact-card" href={link.href} target={link.target} rel={link.rel}>
+								<span class="contact-top">
+									<span class="icon-tile">
+										<Icon name={iconFor(method.icon)} aria-hidden="true" />
+									</span>
+									<Icon name="ph:arrow-right" class="contact-arrow" aria-hidden="true" />
+								</span>
+								<span class="contact-title">{method.title}</span>
+								{method.description && <span class="contact-desc">{method.description}</span>}
+								<span class="contact-label">{method.label}</span>
+							</a>
+						</li>
+					);
+				})
+			}
+		</ul>
+	</div>
+</section>
+
+<style>
+	.contact-grid {
+		list-style: none;
+	}
+
+	.contact-grid > li {
+		display: flex;
+	}
+
+	.contact-card {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: var(--spacing-sm);
+		padding: var(--spacing-xl);
+		min-width: 0;
+	}
+
+	.contact-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--spacing-sm);
+	}
+
+	.contact-arrow {
+		font-size: 1.25rem;
+		color: var(--color-muted);
+		transition:
+			transform var(--transition-base),
+			color var(--transition-base);
+	}
+
+	.contact-card:hover .contact-arrow {
+		transform: translateX(3px);
+		color: var(--color-brand-strong);
+	}
+
+	.contact-title {
+		font-family: var(--font-heading);
+		font-weight: 700;
+		font-size: var(--font-size-xl);
+		line-height: 1.25;
+		color: var(--color-text);
+	}
+
+	.contact-desc {
+		font-size: var(--font-size-sm);
+		line-height: var(--leading-normal);
+		color: var(--color-muted);
+	}
+
+	/* The address or handle reads as an instrument label, pinned to the card foot. */
+	.contact-label {
+		margin-top: auto;
+		padding-top: var(--spacing-md);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		color: var(--color-brand-strong);
+		overflow-wrap: anywhere;
+	}
+</style>

@@ -1,0 +1,165 @@
+---
+import { getEmDashCollection } from "emdash";
+import { Icon } from "astro-iconset/components";
+import type { BlockComponentProps } from "emdash/ui";
+import type { PageContentBlock } from "../../../emdash-env";
+import { hostOf, labelize } from "../../lib/format";
+import { linkAttrs } from "../../lib/links";
+import FilterBar from "./FilterBar.astro";
+import SectionHeader from "./SectionHeader.astro";
+import SectionLink from "./SectionLink.astro";
+
+type TutorialsBlock = Extract<PageContentBlock, { _type: "site_tutorials" }>;
+type Props = BlockComponentProps<TutorialsBlock>;
+
+const { value } = Astro.props;
+const { anchor_id, headline, subheadline, featured_only, show_filters } = value;
+const limit = value.limit ?? 6;
+
+const { entries } = await getEmDashCollection("tutorials", {
+	status: "published",
+	orderBy: { published_at: "desc" },
+	limit: 100,
+});
+
+let tutorials = featured_only ? entries.filter((entry) => entry.data.featured) : entries;
+if (limit > 0) tutorials = tutorials.slice(0, limit);
+
+const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boolean))].map((topic) => ({
+	value: topic as string,
+	label: labelize(topic),
+}));
+---
+
+<section class="section" id={anchor_id || undefined}>
+	<div class="container" data-filter-root>
+		<SectionHeader headline={headline} subheadline={subheadline} meta="Set index" />
+		{show_filters && <FilterBar options={topics} label="Filter tutorials by topic" />}
+
+		{
+			tutorials.length > 0 ? (
+				<ol class="tutorial-index">
+					{tutorials.map((entry, i) => {
+						const link = linkAttrs(entry.data.url);
+						return (
+							<li class="tutorial-row" data-filter-item data-filter-value={entry.data.topic}>
+								<span class="row-no" aria-hidden="true">
+									{String(i + 1).padStart(2, "0")}
+								</span>
+								<div class="row-body">
+									<div class="badges">
+										{entry.data.topic && <span class="badge">{labelize(entry.data.topic)}</span>}
+										{entry.data.level && <span class="badge badge-muted">{labelize(entry.data.level)}</span>}
+									</div>
+									<h3 class="tutorial-title">
+										<a href={link.href} target={link.target} rel={link.rel} class="card-link">
+											{entry.data.title}
+										</a>
+									</h3>
+									{entry.data.summary && <p class="tutorial-summary">{entry.data.summary}</p>}
+								</div>
+								<span class="row-source">
+									Read on {hostOf(entry.data.url) || "the site"}
+									<Icon name="ph:arrow-right" aria-hidden="true" />
+								</span>
+							</li>
+						);
+					})}
+				</ol>
+			) : (
+				<p class="empty-note">No tutorials published yet.</p>
+			)
+		}
+
+		<SectionLink label={value.section_cta_label} url={value.section_cta_url} />
+	</div>
+</section>
+
+<style>
+	/*
+	 * The set index: every tutorial is a numbered row in the drawing
+	 * list, separated by hairlines, the whole row reachable via the
+	 * stretched title link.
+	 */
+	.tutorial-index {
+		list-style: none;
+		border-bottom: var(--line-hair) solid var(--color-border);
+	}
+
+	/* Positioned so the stretched .card-link overlay stays inside its row. */
+	.tutorial-row {
+		position: relative;
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		gap: var(--spacing-lg);
+		align-items: start;
+		padding: var(--spacing-lg) var(--spacing-sm);
+		border-top: var(--line-hair) solid var(--color-border);
+		transition: background var(--transition-base);
+	}
+
+	.tutorial-row:hover {
+		background: color-mix(in srgb, var(--color-brand) 4%, transparent);
+	}
+
+	.row-no {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		color: var(--color-muted);
+		padding-top: 2px;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.row-body {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-sm);
+		min-width: 0;
+	}
+
+	.tutorial-title {
+		font-family: var(--font-heading);
+		font-size: var(--font-size-xl);
+		line-height: 1.3;
+		text-wrap: pretty;
+	}
+
+	.tutorial-summary {
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		max-width: 68ch;
+	}
+
+	.row-source {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		white-space: nowrap;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--color-brand-strong);
+		padding-top: 4px;
+	}
+
+	.row-source :global(svg) {
+		transition: transform var(--transition-base);
+	}
+
+	.tutorial-row:hover .row-source :global(svg) {
+		transform: translateX(3px);
+	}
+
+	@media (max-width: 700px) {
+		.tutorial-row {
+			grid-template-columns: auto 1fr;
+		}
+
+		.row-source {
+			display: none;
+		}
+	}
+</style>

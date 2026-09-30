@@ -1,0 +1,20 @@
+---
+import { optionalLink } from "../../lib/links";
+
+interface Props {
+	label?: string | null;
+	url?: string | null;
+}
+
+const link = optionalLink(Astro.props.label, Astro.props.url);
+---
+
+{
+	link && (
+		<p class="section-link">
+			<a href={link.href} target={link.target} rel={link.rel} class="btn btn-secondary">
+				{link.label}
+			</a>
+		</p>
+	)
+}

@@ -1,0 +1,1796 @@
+{
+	"$schema": "https://emdashcms.com/seed.schema.json",
+	"version": "1",
+	"meta": {
+		"name": "EmDash HQ",
+		"description": "EmDash CMS tutorials, YouTube videos, free and paid themes and plugins, and services",
+		"author": "Bitdoze"
+	},
+	"settings": {
+		"title": "EmDash HQ",
+		"tagline": "Tutorials, videos, themes and plugins for EmDash CMS",
+		"social": {
+			"youtube": "https://www.youtube.com/channel/UCGsUtKhXsRrMvYAWm8q0bCg",
+			"github": "https://github.com/bitdoze",
+			"twitter": "https://twitter.com/bitdoze"
+		}
+	},
+	"blockTypes": [
+		{
+			"slug": "marketing_hero",
+			"label": "Hero",
+			"description": "A prominent page introduction with optional calls to action and media",
+			"category": "Marketing",
+			"currentVersion": 1,
+			"versions": [
+				{
+					"version": 1,
+					"fields": [
+						{
+							"slug": "anchor_id",
+							"label": "Anchor ID",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|[a-z][a-z0-9_-]*)$"
+							}
+						},
+						{
+							"slug": "eyebrow",
+							"label": "Eyebrow (small label above the headline)",
+							"type": "string"
+						},
+						{
+							"slug": "headline",
+							"label": "Headline",
+							"type": "string",
+							"required": true
+						},
+						{
+							"slug": "subheadline",
+							"label": "Subheadline",
+							"type": "text"
+						},
+						{
+							"slug": "primary_cta_label",
+							"label": "Primary CTA label",
+							"type": "string"
+						},
+						{
+							"slug": "primary_cta_url",
+							"label": "Primary CTA URL",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|(?:https?://|mailto:|tel:|/(?!/)|#).+)$"
+							}
+						},
+						{
+							"slug": "secondary_cta_label",
+							"label": "Secondary CTA label",
+							"type": "string"
+						},
+						{
+							"slug": "secondary_cta_url",
+							"label": "Secondary CTA URL",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|(?:https?://|mailto:|tel:|/(?!/)|#).+)$"
+							}
+						},
+						{
+							"slug": "image",
+							"label": "Image",
+							"type": "image"
+						},
+						{
+							"slug": "centered",
+							"label": "Center the layout",
+							"type": "boolean",
+							"defaultValue": false
+						}
+					]
+				}
+			]
+		},
+		{
+			"slug": "marketing_features",
+			"label": "Features",
+			"description": "A grid of product or service features",
+			"category": "Marketing",
+			"currentVersion": 1,
+			"versions": [
+				{
+					"version": 1,
+					"fields": [
+						{
+							"slug": "anchor_id",
+							"label": "Anchor ID",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|[a-z][a-z0-9_-]*)$"
+							}
+						},
+						{
+							"slug": "headline",
+							"label": "Headline",
+							"type": "string",
+							"required": true
+						},
+						{
+							"slug": "subheadline",
+							"label": "Subheadline",
+							"type": "text"
+						},
+						{
+							"slug": "features",
+							"label": "Features",
+							"type": "repeater",
+							"required": true,
+							"validation": {
+								"minItems": 1,
+								"maxItems": 12,
+								"subFields": [
+									{
+										"slug": "icon",
+										"label": "Icon",
+										"type": "select",
+										"required": true,
+										"options": [
+											"zap",
+											"shield",
+											"users",
+											"chart",
+											"code",
+											"globe",
+											"heart",
+											"star",
+											"check",
+											"lock",
+											"clock",
+											"cloud",
+											"rocket",
+											"palette",
+											"plug",
+											"swap",
+											"lifebuoy",
+											"wrench",
+											"book",
+											"video",
+											"gift"
+										]
+									},
+									{
+										"slug": "title",
+										"label": "Title",
+										"type": "string",
+										"required": true
+									},
+									{
+										"slug": "description",
+										"label": "Description",
+										"type": "text",
+										"required": true
+									}
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"slug": "marketing_testimonials",
+			"label": "Testimonials",
+			"description": "Customer quotes and attribution. Use real quotes only.",
+			"category": "Marketing",
+			"currentVersion": 1,
+			"versions": [
+				{
+					"version": 1,
+					"fields": [
+						{
+							"slug": "anchor_id",
+							"label": "Anchor ID",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|[a-z][a-z0-9_-]*)$"
+							}
+						},
+						{
+							"slug": "headline",
+							"label": "Headline",
+							"type": "string"
+						},
+						{
+							"slug": "testimonials",
+							"label": "Testimonials",
+							"type": "repeater",
+							"required": true,
+							"validation": {
+								"minItems": 1,
+								"maxItems": 12,
+								"subFields": [
+									{
+										"slug": "quote",
+										"label": "Quote",
+										"type": "text",
+										"required": true
+									},
+									{
+										"slug": "author",
+										"label": "Author name",
+										"type": "string",
+										"required": true
+									},
+									{
+										"slug": "role",
+										"label": "Role or title",
+										"type": "string"
+									},
+									{
+										"slug": "company",
+										"label": "Company",
+										"type": "string"
+									},
+									{
+										"slug": "avatar",
+										"label": "Avatar",
+										"type": "image"
+									}
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"slug": "marketing_pricing",
+			"label": "Pricing",
+			"description": "A comparison of up to three pricing plans",
+			"category": "Marketing",
+			"currentVersion": 1,
+			"versions": [
+				{
+					"version": 1,
+					"fields": [
+						{
+							"slug": "anchor_id",
+							"label": "Anchor ID",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|[a-z][a-z0-9_-]*)$"
+							}
+						},
+						{
+							"slug": "headline",
+							"label": "Headline",
+							"type": "string"
+						},
+						{
+							"slug": "plans",
+							"label": "Plans",
+							"type": "repeater",
+							"required": true,
+							"validation": {
+								"minItems": 1,
+								"maxItems": 3,
+								"subFields": [
+									{
+										"slug": "name",
+										"label": "Plan name",
+										"type": "string",
+										"required": true
+									},
+									{
+										"slug": "price",
+										"label": "Price",
+										"type": "string",
+										"required": true
+									},
+									{
+										"slug": "period",
+										"label": "Period",
+										"type": "string"
+									},
+									{
+										"slug": "description",
+										"label": "Description",
+										"type": "text"
+									},
+									{
+										"slug": "features",
+										"label": "Features, one per line",
+										"type": "text"
+									},
+									{
+										"slug": "cta_label",
+										"label": "CTA label",
+										"type": "string",
+										"required": true
+									},
+									{
+										"slug": "cta_url",
+										"label": "CTA URL",
+										"type": "string",
+										"required": true
+									},
+									{
+										"slug": "highlighted",
+										"label": "Highlight this plan",
+										"type": "boolean"
+									}
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"slug": "marketing_faq",
+			"label": "FAQ",
+			"description": "A list of frequently asked questions",
+			"category": "Marketing",
+			"currentVersion": 1,
+			"versions": [
+				{
+					"version": 1,
+					"fields": [
+						{
+							"slug": "anchor_id",
+							"label": "Anchor ID",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|[a-z][a-z0-9_-]*)$"
+							}
+						},
+						{
+							"slug": "headline",
+							"label": "Headline",
+							"type": "string"
+						},
+						{
+							"slug": "items",
+							"label": "Questions",
+							"type": "repeater",
+							"required": true,
+							"validation": {
+								"minItems": 1,
+								"maxItems": 12,
+								"subFields": [
+									{
+										"slug": "question",
+										"label": "Question",
+										"type": "string",
+										"required": true
+									},
+									{
+										"slug": "answer",
+										"label": "Answer",
+										"type": "text",
+										"required": true
+									}
+								]
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"slug": "site_tutorials",
+			"label": "Tutorials",
+			"description": "Tutorial cards pulled from the Tutorials collection",
+			"category": "Content hub",
+			"currentVersion": 1,
+			"versions": [
+				{
+					"version": 1,
+					"fields": [
+						{
+							"slug": "anchor_id",
+							"label": "Anchor ID",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|[a-z][a-z0-9_-]*)$"
+							}
+						},
+						{
+							"slug": "headline",
+							"label": "Headline",
+							"type": "string"
+						},
+						{
+							"slug": "subheadline",
+							"label": "Subheadline",
+							"type": "text"
+						},
+						{
+							"slug": "limit",
+							"label": "How many to show (0 = all)",
+							"type": "integer",
+							"defaultValue": 6,
+							"validation": {
+								"min": 0,
+								"max": 100
+							}
+						},
+						{
+							"slug": "featured_only",
+							"label": "Only show featured tutorials",
+							"type": "boolean",
+							"defaultValue": false
+						},
+						{
+							"slug": "show_filters",
+							"label": "Show topic filter",
+							"type": "boolean",
+							"defaultValue": false
+						},
+						{
+							"slug": "section_cta_label",
+							"label": "Section link label",
+							"type": "string"
+						},
+						{
+							"slug": "section_cta_url",
+							"label": "Section link URL",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|(?:https?://|mailto:|tel:|/(?!/)|#).+)$"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"slug": "site_videos",
+			"label": "YouTube videos",
+			"description": "Video cards pulled from the Videos collection",
+			"category": "Content hub",
+			"currentVersion": 1,
+			"versions": [
+				{
+					"version": 1,
+					"fields": [
+						{
+							"slug": "anchor_id",
+							"label": "Anchor ID",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|[a-z][a-z0-9_-]*)$"
+							}
+						},
+						{
+							"slug": "headline",
+							"label": "Headline",
+							"type": "string"
+						},
+						{
+							"slug": "subheadline",
+							"label": "Subheadline",
+							"type": "text"
+						},
+						{
+							"slug": "limit",
+							"label": "How many to show (0 = all)",
+							"type": "integer",
+							"defaultValue": 3,
+							"validation": {
+								"min": 0,
+								"max": 100
+							}
+						},
+						{
+							"slug": "featured_only",
+							"label": "Only show featured videos",
+							"type": "boolean",
+							"defaultValue": false
+						},
+						{
+							"slug": "spotlight",
+							"label": "Play the first video large",
+							"type": "boolean",
+							"defaultValue": true
+						},
+						{
+							"slug": "section_cta_label",
+							"label": "Section link label",
+							"type": "string"
+						},
+						{
+							"slug": "section_cta_url",
+							"label": "Section link URL",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|(?:https?://|mailto:|tel:|/(?!/)|#).+)$"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"slug": "site_resources",
+			"label": "Themes and plugins",
+			"description": "Free and paid theme and plugin cards pulled from the Themes and plugins collection",
+			"category": "Content hub",
+			"currentVersion": 1,
+			"versions": [
+				{
+					"version": 1,
+					"fields": [
+						{
+							"slug": "anchor_id",
+							"label": "Anchor ID",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|[a-z][a-z0-9_-]*)$"
+							}
+						},
+						{
+							"slug": "headline",
+							"label": "Headline",
+							"type": "string"
+						},
+						{
+							"slug": "subheadline",
+							"label": "Subheadline",
+							"type": "text"
+						},
+						{
+							"slug": "kind",
+							"label": "Show",
+							"type": "select",
+							"validation": {
+								"options": [
+									"all",
+									"theme",
+									"plugin"
+								]
+							},
+							"defaultValue": "all"
+						},
+						{
+							"slug": "price",
+							"label": "Price",
+							"type": "select",
+							"validation": {
+								"options": [
+									"all",
+									"free",
+									"paid"
+								]
+							},
+							"defaultValue": "all"
+						},
+						{
+							"slug": "limit",
+							"label": "How many to show (0 = all)",
+							"type": "integer",
+							"defaultValue": 6,
+							"validation": {
+								"min": 0,
+								"max": 100
+							}
+						},
+						{
+							"slug": "featured_only",
+							"label": "Only show featured entries",
+							"type": "boolean",
+							"defaultValue": false
+						},
+						{
+							"slug": "show_filters",
+							"label": "Show free and paid filter",
+							"type": "boolean",
+							"defaultValue": false
+						},
+						{
+							"slug": "section_cta_label",
+							"label": "Section link label",
+							"type": "string"
+						},
+						{
+							"slug": "section_cta_url",
+							"label": "Section link URL",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|(?:https?://|mailto:|tel:|/(?!/)|#).+)$"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"slug": "site_services",
+			"label": "Services",
+			"description": "Service cards pulled from the Services collection",
+			"category": "Content hub",
+			"currentVersion": 1,
+			"versions": [
+				{
+					"version": 1,
+					"fields": [
+						{
+							"slug": "anchor_id",
+							"label": "Anchor ID",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|[a-z][a-z0-9_-]*)$"
+							}
+						},
+						{
+							"slug": "headline",
+							"label": "Headline",
+							"type": "string"
+						},
+						{
+							"slug": "subheadline",
+							"label": "Subheadline",
+							"type": "text"
+						},
+						{
+							"slug": "limit",
+							"label": "How many to show (0 = all)",
+							"type": "integer",
+							"defaultValue": 3,
+							"validation": {
+								"min": 0,
+								"max": 100
+							}
+						},
+						{
+							"slug": "featured_only",
+							"label": "Only show featured services",
+							"type": "boolean",
+							"defaultValue": false
+						},
+						{
+							"slug": "section_cta_label",
+							"label": "Section link label",
+							"type": "string"
+						},
+						{
+							"slug": "section_cta_url",
+							"label": "Section link URL",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|(?:https?://|mailto:|tel:|/(?!/)|#).+)$"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"slug": "site_cta",
+			"label": "Call to action",
+			"description": "A full-width banner with one or two buttons",
+			"category": "Content hub",
+			"currentVersion": 1,
+			"versions": [
+				{
+					"version": 1,
+					"fields": [
+						{
+							"slug": "anchor_id",
+							"label": "Anchor ID",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|[a-z][a-z0-9_-]*)$"
+							}
+						},
+						{
+							"slug": "headline",
+							"label": "Headline",
+							"type": "string",
+							"required": true
+						},
+						{
+							"slug": "subheadline",
+							"label": "Subheadline",
+							"type": "text"
+						},
+						{
+							"slug": "primary_cta_label",
+							"label": "Primary button label",
+							"type": "string"
+						},
+						{
+							"slug": "primary_cta_url",
+							"label": "Primary button URL",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|(?:https?://|mailto:|tel:|/(?!/)|#).+)$"
+							}
+						},
+						{
+							"slug": "secondary_cta_label",
+							"label": "Secondary button label",
+							"type": "string"
+						},
+						{
+							"slug": "secondary_cta_url",
+							"label": "Secondary button URL",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|(?:https?://|mailto:|tel:|/(?!/)|#).+)$"
+							}
+						},
+						{
+							"slug": "style",
+							"label": "Style",
+							"type": "select",
+							"validation": {
+								"options": [
+									"gradient",
+									"plain"
+								]
+							},
+							"defaultValue": "gradient"
+						}
+					]
+				}
+			]
+		},
+		{
+			"slug": "site_contact",
+			"label": "Contact methods",
+			"description": "Cards with a way to reach you: email, YouTube, GitHub",
+			"category": "Content hub",
+			"currentVersion": 1,
+			"versions": [
+				{
+					"version": 1,
+					"fields": [
+						{
+							"slug": "anchor_id",
+							"label": "Anchor ID",
+							"type": "string",
+							"validation": {
+								"pattern": "^(?:$|[a-z][a-z0-9_-]*)$"
+							}
+						},
+						{
+							"slug": "headline",
+							"label": "Headline",
+							"type": "string"
+						},
+						{
+							"slug": "subheadline",
+							"label": "Subheadline",
+							"type": "text"
+						},
+						{
+							"slug": "methods",
+							"label": "Contact methods",
+							"type": "repeater",
+							"required": true,
+							"validation": {
+								"minItems": 1,
+								"maxItems": 6,
+								"subFields": [
+									{
+										"slug": "icon",
+										"label": "Icon",
+										"type": "select",
+										"required": true,
+										"options": [
+											"mail",
+											"lifebuoy",
+											"youtube",
+											"github",
+											"x",
+											"globe",
+											"book"
+										]
+									},
+									{
+										"slug": "title",
+										"label": "Title",
+										"type": "string",
+										"required": true
+									},
+									{
+										"slug": "description",
+										"label": "Description",
+										"type": "text"
+									},
+									{
+										"slug": "label",
+										"label": "Link text",
+										"type": "string",
+										"required": true
+									},
+									{
+										"slug": "url",
+										"label": "Link URL",
+										"type": "string",
+										"required": true
+									}
+								]
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"collections": [
+		{
+			"slug": "pages",
+			"label": "Pages",
+			"labelSingular": "Page",
+			"description": "Every page on the site, built from blocks. The slug becomes the URL.",
+			"supports": [
+				"drafts",
+				"revisions",
+				"seo"
+			],
+			"sortOrder": 0,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "content",
+					"label": "Content",
+					"type": "blocks",
+					"validation": {
+						"allowedTypes": [
+							"marketing_hero",
+							"marketing_features",
+							"marketing_testimonials",
+							"marketing_pricing",
+							"marketing_faq",
+							"site_tutorials",
+							"site_videos",
+							"site_resources",
+							"site_services",
+							"site_cta",
+							"site_contact"
+						],
+						"maxItems": 30
+					}
+				}
+			]
+		},
+		{
+			"slug": "tutorials",
+			"label": "Tutorials",
+			"labelSingular": "Tutorial",
+			"description": "Articles on bitdoze.com. Cards link out to the article.",
+			"supports": [
+				"drafts",
+				"revisions"
+			],
+			"group": "Content hub",
+			"sortOrder": 10,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "summary",
+					"label": "Summary",
+					"type": "text",
+					"searchable": true
+				},
+				{
+					"slug": "url",
+					"label": "Tutorial URL (bitdoze.com)",
+					"type": "url",
+					"required": true
+				},
+				{
+					"slug": "image",
+					"label": "Cover image",
+					"type": "image"
+				},
+				{
+					"slug": "topic",
+					"label": "Topic",
+					"type": "select",
+					"validation": {
+						"options": [
+							"getting-started",
+							"themes",
+							"plugins",
+							"deployment",
+							"content-modeling",
+							"migration",
+							"review"
+						]
+					},
+					"defaultValue": "getting-started"
+				},
+				{
+					"slug": "level",
+					"label": "Level",
+					"type": "select",
+					"validation": {
+						"options": [
+							"beginner",
+							"intermediate",
+							"advanced"
+						]
+					}
+				},
+				{
+					"slug": "featured",
+					"label": "Featured",
+					"type": "boolean",
+					"defaultValue": false
+				}
+			]
+		},
+		{
+			"slug": "videos",
+			"label": "Videos",
+			"labelSingular": "Video",
+			"description": "YouTube videos from your channel. Paste the watch URL.",
+			"supports": [
+				"drafts",
+				"revisions"
+			],
+			"group": "Content hub",
+			"sortOrder": 20,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "youtube_url",
+					"label": "YouTube video URL",
+					"type": "url",
+					"required": true
+				},
+				{
+					"slug": "summary",
+					"label": "Summary",
+					"type": "text",
+					"searchable": true
+				},
+				{
+					"slug": "duration",
+					"label": "Duration (for example 18:42)",
+					"type": "string"
+				},
+				{
+					"slug": "article_url",
+					"label": "Companion article URL",
+					"type": "url"
+				},
+				{
+					"slug": "thumbnail",
+					"label": "Custom thumbnail (optional)",
+					"type": "image"
+				},
+				{
+					"slug": "featured",
+					"label": "Featured",
+					"type": "boolean",
+					"defaultValue": false
+				}
+			]
+		},
+		{
+			"slug": "resources",
+			"label": "Themes and plugins",
+			"labelSingular": "Theme or plugin",
+			"description": "Free and paid themes and plugins. Cards link out to the download or store page.",
+			"supports": [
+				"drafts",
+				"revisions"
+			],
+			"group": "Content hub",
+			"sortOrder": 30,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Name",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "kind",
+					"label": "Kind",
+					"type": "select",
+					"validation": {
+						"options": [
+							"theme",
+							"plugin"
+						]
+					},
+					"required": true,
+					"defaultValue": "theme"
+				},
+				{
+					"slug": "price_type",
+					"label": "Price type",
+					"type": "select",
+					"validation": {
+						"options": [
+							"free",
+							"paid"
+						]
+					},
+					"required": true,
+					"defaultValue": "free"
+				},
+				{
+					"slug": "price",
+					"label": "Price (shown for paid, for example $49 or $9/mo)",
+					"type": "string"
+				},
+				{
+					"slug": "summary",
+					"label": "Summary",
+					"type": "text",
+					"searchable": true
+				},
+				{
+					"slug": "url",
+					"label": "Link (download, repository or store page)",
+					"type": "url",
+					"required": true
+				},
+				{
+					"slug": "demo_url",
+					"label": "Live demo or docs link",
+					"type": "url"
+				},
+				{
+					"slug": "image",
+					"label": "Screenshot",
+					"type": "image"
+				},
+				{
+					"slug": "cta_label",
+					"label": "Button label (optional)",
+					"type": "string"
+				},
+				{
+					"slug": "featured",
+					"label": "Featured",
+					"type": "boolean",
+					"defaultValue": false
+				}
+			]
+		},
+		{
+			"slug": "services",
+			"label": "Services",
+			"labelSingular": "Service",
+			"description": "What you sell. Lowest sort order shows first.",
+			"supports": [
+				"drafts",
+				"revisions"
+			],
+			"group": "Content hub",
+			"sortOrder": 40,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "summary",
+					"label": "Summary",
+					"type": "text",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "icon",
+					"label": "Icon",
+					"type": "select",
+					"validation": {
+						"options": [
+							"zap",
+							"shield",
+							"users",
+							"chart",
+							"code",
+							"globe",
+							"heart",
+							"star",
+							"check",
+							"lock",
+							"clock",
+							"cloud",
+							"rocket",
+							"palette",
+							"plug",
+							"swap",
+							"lifebuoy",
+							"wrench",
+							"book",
+							"video",
+							"gift"
+						]
+					},
+					"defaultValue": "star"
+				},
+				{
+					"slug": "price_label",
+					"label": "Price label (for example From $500 or Contact for a quote)",
+					"type": "string"
+				},
+				{
+					"slug": "features",
+					"label": "What is included (one per line)",
+					"type": "text"
+				},
+				{
+					"slug": "cta_label",
+					"label": "Button label",
+					"type": "string"
+				},
+				{
+					"slug": "cta_url",
+					"label": "Button URL",
+					"type": "url"
+				},
+				{
+					"slug": "featured",
+					"label": "Featured",
+					"type": "boolean",
+					"defaultValue": false
+				},
+				{
+					"slug": "sort_order",
+					"label": "Sort order",
+					"type": "integer",
+					"defaultValue": 100
+				}
+			]
+		}
+	],
+	"menus": [
+		{
+			"name": "primary",
+			"label": "Primary navigation",
+			"items": [
+				{
+					"type": "custom",
+					"label": "Tutorials",
+					"url": "/tutorials/"
+				},
+				{
+					"type": "custom",
+					"label": "Videos",
+					"url": "/videos/"
+				},
+				{
+					"type": "custom",
+					"label": "Themes",
+					"url": "/themes/"
+				},
+				{
+					"type": "custom",
+					"label": "Plugins",
+					"url": "/plugins/"
+				},
+				{
+					"type": "custom",
+					"label": "Services",
+					"url": "/services/"
+				},
+				{
+					"type": "custom",
+					"label": "Contact",
+					"url": "/contact/"
+				}
+			]
+		},
+		{
+			"name": "header_cta",
+			"label": "Header button (first item only)",
+			"items": [
+				{
+					"type": "custom",
+					"label": "Work with me",
+					"url": "/services/"
+				}
+			]
+		},
+		{
+			"name": "footer_learn",
+			"label": "Learn",
+			"items": [
+				{
+					"type": "custom",
+					"label": "Tutorials",
+					"url": "/tutorials/"
+				},
+				{
+					"type": "custom",
+					"label": "Videos",
+					"url": "/videos/"
+				},
+				{
+					"type": "custom",
+					"label": "bitdoze.com",
+					"url": "https://www.bitdoze.com/",
+					"target": "_blank"
+				},
+				{
+					"type": "custom",
+					"label": "YouTube channel",
+					"url": "https://www.youtube.com/channel/UCGsUtKhXsRrMvYAWm8q0bCg",
+					"target": "_blank"
+				}
+			]
+		},
+		{
+			"name": "footer_resources",
+			"label": "Resources",
+			"items": [
+				{
+					"type": "custom",
+					"label": "Themes",
+					"url": "/themes/"
+				},
+				{
+					"type": "custom",
+					"label": "Plugins",
+					"url": "/plugins/"
+				},
+				{
+					"type": "custom",
+					"label": "EmDash docs",
+					"url": "https://docs.emdashcms.com/",
+					"target": "_blank"
+				},
+				{
+					"type": "custom",
+					"label": "EmDash on GitHub",
+					"url": "https://github.com/emdash-cms/emdash",
+					"target": "_blank"
+				}
+			]
+		},
+		{
+			"name": "footer_company",
+			"label": "Work with me",
+			"items": [
+				{
+					"type": "custom",
+					"label": "Services",
+					"url": "/services/"
+				},
+				{
+					"type": "custom",
+					"label": "Contact",
+					"url": "/contact/"
+				}
+			]
+		}
+	],
+	"content": {
+		"pages": [
+			{
+				"id": "home",
+				"slug": "home",
+				"data": {
+					"title": "Home",
+					"content": [
+						{
+							"_type": "marketing_hero",
+							"_version": 1,
+							"_key": "home-hero",
+							"eyebrow": "EmDash CMS hub by Bitdoze",
+							"headline": "EmDash CMS tutorials, themes and plugins in one place",
+							"subheadline": "Tested guides from bitdoze.com, video walkthroughs from the Bitdoze YouTube channel, and a list of free and paid EmDash themes and plugins.",
+							"primary_cta_label": "Start with the tutorials",
+							"primary_cta_url": "/tutorials/",
+							"secondary_cta_label": "Watch on YouTube",
+							"secondary_cta_url": "https://www.youtube.com/channel/UCGsUtKhXsRrMvYAWm8q0bCg"
+						},
+						{
+							"_type": "site_tutorials",
+							"_version": 1,
+							"_key": "home-tutorials",
+							"anchor_id": "tutorials",
+							"headline": "Latest EmDash tutorials",
+							"subheadline": "Step-by-step guides on bitdoze.com, from first install to a deployed site.",
+							"limit": 3,
+							"section_cta_label": "All tutorials",
+							"section_cta_url": "/tutorials/"
+						},
+						{
+							"_type": "site_videos",
+							"_version": 1,
+							"_key": "home-videos",
+							"anchor_id": "videos",
+							"headline": "Watch it built on YouTube",
+							"subheadline": "Walkthroughs from the Bitdoze channel.",
+							"limit": 3,
+							"spotlight": true,
+							"section_cta_label": "More videos",
+							"section_cta_url": "/videos/"
+						},
+						{
+							"_type": "site_resources",
+							"_version": 1,
+							"_key": "home-resources",
+							"anchor_id": "themes-and-plugins",
+							"headline": "Free and paid themes and plugins",
+							"subheadline": "Every listing shows whether it is free or paid, and links to where you get it.",
+							"kind": "all",
+							"price": "all",
+							"limit": 6,
+							"section_cta_label": "Browse all themes",
+							"section_cta_url": "/themes/"
+						},
+						{
+							"_type": "site_services",
+							"_version": 1,
+							"_key": "home-services",
+							"anchor_id": "services",
+							"headline": "Need a hand with EmDash?",
+							"subheadline": "Setup, custom themes, plugins and migrations.",
+							"limit": 3,
+							"section_cta_label": "See all services",
+							"section_cta_url": "/services/"
+						},
+						{
+							"_type": "marketing_faq",
+							"_version": 1,
+							"_key": "home-faq",
+							"headline": "EmDash questions",
+							"items": [
+								{
+									"question": "What is EmDash?",
+									"answer": "EmDash is an Astro-native CMS with a full admin panel. You model content in the admin, and your Astro site queries it. It deploys to Cloudflare Workers or to a Node.js server."
+								},
+								{
+									"question": "Do I need Cloudflare to run EmDash?",
+									"answer": "No. Cloudflare Workers with D1 and R2 is one option. EmDash also runs on Node.js with SQLite and local file storage, for example on a VPS. The EmDash review on bitdoze.com compares both."
+								},
+								{
+									"question": "Are the themes and plugins listed here free?",
+									"answer": "Each listing carries a Free or Paid badge. Paid entries show the price and link to the seller's page."
+								},
+								{
+									"question": "Who runs this site?",
+									"answer": "I'm Dragos. I write the guides at bitdoze.com and publish the videos on the Bitdoze YouTube channel."
+								}
+							]
+						},
+						{
+							"_type": "site_cta",
+							"_version": 1,
+							"_key": "home-cta",
+							"headline": "Planning an EmDash site, or stuck on one?",
+							"subheadline": "Tell me what you need: a setup, a custom theme, a plugin, or a move from WordPress.",
+							"primary_cta_label": "Get in touch",
+							"primary_cta_url": "/contact/",
+							"secondary_cta_label": "Subscribe on YouTube",
+							"secondary_cta_url": "https://www.youtube.com/channel/UCGsUtKhXsRrMvYAWm8q0bCg",
+							"style": "gradient"
+						}
+					]
+				},
+				"status": "published"
+			},
+			{
+				"id": "tutorials",
+				"slug": "tutorials",
+				"data": {
+					"title": "Tutorials",
+					"content": [
+						{
+							"_type": "marketing_hero",
+							"_version": 1,
+							"_key": "tutorials-hero",
+							"eyebrow": "Learn",
+							"headline": "EmDash CMS tutorials",
+							"subheadline": "Guides on bitdoze.com that take you from install to a deployed site. Filter by topic.",
+							"centered": true
+						},
+						{
+							"_type": "site_tutorials",
+							"_version": 1,
+							"_key": "tutorials-list",
+							"limit": 0,
+							"show_filters": true
+						},
+						{
+							"_type": "site_cta",
+							"_version": 1,
+							"_key": "tutorials-cta",
+							"headline": "Want it done for you?",
+							"subheadline": "I set up, theme and migrate EmDash sites.",
+							"primary_cta_label": "See services",
+							"primary_cta_url": "/services/",
+							"style": "plain"
+						}
+					]
+				},
+				"status": "published"
+			},
+			{
+				"id": "videos",
+				"slug": "videos",
+				"data": {
+					"title": "Videos",
+					"content": [
+						{
+							"_type": "marketing_hero",
+							"_version": 1,
+							"_key": "videos-hero",
+							"eyebrow": "Watch",
+							"headline": "EmDash on video",
+							"subheadline": "Walkthroughs from the Bitdoze YouTube channel. Videos play only after you click, so YouTube sets no cookies until then.",
+							"centered": true
+						},
+						{
+							"_type": "site_videos",
+							"_version": 1,
+							"_key": "videos-list",
+							"limit": 0,
+							"spotlight": true
+						},
+						{
+							"_type": "site_cta",
+							"_version": 1,
+							"_key": "videos-cta",
+							"headline": "New EmDash videos every time I ship something",
+							"subheadline": "Subscribe so you don't miss one.",
+							"primary_cta_label": "Subscribe on YouTube",
+							"primary_cta_url": "https://www.youtube.com/channel/UCGsUtKhXsRrMvYAWm8q0bCg",
+							"style": "gradient"
+						}
+					]
+				},
+				"status": "published"
+			},
+			{
+				"id": "themes",
+				"slug": "themes",
+				"data": {
+					"title": "Themes",
+					"content": [
+						{
+							"_type": "marketing_hero",
+							"_version": 1,
+							"_key": "themes-hero",
+							"eyebrow": "Themes",
+							"headline": "EmDash themes",
+							"subheadline": "Free and paid themes for EmDash. Each card links to where you get it.",
+							"centered": true
+						},
+						{
+							"_type": "site_resources",
+							"_version": 1,
+							"_key": "themes-list",
+							"kind": "theme",
+							"price": "all",
+							"limit": 0,
+							"show_filters": true
+						},
+						{
+							"_type": "site_cta",
+							"_version": 1,
+							"_key": "themes-cta",
+							"headline": "Need a theme built for your brand?",
+							"subheadline": "I build custom EmDash themes with page blocks your editors can reorder.",
+							"primary_cta_label": "Custom theme service",
+							"primary_cta_url": "/services/",
+							"style": "plain"
+						}
+					]
+				},
+				"status": "published"
+			},
+			{
+				"id": "plugins",
+				"slug": "plugins",
+				"data": {
+					"title": "Plugins",
+					"content": [
+						{
+							"_type": "marketing_hero",
+							"_version": 1,
+							"_key": "plugins-hero",
+							"eyebrow": "Plugins",
+							"headline": "EmDash plugins",
+							"subheadline": "Free and paid plugins for EmDash. Each card links to where you get it.",
+							"centered": true
+						},
+						{
+							"_type": "site_resources",
+							"_version": 1,
+							"_key": "plugins-list",
+							"kind": "plugin",
+							"price": "all",
+							"limit": 0,
+							"show_filters": true
+						},
+						{
+							"_type": "site_cta",
+							"_version": 1,
+							"_key": "plugins-cta",
+							"headline": "Missing a plugin?",
+							"subheadline": "I build EmDash plugins: hooks, admin settings and API routes.",
+							"primary_cta_label": "Plugin development",
+							"primary_cta_url": "/services/",
+							"style": "plain"
+						}
+					]
+				},
+				"status": "published"
+			},
+			{
+				"id": "services",
+				"slug": "services",
+				"data": {
+					"title": "Services",
+					"content": [
+						{
+							"_type": "marketing_hero",
+							"_version": 1,
+							"_key": "services-hero",
+							"eyebrow": "Work with me",
+							"headline": "EmDash services",
+							"subheadline": "Setup on Cloudflare Workers, custom themes, plugins, and migrations from WordPress.",
+							"centered": true
+						},
+						{
+							"_type": "site_services",
+							"_version": 1,
+							"_key": "services-list",
+							"limit": 0
+						},
+						{
+							"_type": "marketing_faq",
+							"_version": 1,
+							"_key": "services-faq",
+							"headline": "Before you write",
+							"items": [
+								{
+									"question": "How do quotes work?",
+									"answer": "I quote after a short conversation. Use the contact page to tell me what you need and where your site lives today."
+								},
+								{
+									"question": "Can you work on a site I already started?",
+									"answer": "Yes. Send me the repository or a description of the current setup."
+								}
+							]
+						},
+						{
+							"_type": "site_cta",
+							"_version": 1,
+							"_key": "services-cta",
+							"headline": "Tell me about your EmDash project",
+							"subheadline": "A few lines about what you need is enough to start.",
+							"primary_cta_label": "Get in touch",
+							"primary_cta_url": "/contact/",
+							"style": "gradient"
+						}
+					]
+				},
+				"status": "published"
+			},
+			{
+				"id": "contact",
+				"slug": "contact",
+				"data": {
+					"title": "Contact",
+					"content": [
+						{
+							"_type": "marketing_hero",
+							"_version": 1,
+							"_key": "contact-hero",
+							"eyebrow": "Contact",
+							"headline": "Get in touch",
+							"subheadline": "Email is the fastest way to reach me. Include your site URL and what you are trying to do.",
+							"centered": true
+						},
+						{
+							"_type": "site_contact",
+							"_version": 1,
+							"_key": "contact-methods",
+							"headline": "Pick a channel",
+							"methods": [
+								{
+									"icon": "mail",
+									"title": "Email",
+									"description": "Project questions, quotes and anything else.",
+									"label": "hello@emdashhq.com",
+									"url": "mailto:hello@emdashhq.com"
+								},
+								{
+									"icon": "youtube",
+									"title": "YouTube",
+									"description": "Comment on a video or subscribe for new EmDash walkthroughs.",
+									"label": "Bitdoze on YouTube",
+									"url": "https://www.youtube.com/channel/UCGsUtKhXsRrMvYAWm8q0bCg"
+								},
+								{
+									"icon": "github",
+									"title": "GitHub",
+									"description": "Code and open-source projects.",
+									"label": "github.com/bitdoze",
+									"url": "https://github.com/bitdoze"
+								}
+							]
+						}
+					]
+				},
+				"status": "published"
+			}
+		],
+		"tutorials": [
+			{
+				"id": "tutorial-review",
+				"slug": "emdash-cms-review",
+				"status": "published",
+				"data": {
+					"title": "EmDash CMS Review: 6 Months In, After the 1.0 Release",
+					"summary": "An honest review after six months and the 1.0 release: what changed, Cloudflare vs self-hosted VPS deploy, ops footguns, and who it is really for.",
+					"url": "https://www.bitdoze.com/emdash-cms-review/",
+					"topic": "review",
+					"featured": false
+				}
+			},
+			{
+				"id": "tutorial-first-site",
+				"slug": "emdash-cms-tutorial",
+				"status": "published",
+				"data": {
+					"title": "EmDash CMS Tutorial: Build Your First Site Step by Step",
+					"summary": "Install, scaffold, and set up your first site with the admin panel, passkeys, and your first getEmDashCollection query.",
+					"url": "https://www.bitdoze.com/emdash-cms-tutorial/",
+					"topic": "getting-started",
+					"level": "beginner",
+					"featured": true
+				}
+			}
+		],
+		"videos": [
+			{
+				"id": "video-replaced-wordpress",
+				"slug": "i-replaced-wordpress-with-emdash",
+				"status": "published",
+				"data": {
+					"title": "I Replaced WordPress with emdash (Astro + TypeScript CMS)",
+					"youtube_url": "https://www.youtube.com/watch?v=1X6KwMjbv-Y",
+					"summary": "Install and set up EmDash on Cloudflare Workers or self-hosted, tour the admin, the MCP server and the plugin system, and see how it compares to WordPress.",
+					"article_url": "https://www.bitdoze.com/emdash-cms-tutorial/",
+					"featured": true
+				}
+			}
+		],
+		"resources": [
+			{
+				"id": "resource-marketing-template",
+				"slug": "emdash-marketing-template",
+				"status": "published",
+				"data": {
+					"title": "Marketing template (Cloudflare)",
+					"kind": "theme",
+					"price_type": "free",
+					"summary": "The official EmDash landing-page template: hero, features, testimonials, pricing and FAQ blocks on Cloudflare D1 and R2.",
+					"url": "https://github.com/emdash-cms/templates/tree/main/marketing-cloudflare",
+					"cta_label": "View on GitHub",
+					"featured": true
+				}
+			},
+			{
+				"id": "resource-cloudflare-email",
+				"slug": "emdash-cloudflare-email",
+				"status": "published",
+				"data": {
+					"title": "Cloudflare Email",
+					"kind": "plugin",
+					"price_type": "free",
+					"summary": "Sends magic-link sign-in, invite and notification emails through a Cloudflare send_email binding.",
+					"url": "https://www.npmjs.com/package/@emdash-cms/cloudflare",
+					"cta_label": "View on npm",
+					"featured": true
+				}
+			},
+			{
+				"id": "resource-cloudflare-ai-search",
+				"slug": "emdash-cloudflare-ai-search",
+				"status": "published",
+				"data": {
+					"title": "Cloudflare AI Search",
+					"kind": "plugin",
+					"price_type": "free",
+					"summary": "Indexes your published content in Cloudflare AI Search and adds a search box to your site.",
+					"url": "https://www.npmjs.com/package/@emdash-cms/cloudflare",
+					"cta_label": "View on npm",
+					"featured": false
+				}
+			}
+		],
+		"services": [
+			{
+				"id": "service-setup",
+				"slug": "emdash-setup-cloudflare",
+				"status": "published",
+				"data": {
+					"title": "EmDash setup on Cloudflare Workers",
+					"summary": "A production EmDash site on Workers with D1, R2, a custom domain and analytics in place.",
+					"icon": "cloud",
+					"price_label": "Contact for a quote",
+					"features": "Worker, D1 and R2 configured\nCustom domain and SSL\nAdmin accounts and passkeys\nAnalytics and SEO basics",
+					"cta_label": "Request a setup",
+					"cta_url": "/contact/",
+					"featured": true,
+					"sort_order": 10
+				}
+			},
+			{
+				"id": "service-theme",
+				"slug": "custom-emdash-theme",
+				"status": "published",
+				"data": {
+					"title": "Custom EmDash theme",
+					"summary": "A theme built around your brand, with page blocks your editors can add and reorder.",
+					"icon": "palette",
+					"price_label": "Contact for a quote",
+					"features": "Content model designed with you\nPage blocks for editors\nDark and light mode\nHandover walkthrough",
+					"cta_label": "Ask about a theme",
+					"cta_url": "/contact/",
+					"featured": true,
+					"sort_order": 20
+				}
+			},
+			{
+				"id": "service-plugin",
+				"slug": "emdash-plugin-development",
+				"status": "published",
+				"data": {
+					"title": "EmDash plugin development",
+					"summary": "Hooks, admin settings and API routes for whatever the CMS does not do yet.",
+					"icon": "plug",
+					"price_label": "Contact for a quote",
+					"features": "Native or sandboxed plugin\nAdmin settings page\nTests and documentation",
+					"cta_label": "Discuss a plugin",
+					"cta_url": "/contact/",
+					"featured": true,
+					"sort_order": 30
+				}
+			},
+			{
+				"id": "service-migration",
+				"slug": "wordpress-to-emdash-migration",
+				"status": "published",
+				"data": {
+					"title": "WordPress to EmDash migration",
+					"summary": "Move posts, pages and media from WordPress into EmDash and keep your URLs.",
+					"icon": "swap",
+					"price_label": "Contact for a quote",
+					"features": "Content and media import\nRedirects for old URLs\nSEO check before launch",
+					"cta_label": "Plan a migration",
+					"cta_url": "/contact/",
+					"featured": false,
+					"sort_order": 40
+				}
+			}
+		]
+	}
+}

@@ -1,0 +1,233 @@
+---
+import type { BlockComponentProps } from "emdash/ui";
+import type { PageContentBlock } from "../../../emdash-env";
+import { lines } from "../../lib/format";
+import { linkAttrs } from "../../lib/links";
+import SectionHeader from "./SectionHeader.astro";
+
+type PricingBlock = Extract<PageContentBlock, { _type: "marketing_pricing" }>;
+type Props = BlockComponentProps<PricingBlock>;
+
+const { value } = Astro.props;
+const { anchor_id, headline, plans: rawPlans } = value;
+
+const plans = rawPlans.map((plan) => ({
+	...plan,
+	features: lines(plan.features),
+	cta: {
+		label: plan.cta_label,
+		...linkAttrs(plan.cta_url),
+	},
+}));
+---
+
+<section class="pricing section" id={anchor_id || undefined}>
+	<div class="container">
+		<SectionHeader headline={headline} meta="Rate card" />
+		<div class="pricing-grid">
+			{plans.map((plan) => (
+				<div class:list={["pricing-card", { "pricing-highlighted": plan.highlighted }]}>
+					{plan.highlighted && <div class="pricing-badge">Most popular</div>}
+					<div class="pricing-plan-header">
+						<h3 class="pricing-name">{plan.name}</h3>
+						<div class="pricing-price">
+							<span class="pricing-amount">{plan.price}</span>
+							{plan.period && <span class="pricing-period">{plan.period}</span>}
+						</div>
+						{plan.description && (
+							<p class="pricing-description">{plan.description}</p>
+						)}
+					</div>
+					<ul class="pricing-features">
+						{plan.features.map((feature) => (
+							<li>
+								<svg class="check-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+									<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+								</svg>
+								{feature}
+							</li>
+						))}
+					</ul>
+					<a
+						href={plan.cta.href}
+						target={plan.cta.target}
+						rel={plan.cta.rel}
+						class:list={["btn", "btn-lg", "pricing-cta", { "btn-primary": plan.highlighted, "btn-secondary": !plan.highlighted }]}
+					>
+						{plan.cta.label}
+					</a>
+				</div>
+			))}
+		</div>
+	</div>
+</section>
+
+<style>
+	.pricing-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: var(--spacing-lg);
+		/* Stretch, so the CTAs line up along the foot of the row. */
+		align-items: stretch;
+	}
+
+	.pricing-card {
+		position: relative;
+		padding: var(--spacing-xl);
+		background: var(--color-surface);
+		border: var(--line-hair) solid var(--color-border);
+		border-radius: var(--radius-lg);
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-lg);
+		transition:
+			border-color var(--transition-base),
+			background var(--transition-base);
+	}
+
+	.pricing-card:hover {
+		border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-border));
+		background: color-mix(in srgb, var(--color-brand) 3%, var(--color-surface));
+	}
+
+	/* The highlighted plan takes the blueprint ground, like the approval block. */
+	.pricing-highlighted,
+	.pricing-highlighted:hover {
+		color: #cdddf5;
+		background:
+			linear-gradient(rgba(219, 231, 251, 0.035) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(219, 231, 251, 0.035) 1px, transparent 1px),
+			light-dark(#0d2340, #081a33);
+		background-size: 28px 28px, 28px 28px, auto;
+		border: var(--line-ink) solid var(--color-brand-strong);
+	}
+
+	.pricing-highlighted .pricing-name,
+	.pricing-highlighted .pricing-amount {
+		color: #fff;
+	}
+
+	.pricing-highlighted .pricing-description,
+	.pricing-highlighted .pricing-period {
+		color: rgb(219 231 251 / 0.82);
+	}
+
+	.pricing-highlighted .pricing-plan-header {
+		border-bottom-color: rgb(219 231 251 / 0.22);
+	}
+
+	.pricing-highlighted .check-icon {
+		color: var(--color-accent-soft);
+	}
+
+	/* Bracket tag pinned to the card's top rule, like the badges elsewhere. */
+	.pricing-badge {
+		position: absolute;
+		top: 0;
+		left: var(--spacing-xl);
+		transform: translateY(-50%);
+		padding: 1px var(--spacing-sm);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: #0d2340;
+		background: #cdddf5;
+		border-radius: var(--radius-sm);
+		white-space: nowrap;
+	}
+
+	.pricing-badge::before {
+		content: "[";
+		opacity: 0.45;
+	}
+
+	.pricing-badge::after {
+		content: "]";
+		opacity: 0.45;
+	}
+
+	.pricing-plan-header {
+		padding-bottom: var(--spacing-lg);
+		border-bottom: var(--line-hair) solid var(--color-border);
+	}
+
+	.pricing-name {
+		font-family: var(--font-heading);
+		font-size: var(--font-size-lg);
+		font-weight: var(--font-weight-heading);
+		margin-bottom: var(--spacing-sm);
+	}
+
+	.pricing-price {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-xs);
+		margin-bottom: var(--spacing-sm);
+	}
+
+	.pricing-amount {
+		font-size: var(--font-size-4xl);
+		font-weight: var(--font-weight-display);
+		letter-spacing: var(--tracking-tight);
+	}
+
+	.pricing-period {
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+	}
+
+	.pricing-description {
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+	}
+
+	.pricing-features {
+		list-style: none;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-sm);
+	}
+
+	.pricing-features li {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--spacing-sm);
+		font-size: var(--font-size-sm);
+	}
+
+	.check-icon {
+		width: 18px;
+		height: 18px;
+		flex-shrink: 0;
+		color: var(--color-brand-strong);
+		margin-top: 2px;
+	}
+
+	.pricing-cta {
+		width: 100%;
+	}
+
+	/* The highlighted plan is already dark ink, so its stamp inverts to paper. */
+	.pricing-highlighted .pricing-cta {
+		color: #0d2340;
+		background: #fff;
+		border-color: #fff;
+	}
+
+	.pricing-highlighted .pricing-cta:hover {
+		background: #dbe7fb;
+		border-color: #dbe7fb;
+	}
+
+	@media (max-width: 900px) {
+		.pricing-grid {
+			grid-template-columns: 1fr;
+			max-width: 28rem;
+			/* Room for the badge that overhangs the highlighted card. */
+			row-gap: var(--spacing-xl);
+		}
+	}
+</style>

@@ -1,0 +1,450 @@
+---
+import { getMenuWithCacheHint, sanitizeHref } from "emdash";
+import { Image, type BlockComponentProps } from "emdash/ui";
+import type { PageContentBlock } from "../../../emdash-env";
+import { optionalLink } from "../../lib/links";
+
+type HeroBlock = Extract<PageContentBlock, { _type: "marketing_hero" }>;
+type Props = BlockComponentProps<HeroBlock>;
+
+const { value } = Astro.props;
+const { anchor_id, eyebrow, headline, subheadline, image, centered } = value;
+
+const primaryCta = optionalLink(value.primary_cta_label, value.primary_cta_url);
+const secondaryCta = optionalLink(value.secondary_cta_label, value.secondary_cta_url);
+
+const revision = new Date().getFullYear();
+const figLabel = image?.alt ? image.alt : "Reference";
+
+/*
+ * The hero is a sheet in the set, so its number matches the nav index:
+ * pages in the primary menu are Sheet 01..NN; a page outside the menu
+ * (the home cover) is the set's cover sheet.
+ */
+const menuResult = await getMenuWithCacheHint("primary");
+if (Astro.cache?.enabled) Astro.cache.set(menuResult.cacheHint);
+const here = Astro.url.pathname.replace(/\/$/, "") || "/";
+const menuIndex = (menuResult.data?.items ?? []).findIndex((item) => {
+	const link = sanitizeHref(item.url);
+	return link === here || (link !== "/" && here.startsWith(`${link}/`));
+});
+const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "0")}` : "Cover";
+---
+
+<section
+	id={anchor_id || undefined}
+	class:list={["hero-wrap", { "hero-centered": centered, "hero-with-image": !!image }]}
+>
+	<div class="hero">
+		<div class="hero-content">
+			<p class="hero-meta">
+				{eyebrow && <span>{eyebrow}</span>}
+				<span>{sheetToken}</span>
+				<span>Rev {revision}</span>
+			</p>
+			<h1 class="hero-headline">{headline}</h1>
+			{subheadline && <p class="hero-subheadline">{subheadline}</p>}
+			{(primaryCta || secondaryCta) && (
+				<div class="hero-actions">
+					{primaryCta && (
+						<a href={primaryCta.href} target={primaryCta.target} rel={primaryCta.rel} class="btn btn-primary btn-lg">
+							{primaryCta.label}
+						</a>
+					)}
+					{secondaryCta && (
+						<a href={secondaryCta.href} target={secondaryCta.target} rel={secondaryCta.rel} class="btn btn-secondary btn-lg">
+							{secondaryCta.label}
+						</a>
+					)}
+				</div>
+			)}
+			{
+				(image || centered) && (
+					<figure class="hero-schematic" aria-label="How EmDash is wired: reader, browser, Worker, database, media, admin">
+						<svg viewBox="0 0 560 72" fill="none" role="img">
+							<title>System diagram</title>
+							<desc>A reader's browser talks to an Astro Worker, which reads from the D1 database and R2 media store; the admin console writes to both.</desc>
+							<g class="schematic">
+								<line class="ink stroke-draw" style="--d: 0ms" x1="52" y1="36" x2="128" y2="36" />
+								<line class="ink stroke-draw" style="--d: 160ms" x1="224" y1="36" x2="296" y2="36" />
+								<line class="ink stroke-draw" style="--d: 320ms" x1="392" y1="36" x2="424" y2="20" />
+								<line class="ink stroke-draw" style="--d: 320ms" x1="392" y1="36" x2="424" y2="52" />
+								<rect class="ink stroke-draw fill" style="--d: 80ms" x="8" y="22" width="44" height="28" rx="2" />
+								<rect class="ink stroke-draw fill" style="--d: 240ms" x="128" y="22" width="96" height="28" rx="2" />
+								<rect class="ink stroke-draw fill" style="--d: 400ms" x="296" y="22" width="96" height="28" rx="2" />
+								<rect class="ink stroke-draw fill" style="--d: 560ms" x="424" y="8" width="128" height="24" rx="2" />
+								<rect class="ink stroke-draw fill" style="--d: 560ms" x="424" y="42" width="128" height="24" rx="2" />
+								<text class="label" style="--d: 700ms" x="30" y="40" text-anchor="middle">YOU</text>
+								<text class="label" style="--d: 780ms" x="176" y="40" text-anchor="middle">BROWSER</text>
+								<text class="label" style="--d: 860ms" x="344" y="40" text-anchor="middle">WORKER</text>
+								<text class="label" style="--d: 960ms" x="488" y="24" text-anchor="middle">D1 · R2</text>
+								<text class="label" style="--d: 1040ms" x="488" y="58" text-anchor="middle">ADMIN</text>
+							</g>
+						</svg>
+						<figcaption class="hero-fig">Fig. 00: how the pieces connect</figcaption>
+					</figure>
+				)
+			}
+		</div>
+		{
+			image ? (
+				<figure class="hero-image">
+					<Image image={image} class="hero-image-media" priority />
+					<figcaption class="hero-fig">Fig. 01: {figLabel}</figcaption>
+				</figure>
+			) : !centered && (
+				<figure class="hero-panel" aria-label="How EmDash is wired">
+					<svg viewBox="0 0 560 340" fill="none" role="img">
+						<title>System diagram</title>
+						<desc>A visitor's browser requests a page; the Astro Worker server-renders it and reads content from the D1 database and media from R2; the EmDash admin console writes to both.</desc>
+						<g class="schematic">
+							<!-- flow: visitor -> browser -> worker -->
+							<rect class="ink stroke-draw fill" style="--d: 0ms" x="12" y="150" width="96" height="44" rx="2" />
+							<text class="label" style="--d: 500ms" x="60" y="176" text-anchor="middle">VISITOR</text>
+							<line class="ink stroke-draw" style="--d: 160ms" x1="108" y1="172" x2="146" y2="172" />
+							<path class="ink head" style="--d: 400ms" d="M140 167 L148 172 L140 177" />
+							<rect class="ink stroke-draw fill" style="--d: 240ms" x="150" y="150" width="110" height="44" rx="2" />
+							<text class="label" style="--d: 620ms" x="205" y="176" text-anchor="middle">BROWSER</text>
+							<line class="ink stroke-draw" style="--d: 380ms" x1="260" y1="172" x2="298" y2="172" />
+							<path class="ink head" style="--d: 620ms" d="M292 167 L300 172 L292 177" />
+							<rect class="ink strong stroke-draw fill" style="--d: 460ms" x="302" y="150" width="110" height="44" rx="2" />
+							<text class="label" style="--d: 840ms" x="357" y="170" text-anchor="middle">WORKER</text>
+							<text class="sublabel" style="--d: 900ms" x="357" y="185" text-anchor="middle">ASTRO · SSR</text>
+							<!-- spine feeds the storage and admin nodes -->
+							<line class="ink stroke-draw" style="--d: 600ms" x1="412" y1="172" x2="426" y2="172" />
+							<line class="ink stroke-draw" style="--d: 700ms" x1="426" y1="60" x2="426" y2="282" />
+							<line class="ink stroke-draw" style="--d: 760ms" x1="426" y1="60" x2="444" y2="60" />
+							<path class="ink head" style="--d: 900ms" d="M438 55 L446 60 L438 65" />
+							<line class="ink stroke-draw" style="--d: 800ms" x1="426" y1="172" x2="444" y2="172" />
+							<path class="ink head" style="--d: 940ms" d="M438 167 L446 172 L438 177" />
+							<line class="ink stroke-draw" style="--d: 840ms" x1="426" y1="282" x2="444" y2="282" />
+							<path class="ink head" style="--d: 980ms" d="M438 277 L446 282 L438 287" />
+							<rect class="ink stroke-draw fill" style="--d: 860ms" x="448" y="40" width="100" height="40" rx="2" />
+							<text class="label" style="--d: 1060ms" x="498" y="58" text-anchor="middle">D1</text>
+							<text class="sublabel" style="--d: 1100ms" x="498" y="72" text-anchor="middle">CONTENT</text>
+							<rect class="ink stroke-draw fill" style="--d: 900ms" x="448" y="152" width="100" height="40" rx="2" />
+							<text class="label" style="--d: 1120ms" x="498" y="170" text-anchor="middle">R2</text>
+							<text class="sublabel" style="--d: 1160ms" x="498" y="184" text-anchor="middle">MEDIA</text>
+							<rect class="ink stroke-draw fill" style="--d: 940ms" x="448" y="262" width="100" height="40" rx="2" />
+							<text class="label" style="--d: 1200ms" x="498" y="280" text-anchor="middle">ADMIN</text>
+							<text class="sublabel" style="--d: 1240ms" x="498" y="294" text-anchor="middle">WRITES</text>
+							<!-- dimension annotation, drafting style -->
+							<line class="dim stroke-draw" style="--d: 1000ms" x1="150" y1="240" x2="412" y2="240" />
+							<line class="dim stroke-draw" style="--d: 1060ms" x1="150" y1="232" x2="150" y2="248" />
+							<line class="dim stroke-draw" style="--d: 1060ms" x1="412" y1="232" x2="412" y2="248" />
+							<text class="dimlabel" style="--d: 1300ms" x="281" y="230" text-anchor="middle">REQUEST / RESPONSE</text>
+						</g>
+					</svg>
+					<figcaption class="hero-fig">Fig. 00: how the pieces connect</figcaption>
+				</figure>
+			)
+		}
+	</div>
+</section>
+
+<style>
+	.hero-wrap {
+		position: relative;
+		overflow: clip;
+		border-bottom: var(--line-hair) solid var(--color-border);
+	}
+
+	.hero {
+		position: relative;
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: clamp(3.5rem, 7vw, 6rem) var(--spacing-lg) clamp(3rem, 6vw, 5rem);
+		display: grid;
+		grid-template-columns: 1.05fr 0.95fr;
+		gap: var(--spacing-2xl);
+		align-items: center;
+	}
+
+	.hero-centered {
+		text-align: center;
+	}
+
+	.hero-centered .hero {
+		grid-template-columns: 1fr;
+		max-width: var(--max-width);
+		padding-top: var(--spacing-4xl);
+		padding-bottom: var(--spacing-xl);
+	}
+
+	.hero-centered .hero-content {
+		max-width: 100%;
+		align-items: center;
+	}
+
+	.hero-centered .hero-actions,
+	.hero-centered .hero-meta {
+		justify-content: center;
+	}
+
+	.hero-centered .hero-subheadline {
+		margin-inline: auto;
+	}
+
+	.hero-content {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--spacing-lg);
+		max-width: 560px;
+		animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	/* Title block: the meta strip reads like a drawing header. */
+	.hero-meta {
+		display: flex;
+		gap: var(--spacing-md);
+		width: 100%;
+		padding-top: var(--spacing-sm);
+		border-top: var(--line-ink) solid var(--color-text);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-muted);
+	}
+
+	.hero-headline {
+		font-family: var(--font-heading);
+		font-size: clamp(2.5rem, 5vw, 3.75rem);
+		font-weight: var(--font-weight-display);
+		line-height: var(--leading-tight);
+		letter-spacing: -0.02em;
+		color: var(--color-text);
+		text-wrap: balance;
+	}
+
+	.hero-subheadline {
+		max-width: 55ch;
+		font-size: var(--font-size-lg);
+		line-height: var(--leading-normal);
+		color: var(--color-muted);
+		text-wrap: pretty;
+	}
+
+	.hero-actions {
+		display: flex;
+		gap: var(--spacing-md);
+		flex-wrap: wrap;
+	}
+
+	/* Reference plate: a real screenshot framed as a figure. */
+	.hero-image {
+		position: relative;
+		margin: 0;
+		animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+	}
+
+	.hero-image :global(.hero-image-media) {
+		width: 100%;
+		height: auto;
+		border-radius: var(--radius-lg);
+		border: var(--line-ink) solid var(--color-text);
+	}
+
+	/* The schematic panel: the drawing stands in when no plate exists. */
+	.hero-panel {
+		position: relative;
+		margin: 0;
+		padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
+		border: var(--line-hair) solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+		animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+	}
+
+	/* Registration marks pin the panel to the sheet. */
+	.hero-panel::before,
+	.hero-panel::after {
+		content: "";
+		position: absolute;
+		width: 12px;
+		height: 12px;
+		pointer-events: none;
+	}
+
+	.hero-panel::before {
+		top: 6px;
+		left: 6px;
+		border-top: var(--line-ink) solid var(--color-brand-strong);
+		border-left: var(--line-ink) solid var(--color-brand-strong);
+	}
+
+	.hero-panel::after {
+		bottom: 6px;
+		right: 6px;
+		border-bottom: var(--line-ink) solid var(--color-brand-strong);
+		border-right: var(--line-ink) solid var(--color-brand-strong);
+	}
+
+	/* Annotation captions under plates and schematics. */
+	.hero-fig {
+		margin-top: var(--spacing-sm);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-muted);
+	}
+
+	.hero-schematic {
+		margin: var(--spacing-sm) 0 0;
+		width: 100%;
+		max-width: 480px;
+	}
+
+	.hero-centered .hero-schematic {
+		margin-inline: auto;
+	}
+
+	.hero-schematic svg,
+	.hero-panel svg {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	.hero-schematic .ink,
+	.hero-panel .ink {
+		stroke: var(--color-brand-strong);
+		stroke-width: 1.5;
+	}
+
+	.hero-schematic .fill,
+	.hero-panel .fill {
+		fill: color-mix(in srgb, var(--color-brand) 5%, transparent);
+	}
+
+	.hero-panel .strong {
+		stroke-width: 2;
+		fill: color-mix(in srgb, var(--color-brand) 9%, transparent);
+	}
+
+	.hero-panel .head {
+		fill: none;
+	}
+
+	.hero-schematic .label {
+		fill: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+	}
+
+	.hero-panel .label {
+		fill: var(--color-text);
+		font-family: var(--font-mono);
+		font-size: 17px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+	}
+
+	.hero-panel .sublabel {
+		fill: var(--color-muted);
+		font-family: var(--font-mono);
+		font-size: 13px;
+		font-weight: 500;
+		letter-spacing: 0.06em;
+	}
+
+	.hero-panel .dim {
+		stroke: var(--color-muted);
+		stroke-width: 1;
+	}
+
+	.hero-panel .dimlabel {
+		fill: var(--color-muted);
+		font-family: var(--font-mono);
+		font-size: 13px;
+		font-weight: 500;
+		letter-spacing: 0.08em;
+	}
+
+	@keyframes hero-rise {
+		from {
+			opacity: 0;
+			transform: translateY(14px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* The linework draws itself in; the resting state is complete. */
+	@media (prefers-reduced-motion: no-preference) {
+		.hero-schematic .stroke-draw,
+		.hero-panel .stroke-draw {
+			stroke-dasharray: 340;
+			stroke-dashoffset: 340;
+			animation: sheet-draw 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+			animation-delay: var(--d, 0ms);
+		}
+
+		.hero-schematic .label,
+		.hero-panel .label,
+		.hero-panel .sublabel,
+		.hero-panel .dimlabel {
+			opacity: 0;
+			animation: sheet-ink 0.4s ease-out forwards;
+			animation-delay: var(--d, 0ms);
+		}
+	}
+
+	@keyframes sheet-draw {
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+
+	@keyframes sheet-ink {
+		to {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-content,
+		.hero-image,
+		.hero-panel {
+			animation: none;
+		}
+	}
+
+	@media (max-width: 1024px) {
+		.hero {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-2xl);
+		}
+
+		.hero-headline {
+			font-size: var(--font-size-4xl);
+		}
+
+		.hero-with-image {
+			text-align: center;
+		}
+
+		.hero-with-image .hero-content {
+			align-items: center;
+			margin-inline: auto;
+		}
+
+		.hero-with-image .hero-actions {
+			justify-content: center;
+		}
+
+		.hero-image,
+		.hero-panel {
+			max-width: 640px;
+			margin-inline: auto;
+		}
+	}
+</style>

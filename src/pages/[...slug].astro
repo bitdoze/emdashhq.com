@@ -1,0 +1,77 @@
+---
+import { getEmDashEntry, getSeoMeta } from "emdash";
+import MarketingBlocks from "../components/MarketingBlocks.astro";
+import Base from "../layouts/Base.astro";
+
+// One route renders every entry in the pages collection. "/" is the page
+// with the slug "home".
+const requested = Astro.params.slug;
+if (requested === "home") return Astro.redirect("/", 301);
+
+const slug = requested ?? "home";
+const isHome = slug === "home";
+
+const { entry: page, cacheHint } = await getEmDashEntry("pages", slug);
+
+if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+if (!page && !isHome) return Astro.rewrite("/404");
+
+const seo = page
+	? getSeoMeta(page, {
+			siteUrl: Astro.url.origin,
+			path: isHome ? "/" : `/${slug}/`,
+		})
+	: null;
+---
+
+<Base
+	title={isHome ? undefined : seo?.title}
+	pageTitle={page?.data.title}
+	description={seo?.description}
+	image={seo?.ogImage}
+	canonical={seo?.canonical}
+	robots={seo?.robots}
+	content={page ? { collection: "pages", id: page.data.id, slug: page.id } : undefined}
+>
+	{
+		page?.data.content ? (
+			<div {...page.edit.content}>
+				<MarketingBlocks value={page.data.content} />
+			</div>
+		) : (
+			<div class="empty-state">
+				<h1>Welcome to EmDash HQ</h1>
+				<p>Add content to the home page in the admin to get started.</p>
+				{Astro.locals.user && (
+					<a href="/_emdash/admin" class="btn btn-primary">
+						Open Admin
+					</a>
+				)}
+			</div>
+		)
+	}
+</Base>
+
+<style>
+	.empty-state {
+		text-align: center;
+		padding: var(--spacing-5xl) var(--spacing-lg);
+		max-width: var(--max-width);
+		margin: var(--spacing-3xl) auto;
+		background: color-mix(in srgb, var(--color-brand) 6%, var(--color-surface));
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+	}
+
+	.empty-state h1 {
+		font-family: var(--font-heading);
+		margin-bottom: var(--spacing-md);
+		text-wrap: balance;
+	}
+
+	.empty-state p {
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-xl);
+	}
+</style>

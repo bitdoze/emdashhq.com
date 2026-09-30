@@ -1,0 +1,171 @@
+---
+import type { BlockComponentProps } from "emdash/ui";
+import type { PageContentBlock } from "../../../emdash-env";
+import { optionalLink } from "../../lib/links";
+
+type CtaBlock = Extract<PageContentBlock, { _type: "site_cta" }>;
+type Props = BlockComponentProps<CtaBlock>;
+
+const { value } = Astro.props;
+const { anchor_id, headline, subheadline } = value;
+const gradient = (value.style ?? "gradient") === "gradient";
+const primary = optionalLink(value.primary_cta_label, value.primary_cta_url);
+const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_url);
+---
+
+<section class="section cta-section" id={anchor_id || undefined}>
+	<div class="container">
+		<div class:list={["cta-banner", { "cta-gradient": gradient }]}>
+			<div class="cta-text">
+				<h2 class="cta-headline">{headline}</h2>
+				{subheadline && <p class="cta-sub">{subheadline}</p>}
+			</div>
+			{
+				(primary || secondary) && (
+					<div class="cta-actions">
+						{primary && (
+							<a
+								href={primary.href}
+								target={primary.target}
+								rel={primary.rel}
+								class:list={["btn btn-lg", gradient ? "btn-on-gradient" : "btn-primary"]}
+							>
+								{primary.label}
+							</a>
+						)}
+						{secondary && (
+							<a
+								href={secondary.href}
+								target={secondary.target}
+								rel={secondary.rel}
+								class:list={["btn btn-lg", gradient ? "btn-outline-on-gradient" : "btn-secondary"]}
+							>
+								{secondary.label}
+							</a>
+						)}
+					</div>
+				)
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.cta-section {
+		padding: var(--spacing-3xl) 0;
+	}
+
+	/*
+	 * The approval block: the sign-off table from a drawing title
+	 * block. Heavy ink frame, inner hairline, flat ground.
+	 */
+	.cta-banner {
+		position: relative;
+		display: grid;
+		grid-template-columns: 1.4fr auto;
+		align-items: center;
+		gap: var(--spacing-2xl);
+		padding: clamp(var(--spacing-xl), 5vw, var(--spacing-3xl));
+		background: color-mix(in srgb, var(--color-brand) 4%, var(--color-surface));
+		border: var(--line-ink) solid var(--color-text);
+		border-radius: var(--radius);
+	}
+
+	.cta-banner::before {
+		content: "";
+		position: absolute;
+		inset: 5px;
+		border: var(--line-hair) solid color-mix(in srgb, var(--color-text) 35%, transparent);
+		border-radius: 1px;
+		pointer-events: none;
+	}
+
+	.cta-gradient {
+		color: #cdddf5;
+		background:
+			linear-gradient(rgba(219, 231, 251, 0.035) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(219, 231, 251, 0.035) 1px, transparent 1px),
+			light-dark(#0d2340, #081a33);
+		background-size: 28px 28px, 28px 28px, auto;
+		border-color: var(--color-brand-strong);
+	}
+
+	.cta-gradient::before {
+		border-color: rgb(219 231 251 / 0.28);
+	}
+
+	.cta-text {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-md);
+	}
+
+	.cta-headline {
+		max-width: 24ch;
+		font-family: var(--font-heading);
+		font-size: clamp(var(--font-size-2xl), 4vw, var(--font-size-3xl));
+		font-weight: var(--font-weight-display);
+		line-height: 1.15;
+		text-wrap: balance;
+	}
+
+	.cta-sub {
+		max-width: 52ch;
+		font-size: var(--font-size-lg);
+		color: var(--color-muted);
+		text-wrap: pretty;
+	}
+
+	.cta-gradient .cta-sub {
+		color: rgb(219 231 251 / 0.82);
+	}
+
+	.cta-actions {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-md);
+		min-width: 220px;
+	}
+
+	.cta-actions .btn {
+		width: 100%;
+	}
+
+	/* White ink stamp for actions on the blueprint ground. */
+	.btn-on-gradient {
+		color: #0d2340;
+		background: #fff;
+		border-color: #fff;
+	}
+
+	.btn-on-gradient:hover {
+		background: #dbe7fb;
+		border-color: #dbe7fb;
+	}
+
+	.btn-outline-on-gradient {
+		color: #fff;
+		border: var(--line-ink) solid rgb(219 231 251 / 0.55);
+		background: transparent;
+	}
+
+	.btn-outline-on-gradient:hover {
+		background: rgb(219 231 251 / 0.12);
+		border-color: #fff;
+	}
+
+	@media (max-width: 800px) {
+		.cta-banner {
+			grid-template-columns: 1fr;
+			text-align: left;
+		}
+
+		.cta-actions {
+			min-width: 0;
+		}
+	}
+</style>

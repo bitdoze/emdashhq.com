@@ -1,0 +1,302 @@
+/*
+  theme.css -- EmDash HQ "Drawing Set" theme.
+
+  The site is a set of engineering drawings for one working CMS. Light
+  mode is a blue-ink sheet on drafting paper; dark mode is a true
+  blueprint (Prussian ground, pale ink line-work). Depth comes from
+  line weight and rules, never blur, glow, or shadow. Blue stays the
+  brand family in both modes (user commitment).
+
+  Declarations here are unlayered, so they always beat the @layer base
+  defaults in tokens.css. Colors use light-dark(): light value first,
+  dark value second.
+*/
+
+:root {
+	/* Paper and ink */
+	--color-bg: light-dark(#f6f8fb, #0d2340);
+	--color-text: light-dark(#0a1c38, #dbe7fb);
+	--color-muted: light-dark(#4b5f7f, #9fb0cc);
+	--color-border: light-dark(#c9d6ea, #2a4a7f);
+	--color-surface: light-dark(#ffffff, #10294d);
+
+	/* Ink (signal blue brand) */
+	--color-brand: light-dark(#1d4ed8, #60a5fa);
+	--color-brand-strong: light-dark(#1e40af, #3b82f6);
+	--color-brand-soft: light-dark(#3b82f6, #93c5fd);
+	--color-accent: light-dark(#0284c7, #22d3ee);
+	--color-accent-soft: light-dark(#38bdf8, #67e8f9);
+	--color-on-brand: #ffffff;
+	--color-brand-ring: color-mix(in srgb, var(--color-brand) 14%, transparent);
+	--color-success: light-dark(#15803d, #4ade80);
+	--color-warning: light-dark(#b45309, #fbbf24);
+
+	/* The drawing world is flat: gradients resolve to solid ink. */
+	--gradient-brand: linear-gradient(135deg, var(--color-brand-strong), var(--color-brand-strong));
+	--gradient-brand-strong: linear-gradient(135deg, var(--color-brand-strong), var(--color-brand-strong));
+	--gradient-brand-soft: linear-gradient(135deg, var(--color-brand-soft), var(--color-brand-soft));
+	--gradient-headline: none;
+
+	/* One voice for headings and body (Archivo via --font-body).
+	   --font-mono comes from the font pipeline (IBM Plex Mono). */
+	--font-heading: var(--font-body);
+	--font-weight-heading: 700;
+	--font-weight-display: 800;
+
+	/* Line weights and sheet geometry */
+	--line-hair: 1px;
+	--line-ink: 1.5px;
+	--radius-sm: 2px;
+	--radius: 2px;
+	--radius-lg: 4px;
+
+	/* The world is flat: no elevation. */
+	--shadow-sm: none;
+	--shadow: none;
+	--shadow-lg: none;
+	--shadow-xl: none;
+}
+
+/* Type rhythm */
+h1,
+h2,
+h3 {
+	text-wrap: balance;
+}
+
+p,
+li {
+	text-wrap: pretty;
+}
+
+::selection {
+	background: var(--color-brand-strong);
+	color: var(--color-on-brand);
+}
+
+:focus-visible {
+	outline: 2px dashed var(--color-brand-strong);
+	outline-offset: 3px;
+	border-radius: 2px;
+}
+
+[hidden] {
+	display: none !important;
+}
+
+.section {
+	padding: clamp(4rem, 8vw, 6.5rem) 0;
+}
+
+.section-headline {
+	font-family: var(--font-heading);
+	font-weight: var(--font-weight-display);
+	letter-spacing: -0.015em;
+	text-transform: none;
+	text-wrap: balance;
+}
+
+/*
+ * Section headers are title blocks: a meta strip (sheet number and
+ * revision) over the headline, closed by a heavy ink rule. The numbers
+ * are the set's navigation, so the sequence carries real information.
+ */
+.section-header {
+	/* The base layer centers headers with auto side margins; hang the
+	   title block from the same left edge as the content below it. */
+	margin: 0 0 var(--spacing-2xl);
+	max-width: 44rem;
+	text-align: left;
+	border-top: var(--line-ink) solid var(--color-text);
+	padding-top: var(--spacing-sm);
+}
+
+.section-header::before {
+	content: "";
+	display: none;
+}
+
+.section-meta {
+	display: flex;
+	gap: var(--spacing-md);
+	font-family: var(--font-mono);
+	font-size: var(--font-size-xs);
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--color-muted);
+	margin-bottom: var(--spacing-sm);
+}
+
+.section-subheadline {
+	max-width: 62ch;
+}
+
+/* Cards are sheets: 1px ink line, square corners, no elevation. */
+.hub-card {
+	position: relative;
+	background: var(--color-surface);
+	border: var(--line-hair) solid var(--color-border);
+	border-radius: var(--radius-lg);
+	transition:
+		border-color var(--transition-base),
+		background var(--transition-base),
+		transform var(--transition-base);
+}
+
+.hub-card:hover {
+	border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-border));
+	background: color-mix(in srgb, var(--color-brand) 3%, var(--color-surface));
+}
+
+/* Registration marks appear at the sheet corners on hover. */
+.hub-card::before,
+.hub-card::after {
+	content: "";
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	opacity: 0;
+	transition: opacity var(--transition-base);
+	pointer-events: none;
+}
+
+.hub-card::before {
+	top: 5px;
+	left: 5px;
+	border-top: var(--line-ink) solid var(--color-brand-strong);
+	border-left: var(--line-ink) solid var(--color-brand-strong);
+}
+
+.hub-card::after {
+	bottom: 5px;
+	right: 5px;
+	border-bottom: var(--line-ink) solid var(--color-brand-strong);
+	border-right: var(--line-ink) solid var(--color-brand-strong);
+}
+
+.hub-card:hover::before,
+.hub-card:hover::after {
+	opacity: 1;
+}
+
+/* Stretches a card title link over the whole card. */
+.card-link::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+}
+
+/* Sheet columns: three across. A short last row starts at the left edge,
+   on the same line as the section header and lists above it. */
+.card-grid {
+	--cols: 3;
+	--gap: var(--spacing-lg);
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	gap: var(--gap);
+}
+
+.card-grid > * {
+	flex: 0 1 calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+	min-width: 0;
+}
+
+@media (max-width: 900px) {
+	.card-grid {
+		--cols: 2;
+	}
+}
+
+@media (max-width: 600px) {
+	.card-grid {
+		--cols: 1;
+	}
+}
+
+/* Bracket tags: [FREE] [TUTORIAL] -- annotation, not pill. */
+.badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--spacing-xs);
+}
+
+.badge {
+	display: inline-block;
+	padding: 1px var(--spacing-sm);
+	font-family: var(--font-mono);
+	font-size: var(--font-size-xs);
+	font-weight: 500;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--color-brand-strong);
+	background: color-mix(in srgb, var(--color-brand) 8%, transparent);
+	border: 1px solid color-mix(in srgb, var(--color-brand) 35%, transparent);
+	border-radius: var(--radius-sm);
+}
+
+.badge::before {
+	content: "[";
+	color: inherit;
+	opacity: 0.55;
+}
+
+.badge::after {
+	content: "]";
+	color: inherit;
+	opacity: 0.55;
+}
+
+.badge-muted {
+	color: var(--color-muted);
+	background: color-mix(in srgb, var(--color-muted) 8%, transparent);
+	border-color: color-mix(in srgb, var(--color-muted) 30%, transparent);
+}
+
+.badge-free {
+	color: var(--color-success);
+	background: color-mix(in srgb, var(--color-success) 8%, transparent);
+	border-color: color-mix(in srgb, var(--color-success) 35%, transparent);
+}
+
+.badge-paid {
+	color: var(--color-warning);
+	background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+	border-color: color-mix(in srgb, var(--color-warning) 35%, transparent);
+}
+
+.section-link {
+	margin-top: var(--spacing-2xl);
+}
+
+.empty-note {
+	padding: var(--spacing-lg) 0;
+	color: var(--color-muted);
+	font-family: var(--font-mono);
+	font-size: var(--font-size-sm);
+}
+
+@media (max-width: 768px) {
+	.section {
+		padding: var(--spacing-2xl) 0;
+	}
+}
+
+/* Mirrors the light values above for browsers without light-dark(). */
+@supports not (color: light-dark(#000, #fff)) {
+	:root {
+		--color-bg: #f6f8fb;
+		--color-text: #0a1c38;
+		--color-muted: #4b5f7f;
+		--color-border: #c9d6ea;
+		--color-surface: #ffffff;
+		--color-brand: #1d4ed8;
+		--color-brand-strong: #1e40af;
+		--color-brand-soft: #3b82f6;
+		--color-accent: #0284c7;
+		--color-accent-soft: #38bdf8;
+		--color-success: #15803d;
+		--color-warning: #b45309;
+	}
+}

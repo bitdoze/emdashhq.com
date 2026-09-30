@@ -1,0 +1,11 @@
+export { default as Hero } from "./Hero.astro";
+export { default as Features } from "./Features.astro";
+export { default as Testimonials } from "./Testimonials.astro";
+export { default as Pricing } from "./Pricing.astro";
+export { default as FAQ } from "./FAQ.astro";
+export { default as SiteTutorials } from "./SiteTutorials.astro";
+export { default as SiteVideos } from "./SiteVideos.astro";
+export { default as SiteResources } from "./SiteResources.astro";
+export { default as SiteServices } from "./SiteServices.astro";
+export { default as SiteCta } from "./SiteCta.astro";
+export { default as SiteContact } from "./SiteContact.astro";

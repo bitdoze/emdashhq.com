@@ -1,0 +1,84 @@
+---
+interface Props {
+	options: { value: string; label: string }[];
+	label: string;
+}
+
+const { options, label } = Astro.props;
+---
+
+{
+	options.length > 1 && (
+		<div class="filter-bar" data-filter-bar role="group" aria-label={label} hidden>
+			<button type="button" class="filter-chip" data-filter="all" aria-pressed="true">
+				All
+			</button>
+			{options.map((option) => (
+				<button type="button" class="filter-chip" data-filter={option.value} aria-pressed="false">
+					{option.label}
+				</button>
+			))}
+		</div>
+	)
+}
+
+<script>
+	// The bar ships hidden and is revealed here, so without JavaScript
+	// visitors simply see every card.
+	document.querySelectorAll<HTMLElement>("[data-filter-root]").forEach((root) => {
+		const bar = root.querySelector<HTMLElement>("[data-filter-bar]");
+		if (!bar) return;
+		const items = root.querySelectorAll<HTMLElement>("[data-filter-item]");
+		bar.hidden = false;
+		bar.addEventListener("click", (event) => {
+			const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-filter]");
+			if (!button) return;
+			const value = button.dataset.filter ?? "all";
+			bar.querySelectorAll("button").forEach((other) => {
+				other.setAttribute("aria-pressed", String(other === button));
+			});
+			items.forEach((item) => {
+				item.hidden = value !== "all" && item.dataset.filterValue !== value;
+			});
+		});
+	});
+</script>
+
+<style>
+	.filter-bar {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-start;
+		gap: var(--spacing-sm);
+		margin-bottom: var(--spacing-2xl);
+	}
+
+	.filter-chip {
+		padding: 0.375rem 0.875rem;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-muted);
+		background: transparent;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		cursor: pointer;
+		transition:
+			color var(--transition-fast),
+			border-color var(--transition-fast),
+			background var(--transition-fast);
+	}
+
+	.filter-chip:hover {
+		color: var(--color-text);
+		border-color: var(--color-muted);
+	}
+
+	.filter-chip[aria-pressed="true"] {
+		color: #fff;
+		background: var(--color-brand-strong);
+		border-color: var(--color-brand-strong);
+	}
+</style>

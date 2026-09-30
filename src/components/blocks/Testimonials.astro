@@ -1,0 +1,192 @@
+---
+import { Image, type BlockComponentProps } from "emdash/ui";
+import type { PageContentBlock } from "../../../emdash-env";
+import SectionHeader from "./SectionHeader.astro";
+
+type TestimonialsBlock = Extract<PageContentBlock, { _type: "marketing_testimonials" }>;
+type Props = BlockComponentProps<TestimonialsBlock>;
+
+const { value } = Astro.props;
+const { anchor_id, headline, testimonials } = value;
+
+const [lead, ...rest] = testimonials;
+---
+
+<section class="testimonials section" id={anchor_id || undefined}>
+	<div class="container">
+		<SectionHeader headline={headline} meta="References" />
+		{lead && (
+			<figure class="quote-lead">
+				<span class="quote-mark" aria-hidden="true">&ldquo;</span>
+				<blockquote class="quote-lead-text">{lead.quote}</blockquote>
+				<figcaption class="quote-lead-author">
+					{lead.avatar && (
+						<Image
+							image={lead.avatar}
+							alt=""
+							class="testimonial-avatar"
+							width={44}
+							height={44}
+						/>
+					)}
+					<span class="testimonial-info">
+						<span class="testimonial-name">{lead.author}</span>
+						{(lead.role || lead.company) && (
+							<span class="testimonial-role">
+								{lead.role}
+								{lead.role && lead.company && " at "}
+								{lead.company}
+							</span>
+						)}
+					</span>
+				</figcaption>
+			</figure>
+		)}
+		{rest.length > 0 && (
+			<div class="testimonials-grid">
+				{rest.map((testimonial) => (
+					<div class="testimonial-card">
+						<blockquote class="testimonial-quote">{testimonial.quote}</blockquote>
+						<div class="testimonial-author">
+							{testimonial.avatar && (
+								<Image
+									image={testimonial.avatar}
+									alt=""
+									class="testimonial-avatar"
+									width={40}
+									height={40}
+								/>
+							)}
+							<div class="testimonial-info">
+								<span class="testimonial-name">{testimonial.author}</span>
+								{(testimonial.role || testimonial.company) && (
+									<span class="testimonial-role">
+										{testimonial.role}
+										{testimonial.role && testimonial.company && " at "}
+										{testimonial.company}
+									</span>
+								)}
+							</div>
+						</div>
+					</div>
+				))}
+			</div>
+		)}
+	</div>
+</section>
+
+<style>
+	.testimonials {
+		background: color-mix(in srgb, var(--color-brand) 4%, var(--color-bg));
+		border-block: 1px solid var(--color-border);
+	}
+
+	.quote-lead {
+		max-width: 44rem;
+		margin: 0 0 var(--spacing-2xl);
+		padding: var(--spacing-xl) var(--spacing-2xl);
+		background: var(--color-surface);
+		border: var(--line-ink) solid var(--color-text);
+		border-radius: var(--radius-lg);
+	}
+
+	.quote-mark {
+		display: block;
+		font-family: var(--font-heading);
+		font-size: 3.5rem;
+		line-height: 1;
+		color: var(--color-brand);
+		margin-bottom: var(--spacing-sm);
+	}
+
+	.quote-lead-text {
+		font-family: var(--font-heading);
+		font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+		line-height: 1.4;
+		font-weight: 600;
+		color: var(--color-text);
+		text-wrap: pretty;
+	}
+
+	.quote-lead-author {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-md);
+		margin-top: var(--spacing-lg);
+	}
+
+	.testimonials-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: var(--spacing-xl);
+	}
+
+	.testimonial-card {
+		padding: var(--spacing-xl);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-lg);
+		transition:
+			border-color var(--transition-base),
+			background var(--transition-base);
+	}
+
+	.testimonial-card:hover {
+		border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-border));
+		background: color-mix(in srgb, var(--color-brand) 3%, var(--color-surface));
+	}
+
+	.testimonial-quote {
+		font-size: var(--font-size-base);
+		line-height: var(--leading-normal);
+		color: var(--color-text);
+		flex: 1;
+		text-wrap: pretty;
+	}
+
+	.testimonial-quote::before {
+		content: "“";
+		color: var(--color-brand);
+		font-weight: 700;
+		margin-right: 2px;
+	}
+
+	.testimonial-author {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-md);
+		padding-top: var(--spacing-md);
+		border-top: 1px solid var(--color-border);
+	}
+
+	:global(.testimonial-avatar) {
+		width: 40px;
+		height: 40px;
+		border-radius: var(--radius-sm);
+		object-fit: cover;
+		border: var(--line-hair) solid var(--color-border);
+	}
+
+	.quote-lead-author :global(.testimonial-avatar) {
+		width: 44px;
+		height: 44px;
+	}
+
+	.testimonial-info {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.testimonial-name {
+		font-weight: 700;
+		font-size: var(--font-size-sm);
+	}
+
+	.testimonial-role {
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+	}
+</style>

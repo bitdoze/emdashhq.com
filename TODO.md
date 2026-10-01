@@ -16,7 +16,8 @@ Legend: `[x]` done and checked, `[ ]` still to do, **(you)** needs an action fro
 
 - [ ] **(you)** Confirm the real services, prices and contact email. The seed uses placeholder service copy ("Contact for a quote") and `hello@emdashhq.com`.
 - [ ] **(you)** Add the first real themes and plugins (name, link, free or paid, price, screenshot). The seed lists the official marketing template and two official Cloudflare plugins as free examples.
-- [ ] **(you)** Upload a logo and favicon (Settings, General). The header shows the site title until then.
+- [ ] **(you)** Upload a logo (Settings, General). The header shows the site title until then.
+- [x] Favicon: `public/favicon.ico` (16 to 256 px), a white em dash drawn as a dimension line on the control blue, with registration marks from 32 px up.
 - [ ] **(you)** Pick the analytics provider: Plausible, Cloudflare Web Analytics or Google Analytics 4 are supported.
 
 ## Phase 1: Content model (`seed/seed.json`)

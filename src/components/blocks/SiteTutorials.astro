@@ -77,13 +77,13 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 
 <style>
 	/*
-	 * The set index: every tutorial is a numbered row in the drawing
-	 * list, separated by hairlines, the whole row reachable via the
-	 * stretched title link.
+	 * The set index: elevated interactive cards with numbered index badges
 	 */
 	.tutorial-index {
 		list-style: none;
-		border-bottom: var(--line-hair) solid var(--color-border);
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-sm);
 	}
 
 	/* Positioned so the stretched .card-link overlay stays inside its row. */
@@ -92,23 +92,41 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 		display: grid;
 		grid-template-columns: auto 1fr auto;
 		gap: var(--spacing-lg);
-		align-items: start;
-		padding: var(--spacing-lg) var(--spacing-sm);
-		border-top: var(--line-hair) solid var(--color-border);
-		transition: background var(--transition-base);
+		align-items: center;
+		padding: var(--spacing-lg);
+		background: var(--gradient-card);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		box-shadow: var(--shadow-sm), inset 0 1px 0 0 var(--color-highlight);
+		transition:
+			border-color var(--transition-base),
+			background var(--transition-base),
+			transform var(--transition-base),
+			box-shadow var(--transition-base);
 	}
 
 	.tutorial-row:hover {
-		background: color-mix(in srgb, var(--color-brand) 4%, transparent);
+		transform: translateX(4px);
+		border-color: color-mix(in srgb, var(--color-brand) 60%, var(--color-border));
+		background: color-mix(in srgb, var(--color-brand) 4%, var(--color-surface));
+		box-shadow: var(--shadow), 0 0 16px -4px color-mix(in srgb, var(--color-brand) 20%, transparent);
 	}
 
 	.row-no {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
 		font-family: var(--font-mono);
-		font-size: var(--font-size-sm);
-		font-weight: 500;
-		color: var(--color-muted);
-		padding-top: 2px;
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		color: var(--color-brand-strong);
+		background: color-mix(in srgb, var(--color-brand) 8%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-brand) 25%, transparent);
+		border-radius: var(--radius-sm);
 		font-variant-numeric: tabular-nums;
+		flex-shrink: 0;
 	}
 
 	.row-body {
@@ -138,15 +156,28 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 		white-space: nowrap;
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
-		font-weight: 500;
+		font-weight: 600;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		color: var(--color-brand-strong);
-		padding-top: 4px;
+		padding: 6px 12px;
+		background: color-mix(in srgb, var(--color-brand) 6%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-brand) 20%, transparent);
+		border-radius: var(--radius-sm);
+		transition:
+			background var(--transition-fast),
+			color var(--transition-fast),
+			border-color var(--transition-fast);
 	}
 
 	.row-source :global(svg) {
 		transition: transform var(--transition-base);
+	}
+
+	.tutorial-row:hover .row-source {
+		background: var(--color-brand-strong);
+		color: var(--color-on-brand);
+		border-color: var(--color-brand-strong);
 	}
 
 	.tutorial-row:hover .row-source :global(svg) {
@@ -156,6 +187,7 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 	@media (max-width: 700px) {
 		.tutorial-row {
 			grid-template-columns: auto 1fr;
+			align-items: start;
 		}
 
 		.row-source {

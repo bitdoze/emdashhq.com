@@ -45,9 +45,9 @@ typography:
     lineHeight: 1.2
     letterSpacing: "0.07em"
 rounded:
-  sm: "2px"
-  md: "2px"
-  lg: "4px"
+  sm: "4px"
+  md: "8px"
+  lg: "12px"
 spacing:
   xs: "0.25rem"
   sm: "0.5rem"
@@ -64,25 +64,25 @@ components:
     textColor: "{colors.on-brand}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
-    padding: "0.625rem 1.125rem"
+    padding: "0.625rem 1.25rem"
   button-primary-hover:
     backgroundColor: "{colors.signal-blue}"
     textColor: "{colors.on-brand}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
-    padding: "0.625rem 1.125rem"
+    padding: "0.625rem 1.25rem"
   button-secondary:
-    backgroundColor: "transparent"
+    backgroundColor: "color-mix(in srgb, {colors.surface} 80%, transparent)"
     textColor: "{colors.signal-blue-strong}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
-    padding: "0.625rem 1.125rem"
+    padding: "0.625rem 1.25rem"
   badge:
-    backgroundColor: "color-mix(in srgb, {colors.signal-blue} 8%, transparent)"
+    backgroundColor: "color-mix(in srgb, {colors.signal-blue} 10%, transparent)"
     textColor: "{colors.signal-blue-strong}"
     typography: "{typography.label}"
     rounded: "{rounded.sm}"
-    padding: "1px 0.5rem"
+    padding: "2px 8px"
 ---
 
 # Design System: EmDash HQ — Drawing Set
@@ -157,59 +157,62 @@ Sections use `padding: clamp(4rem, 8vw, 6.5rem) 0` (≤768px: `--spacing-2xl` 3r
 
 ## Elevation & Depth
 
-This system has **no shadows and no gradients** — all four shadow tokens (`--shadow-sm` … `--shadow-xl`) are `none`, and all gradient tokens resolve to a single solid color (`--gradient-headline` is `none`). Depth is conveyed by line weight (1 px hairline rules vs 1.5 px ink rules), layered rules (meta strip over headline over heavy rule in section title blocks), the background grid receding behind surface fills, and hover responses (registration marks, tint) that draw on the surface rather than lift it.
+This system features **tactile, multi-layered dimensional depth**:
+- `--shadow-sm`: micro-shadow for subtle controls and buttons.
+- `--shadow`: medium elevation for cards (`hub-card`) with an inset top specular highlight (`--color-highlight`).
+- `--shadow-lg`: hover lift for cards, schematic panels, and interactive elements.
+- `--shadow-xl`: prominent elevation for featured spotlight, CTA banner, and modals.
+- `--shadow-glow`: soft brand-colored halo for active signals and hero atmosphere.
 
 ## Shapes
 
-Near-square drafting geometry: `--radius-sm`/`--radius` are 2px, `--radius-lg` is 4px. Line work is the form language: `--line-hair` 1px for card borders and dividers, `--line-ink` 1.5px for heavy rules, stamp-button borders, registration marks, and the header rule. The only round affordance in the system is the play button in the video facade (a deliberate exception: a round screening affordance on an otherwise square sheet). Focus is a 2px dashed brand outline, offset 3px, radius 2px — dashed like a construction line.
+Modern developer tech hub geometry:
+- `--radius-sm`: 4px for badges, filter chips, and inner tags.
+- `--radius`: 8px for buttons, input controls, and list items.
+- `--radius-lg`: 12px for cards, spotlight panels, and schematic containers.
+- `--radius-full`: 9999px for pill accents.
+Focus remains a 2px dashed brand outline with a 3px offset for strong accessibility.
 
 ## Components
 
 ### Buttons
-Mono-uppercase stamp and outline controls; press travels 1px, no shadow theatre.
-- **Shape:** 2px radius, 1.5px solid `--color-brand-strong` border.
-- **Primary (stamp):** solid `--color-brand-strong` ground, `--color-on-brand` text; padding `0.625rem 1.125rem`; mono 500–600, `--font-size-xs`, 0.07em, uppercase. Large variant: `0.875rem 1.5rem`, `--font-size-sm`.
-- **Secondary (outline):** transparent ground, brand-strong text, 55%-mixed border.
-- **Hover / Active:** primary shifts ground to `--color-brand`; secondary gains a 7% brand tint and full border. `:active` translates Y by 1px.
-- **Focus:** system dashed brand outline.
+Mono-uppercase tactile controls with dimensional elevation.
+- **Shape:** 8px radius (`--radius`).
+- **Primary:** solid brand gradient (`--gradient-brand-strong`), `--color-on-brand` text, subtle specular top inset and drop shadow. Hover shifts to `--gradient-brand` with lift.
+- **Secondary:** translucent surface with backdrop blur, brand-mixed hairline border, subtle shadow. Hover gains brand tint and lift.
+- **Active:** 1px travel (`translateY(1px)`).
 
 ### Badges
-- **Style:** bracket tags — CSS `[` `]` pseudo-elements frame mono uppercase text (`[FREE]`, `[TUTORIAL]`); 8–10% tint ground, 30–35% tint border, 2px radius, `1px 0.5rem` padding. Never pills.
-- **State:** default (brand), `badge-muted`, `badge-free` (green), `badge-paid` (amber) — the only non-blue hues.
+- **Style:** punchy, modern technical indicator tags with a glowing dot prefix.
+- **State:** default (brand), `badge-muted`, `badge-free` (emerald), `badge-paid` (amber).
 
-### Cards / Containers (sheets)
-- **Corner Style:** `--radius-lg` 4px.
-- **Background:** `--color-surface` on the grid ground.
-- **Shadow Strategy:** none; see Elevation.
-- **Border:** 1px hairline `--color-border`.
-- **Internal Padding:** scale-driven; the stretched `.card-link` covers the whole card.
-- **Hover:** border mixes toward brand (55%), ground tints 3% brand, and 10px registration marks (1.5px ink, top-left + bottom-right) fade in.
+### Cards / Containers
+- **Corner Style:** `--radius-lg` 12px.
+- **Background:** `--gradient-card`.
+- **Elevation:** `--shadow` plus inset top specular highlight (`--color-highlight`).
+- **Hover:** lifts `translateY(-3px)`, intensifies border color toward brand, gains elevated shadow and soft brand glow. Corner registration marks fade in smoothly.
 
 ### Inputs / Filters
-- **Filter chips:** transparent ground, 1px `--color-border`, 2px radius, mono; pressed state is solid brand-strong ground with on-brand text (`aria-pressed`).
-- **Focus:** dashed brand outline system-wide.
-
-### Navigation
-Sticky header, mono uppercase items with zero-padded sheet numbers; `aria-current` item underlined; CTA is a compact primary stamp. Hover draws the underline. Mobile collapses to a toggled panel (list/x icon swap).
+- **Filter chips:** 4px radius, mono uppercase; pressed state is solid brand-strong gradient with on-brand text and glow shadow.
 
 ### Signature Component: Hero Schematic
-An authored SVG of the EmDash stack (browser → Worker → D1/R2, admin branch) in thin ink strokes with mono node labels. It draws itself on load once over ~1.2s via staged `stroke-draw` delays (0–760ms); `prefers-reduced-motion` renders it complete. The schematic stays semantic: real `<title>`/`<desc>`, real labels, no faked numbers.
+An authored SVG of the EmDash stack (browser → Worker → D1/R2, admin branch) inside an elevated, glassmorphic panel with ambient hero glow. It features live pulsing telemetry indicators on Worker and D1 nodes, and staged line animations.
 
 ### Title Blocks (section headers)
-Meta strip in mono uppercase (sheet number + revision) over the Archivo display headline, capped subheadline, closed by a 1.5px ink rule — a drawing title block, left-aligned, max 44rem.
+Left-aligned technical title block with a sleek brand gradient bar accent, mono uppercase `// META` strip, and display headline.
+
+### Accordion FAQ
+Full-width interactive accordion rows spanning the entire container width. Each item features a monospace numeric badge (`01`, `02`), clean question typography, a smooth rotating chevron indicator, elevated card styling (`--gradient-card`), and comfortable reading line length (`75ch`).
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** keep every surface flat: `--shadow-*: none`, gradients resolved to solid ink.
-- **Do** annotate in IBM Plex Mono at ≤ `sm` sizes; set metadata (dates, durations, counts) as instrument readouts.
-- **Do** respond to hover with sheet behavior: registration marks, paper-blue tint, drawn underlines — and keep press states decisive (1px travel).
-- **Do** keep the background grid ≤5.5% opacity and semantic SVG in the schematic (`title`/`desc`, real labels).
-- **Do** use dashed construction-line focus outlines (2px brand, 3px offset) on all interactive elements.
+- **Do** maintain multi-layered depth with subtle offsets and soft blurs.
+- **Do** annotate in IBM Plex Mono at ≤ `sm` sizes; set metadata as instrument readouts.
+- **Do** respond to hover with decisive tactile lift (translateY) and subtle brand glow.
+- **Do** preserve WCAG AA contrast across both light and dark modes.
 
 ### Don't:
-- **Don't** use blur, glow, drop shadows, or decorative gradients — the world's depth is line weight and rules.
-- **Don't** introduce hues outside the blue family except functional green/amber badges.
-- **Don't** render mono at display sizes or as body prose; don't round corners beyond 4px (sole exception: the video play affordance).
-- **Don't** add scroll-driven motion or repeat the schematic draw; the one draw happens once on load and reduced-motion renders it complete.
-- **Don't** fake numbers in schematics or invent content: placeholder-truthful copy stays truthful.
+- **Don't** introduce random off-brand hues outside the blue/cyan family and status green/amber.
+- **Don't** use flat 0-offset muddy shadows.
+- **Don't** remove visible focus rings or reduce-motion support.

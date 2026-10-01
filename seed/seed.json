@@ -86,6 +86,38 @@
 							"label": "Center the layout",
 							"type": "boolean",
 							"defaultValue": false
+						},
+						{
+							"slug": "specs",
+							"label": "Architecture highlights",
+							"description": "Short spec items shown under the hero CTAs",
+							"type": "repeater",
+							"validation": {
+								"maxItems": 4,
+								"subFields": [
+									{
+										"slug": "icon",
+										"label": "Icon",
+										"type": "select",
+										"required": true,
+										"options": [
+											"zap",
+											"database",
+											"code",
+											"cloud",
+											"rocket",
+											"lock",
+											"globe"
+										]
+									},
+									{
+										"slug": "label",
+										"label": "Label",
+										"type": "string",
+										"required": true
+									}
+								]
+							}
 						}
 					]
 				}
@@ -1304,7 +1336,12 @@
 							"primary_cta_label": "Start with the tutorials",
 							"primary_cta_url": "/tutorials/",
 							"secondary_cta_label": "Watch on YouTube",
-							"secondary_cta_url": "https://www.youtube.com/channel/UCGsUtKhXsRrMvYAWm8q0bCg"
+							"secondary_cta_url": "https://www.youtube.com/channel/UCGsUtKhXsRrMvYAWm8q0bCg",
+							"specs": [
+								{ "icon": "zap", "label": "Cloudflare Workers SSR" },
+								{ "icon": "database", "label": "D1 & R2 Storage" },
+								{ "icon": "code", "label": "Astro 7 Ready" }
+							]
 						},
 						{
 							"_type": "site_tutorials",

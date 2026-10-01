@@ -9,6 +9,7 @@ export const ICON_MAP: Record<string, string> = {
 	users: "ph:users-three",
 	chart: "ph:chart-bar",
 	code: "ph:code",
+	database: "ph:database",
 	globe: "ph:globe",
 	heart: "ph:heart",
 	star: "ph:star",

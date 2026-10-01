@@ -66,32 +66,36 @@ const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_ur
 		align-items: center;
 		gap: var(--spacing-2xl);
 		padding: clamp(var(--spacing-xl), 5vw, var(--spacing-3xl));
-		background: color-mix(in srgb, var(--color-brand) 4%, var(--color-surface));
-		border: var(--line-ink) solid var(--color-text);
-		border-radius: var(--radius);
+		background: var(--gradient-card);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-lg), inset 0 1px 0 0 var(--color-highlight);
 	}
 
 	.cta-banner::before {
 		content: "";
 		position: absolute;
-		inset: 5px;
-		border: var(--line-hair) solid color-mix(in srgb, var(--color-text) 35%, transparent);
-		border-radius: 1px;
+		inset: 6px;
+		border: var(--line-hair) solid color-mix(in srgb, var(--color-brand) 25%, transparent);
+		border-radius: var(--radius);
 		pointer-events: none;
 	}
 
 	.cta-gradient {
-		color: #cdddf5;
+		color: #ffffff;
 		background:
-			linear-gradient(rgba(219, 231, 251, 0.035) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(219, 231, 251, 0.035) 1px, transparent 1px),
-			light-dark(#0d2340, #081a33);
-		background-size: 28px 28px, 28px 28px, auto;
-		border-color: var(--color-brand-strong);
+			radial-gradient(ellipse at 80% 20%, color-mix(in srgb, var(--color-accent) 25%, transparent) 0%, transparent 60%),
+			radial-gradient(ellipse at 15% 90%, color-mix(in srgb, var(--color-brand-strong) 40%, transparent) 0%, transparent 65%),
+			linear-gradient(145deg, #0f274a 0%, #08172c 100%);
+		border: 1px solid color-mix(in srgb, var(--color-brand-strong) 50%, var(--color-border));
+		box-shadow:
+			var(--shadow-xl),
+			0 0 35px -8px color-mix(in srgb, var(--color-brand-strong) 35%, transparent),
+			inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
 	}
 
 	.cta-gradient::before {
-		border-color: rgb(219 231 251 / 0.28);
+		border-color: rgba(255, 255, 255, 0.15);
 	}
 
 	.cta-text {
@@ -111,6 +115,10 @@ const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_ur
 		text-wrap: balance;
 	}
 
+	.cta-gradient .cta-headline {
+		color: #ffffff;
+	}
+
 	.cta-sub {
 		max-width: 52ch;
 		font-size: var(--font-size-lg);
@@ -119,7 +127,7 @@ const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_ur
 	}
 
 	.cta-gradient .cta-sub {
-		color: rgb(219 231 251 / 0.82);
+		color: #cdddf5;
 	}
 
 	.cta-actions {
@@ -135,27 +143,38 @@ const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_ur
 		width: 100%;
 	}
 
-	/* White ink stamp for actions on the blueprint ground. */
+	/* High-contrast tactile action buttons on gradient CTA */
 	.btn-on-gradient {
-		color: #0d2340;
-		background: #fff;
-		border-color: #fff;
+		color: var(--color-brand-strong);
+		background: #ffffff;
+		border: 1.5px solid #ffffff;
+		font-weight: 700;
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+		transition: all var(--transition-fast);
 	}
 
 	.btn-on-gradient:hover {
-		background: #dbe7fb;
-		border-color: #dbe7fb;
+		background: #eef4ff;
+		border-color: #eef4ff;
+		color: var(--color-brand-strong);
+		transform: translateY(-1px);
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 	}
 
 	.btn-outline-on-gradient {
-		color: #fff;
-		border: var(--line-ink) solid rgb(219 231 251 / 0.55);
-		background: transparent;
+		color: #ffffff;
+		border: 1.5px solid rgba(255, 255, 255, 0.45);
+		background: rgba(255, 255, 255, 0.08);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		font-weight: 600;
+		transition: all var(--transition-fast);
 	}
 
 	.btn-outline-on-gradient:hover {
-		background: rgb(219 231 251 / 0.12);
-		border-color: #fff;
+		background: rgba(255, 255, 255, 0.18);
+		border-color: #ffffff;
+		transform: translateY(-1px);
 	}
 
 	@media (max-width: 800px) {

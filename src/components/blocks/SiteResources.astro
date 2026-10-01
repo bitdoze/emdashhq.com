@@ -51,7 +51,11 @@ const priceOptions = [...new Set(resources.map((entry) => entry.data.price_type)
 						const isPaid = entry.data.price_type === "paid";
 						return (
 							<article class="hub-card resource-card" data-filter-item data-filter-value={entry.data.price_type}>
-								{entry.data.image && <Image image={entry.data.image} class="resource-shot" />}
+								{entry.data.image && (
+									<div class="resource-media-wrap">
+										<Image image={entry.data.image} class="resource-shot" />
+									</div>
+								)}
 								<div class="resource-body">
 									<div class="badges">
 										<span class="badge badge-muted">{labelize(entry.data.kind)}</span>
@@ -62,7 +66,7 @@ const priceOptions = [...new Set(resources.map((entry) => entry.data.price_type)
 									<h3 class="resource-title">{entry.data.title}</h3>
 									{entry.data.summary && <p class="resource-summary">{entry.data.summary}</p>}
 									<div class="resource-actions">
-										<a href={link.href} target={link.target} rel={link.rel} class="btn btn-secondary">
+										<a href={link.href} target={link.target} rel={link.rel} class="btn btn-primary">
 											{entry.data.cta_label || "View"}
 										</a>
 										{demo && (
@@ -93,11 +97,22 @@ const priceOptions = [...new Set(resources.map((entry) => entry.data.price_type)
 		border-radius: var(--radius-lg);
 	}
 
+	.resource-media-wrap {
+		position: relative;
+		overflow: hidden;
+		border-bottom: 1px solid var(--color-border);
+		background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+	}
+
 	.resource-card :global(.resource-shot) {
 		width: 100%;
 		aspect-ratio: 16 / 10;
 		object-fit: cover;
-		border-bottom: var(--line-hair) solid var(--color-border);
+		transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+	}
+
+	.resource-card:hover :global(.resource-shot) {
+		transform: scale(1.04);
 	}
 
 	.resource-body {

@@ -13,7 +13,7 @@ const { anchor_id, headline, items } = value;
 	<div class="container">
 		{headline && (
 			<header class="section-header">
-				<p class="section-meta">Notes</p>
+				<p class="section-meta">Questions & answers</p>
 				<h2 class="section-headline">{headline}</h2>
 			</header>
 		)}
@@ -21,7 +21,7 @@ const { anchor_id, headline, items } = value;
 			{items.map((item, i) => (
 				<details class="faq-item" name="faq">
 					<summary class="faq-question">
-						<span class="faq-no" aria-hidden="true">N{i + 1}</span>
+						<span class="faq-no" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
 						<span class="faq-q">{item.question}</span>
 						<svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
 							<path d="M6 9l6 6 6-6" />
@@ -37,65 +37,80 @@ const { anchor_id, headline, items } = value;
 </section>
 
 <style>
-	/* Notes: numbered like drawing notes, hairline rules, no cards. */
 	.faq-list {
-		--faq-no-width: 2rem;
-		max-width: 44rem;
+		width: 100%;
 		display: flex;
 		flex-direction: column;
-		border-bottom: var(--line-hair) solid var(--color-border);
+		gap: var(--spacing-sm);
 	}
 
 	.faq-item {
-		background: transparent;
-		border-top: var(--line-hair) solid var(--color-border);
-		transition: background var(--transition-fast);
+		background: var(--gradient-card);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		box-shadow: var(--shadow-sm), inset 0 1px 0 0 var(--color-highlight);
+		transition:
+			border-color var(--transition-base),
+			background var(--transition-base),
+			box-shadow var(--transition-base);
+		overflow: hidden;
 	}
 
 	.faq-item:hover {
-		background: color-mix(in srgb, var(--color-brand) 3%, transparent);
+		border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-border));
+		box-shadow: var(--shadow);
 	}
 
 	.faq-item[open] {
-		background: color-mix(in srgb, var(--color-brand) 4%, transparent);
+		border-color: var(--color-brand-strong);
+		background: color-mix(in srgb, var(--color-brand) 3%, var(--color-surface));
+		box-shadow: var(--shadow);
 	}
 
 	.faq-question {
 		display: flex;
-		align-items: baseline;
+		align-items: center;
 		gap: var(--spacing-md);
-		padding: var(--spacing-lg) var(--spacing-sm);
+		padding: var(--spacing-lg);
 		font-family: var(--font-heading);
 		font-size: var(--font-size-base);
 		font-weight: 600;
+		color: var(--color-text);
 		cursor: pointer;
 		list-style: none;
+		user-select: none;
 	}
 
 	.faq-question::-webkit-details-marker {
 		display: none;
 	}
 
-	/* Fixed-width tag column, so answers indent to the question text. */
 	.faq-no {
-		flex: 0 0 var(--faq-no-width);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
-		font-weight: 500;
-		letter-spacing: 0.05em;
-		color: var(--color-muted);
+		font-weight: 600;
+		color: var(--color-brand-strong);
+		background: color-mix(in srgb, var(--color-brand) 8%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-brand) 25%, transparent);
+		border-radius: var(--radius-sm);
+		flex-shrink: 0;
 		font-variant-numeric: tabular-nums;
 	}
 
 	.faq-q {
 		flex: 1;
+		line-height: var(--leading-snug);
 	}
 
 	.faq-icon {
 		width: 20px;
 		height: 20px;
 		flex-shrink: 0;
-		align-self: center;
 		color: var(--color-brand-strong);
 		transition: transform var(--transition-base);
 	}
@@ -105,14 +120,25 @@ const { anchor_id, headline, items } = value;
 	}
 
 	.faq-answer {
-		padding: 0 var(--spacing-sm) var(--spacing-lg)
-			calc(var(--spacing-sm) + var(--faq-no-width) + var(--spacing-md));
+		padding: 0 var(--spacing-lg) var(--spacing-lg) calc(var(--spacing-lg) + 32px + var(--spacing-md));
 	}
 
 	.faq-answer p {
-		max-width: 62ch;
-		font-size: var(--font-size-base);
+		max-width: 75ch;
+		font-size: var(--font-size-sm);
 		color: var(--color-muted);
 		line-height: var(--leading-relaxed);
+		margin: 0;
+	}
+
+	@media (max-width: 640px) {
+		.faq-question {
+			padding: var(--spacing-md);
+			gap: var(--spacing-sm);
+		}
+
+		.faq-answer {
+			padding: 0 var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) + 32px + var(--spacing-sm));
+		}
 	}
 </style>

@@ -12,16 +12,16 @@ export default defineConfig({
 	adapter: cloudflare(),
 	prefetch: {
 		prefetchAll: true,
-		defaultStrategy: "viewport",
+		defaultStrategy: "hover",
 	},
 	cache: {
 		provider: cacheCloudflare(),
 	},
 	routeRules: {
-		"/": { maxAge: 300, swr: 86400 },
+		"/": { maxAge: 3600, swr: 86400 },
 		"/_emdash/api/media/[...path]": { maxAge: 86400, swr: 604800 },
 		"/_emdash/[...path]": { maxAge: 0 },
-		"/[...slug]": { maxAge: 300, swr: 86400 },
+		"/[...slug]": { maxAge: 3600, swr: 86400 },
 	},
 	build: {
 		inlineStylesheets: "always",
@@ -62,6 +62,7 @@ export default defineConfig({
 					"clock",
 					"cloud",
 					"code",
+					"database",
 					"envelope",
 					"gift",
 					"github-logo",

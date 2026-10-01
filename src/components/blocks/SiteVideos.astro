@@ -108,14 +108,16 @@ const firstArticle = first ? linkAttrs(first.entry.data.article_url) : undefined
 		align-items: center;
 		margin-bottom: var(--spacing-2xl);
 		padding: var(--spacing-xl);
-		color: #cdddf5;
+		color: #ffffff;
 		background:
-			linear-gradient(rgba(219, 231, 251, 0.035) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(219, 231, 251, 0.035) 1px, transparent 1px),
-			light-dark(#0d2340, #081a33);
-		background-size: 28px 28px, 28px 28px, auto;
-		border: var(--line-ink) solid var(--color-brand-strong);
+			radial-gradient(ellipse at 90% 15%, color-mix(in srgb, var(--color-accent) 20%, transparent) 0%, transparent 60%),
+			linear-gradient(145deg, #0f274a 0%, #08172c 100%);
+		border: 1px solid color-mix(in srgb, var(--color-brand-strong) 45%, var(--color-border));
 		border-radius: var(--radius-lg);
+		box-shadow:
+			var(--shadow-xl),
+			0 0 32px -8px color-mix(in srgb, var(--color-brand) 30%, transparent),
+			inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
 	}
 
 	.spotlight-text {
@@ -129,39 +131,44 @@ const firstArticle = first ? linkAttrs(first.entry.data.article_url) : undefined
 		font-family: var(--font-heading);
 		font-size: var(--font-size-2xl);
 		line-height: 1.25;
+		color: #ffffff;
 		text-wrap: balance;
 	}
 
 	.spotlight .video-summary {
-		color: rgb(219 231 251 / 0.82);
+		color: #cdddf5;
 	}
 
 	.spotlight .badge-muted {
 		color: #cdddf5;
-		background: rgb(219 231 251 / 0.12);
-		border-color: rgb(219 231 251 / 0.3);
+		background: rgba(219, 231, 251, 0.12);
+		border-color: rgba(219, 231, 251, 0.3);
 	}
 
 	.spotlight .badge {
-		color: #0d2340;
-		background: #cdddf5;
-		border-color: transparent;
+		color: var(--color-brand-strong);
+		background: #ffffff;
+		border-color: #ffffff;
+		font-weight: 700;
 	}
 
-	.spotlight .badge::before,
-	.spotlight .badge::after {
-		opacity: 0.4;
+	.spotlight .badge::before {
+		background: var(--color-brand-strong);
 	}
 
 	.spotlight .btn-secondary {
-		color: #fff;
-		background: transparent;
-		border-color: rgb(219 231 251 / 0.5);
+		color: #ffffff;
+		background: rgba(255, 255, 255, 0.08);
+		border-color: rgba(255, 255, 255, 0.4);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
 	}
 
 	.spotlight .btn-secondary:hover {
-		background: rgb(219 231 251 / 0.12);
-		border-color: #fff;
+		background: rgba(255, 255, 255, 0.18);
+		border-color: #ffffff;
+		color: #ffffff;
+		transform: translateY(-1px);
 	}
 
 	.video-summary {

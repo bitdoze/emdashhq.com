@@ -93,10 +93,14 @@ if (limit > 0) services = services.slice(0, limit);
 	.service-price {
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
-		font-weight: 500;
+		font-weight: 600;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		color: var(--color-brand-strong);
+		padding: 4px 10px;
+		background: color-mix(in srgb, var(--color-brand) 10%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-brand) 28%, transparent);
+		border-radius: var(--radius-sm);
 		text-align: right;
 		text-wrap: balance;
 	}
@@ -104,10 +108,16 @@ if (limit > 0) services = services.slice(0, limit);
 	.service-no {
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
-		font-weight: 500;
+		font-weight: 600;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		color: var(--color-muted);
+	}
+
+	.service-no::before {
+		content: "// ";
+		color: var(--color-brand-strong);
+		opacity: 0.6;
 	}
 
 	.service-title {
@@ -160,6 +170,13 @@ if (limit > 0) services = services.slice(0, limit);
 
 	.service-cta :global(.service-cta-arrow) {
 		transition: transform var(--transition-base);
+	}
+
+	.service-card:hover .service-cta {
+		border-color: var(--color-brand-strong);
+		background: color-mix(in srgb, var(--color-brand) 12%, var(--color-surface));
+		color: var(--color-brand-strong);
+		box-shadow: var(--shadow);
 	}
 
 	.service-card:hover .service-cta :global(.service-cta-arrow) {

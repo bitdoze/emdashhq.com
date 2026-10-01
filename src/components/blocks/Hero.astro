@@ -1,14 +1,17 @@
 ---
 import { getMenuWithCacheHint, sanitizeHref } from "emdash";
 import { Image, type BlockComponentProps } from "emdash/ui";
+import { Icon } from "astro-iconset/components";
 import type { PageContentBlock } from "../../../emdash-env";
 import { optionalLink } from "../../lib/links";
+import { iconFor } from "../../lib/icons";
 
 type HeroBlock = Extract<PageContentBlock, { _type: "marketing_hero" }>;
 type Props = BlockComponentProps<HeroBlock>;
 
 const { value } = Astro.props;
 const { anchor_id, eyebrow, headline, subheadline, image, centered } = value;
+const specs = value.specs ?? [];
 
 const primaryCta = optionalLink(value.primary_cta_label, value.primary_cta_url);
 const secondaryCta = optionalLink(value.secondary_cta_label, value.secondary_cta_url);
@@ -35,20 +38,24 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 	id={anchor_id || undefined}
 	class:list={["hero-wrap", { "hero-centered": centered, "hero-with-image": !!image }]}
 >
+	<div class="hero-glow-primary" aria-hidden="true"></div>
+	<div class="hero-glow-secondary" aria-hidden="true"></div>
 	<div class="hero">
 		<div class="hero-content">
-			<p class="hero-meta">
-				{eyebrow && <span>{eyebrow}</span>}
-				<span>{sheetToken}</span>
-				<span>Rev {revision}</span>
-			</p>
+			<div class="hero-badge">
+				<span class="badge-dot" aria-hidden="true"></span>
+				<span class="badge-text">{eyebrow || "EmDash CMS Hub"}</span>
+				<span class="badge-divider" aria-hidden="true">/</span>
+				<span class="badge-meta">{sheetToken} · Rev {revision}</span>
+			</div>
 			<h1 class="hero-headline">{headline}</h1>
 			{subheadline && <p class="hero-subheadline">{subheadline}</p>}
 			{(primaryCta || secondaryCta) && (
 				<div class="hero-actions">
 					{primaryCta && (
-						<a href={primaryCta.href} target={primaryCta.target} rel={primaryCta.rel} class="btn btn-primary btn-lg">
-							{primaryCta.label}
+						<a href={primaryCta.href} target={primaryCta.target} rel={primaryCta.rel} class="btn btn-primary btn-lg hero-cta-primary">
+							<span>{primaryCta.label}</span>
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" class="hero-cta-arrow"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
 						</a>
 					)}
 					{secondaryCta && (
@@ -56,6 +63,16 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 							{secondaryCta.label}
 						</a>
 					)}
+				</div>
+			)}
+			{specs.length > 0 && (
+				<div class="hero-specs" aria-label="Architecture highlights">
+					{specs.map((spec) => (
+						<div class="spec-item">
+							<Icon name={iconFor(spec.icon)} width={13} height={13} aria-hidden="true" />
+							<span>{spec.label}</span>
+						</div>
+					))}
 				</div>
 			)}
 			{
@@ -69,11 +86,11 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 								<line class="ink stroke-draw" style="--d: 160ms" x1="224" y1="36" x2="296" y2="36" />
 								<line class="ink stroke-draw" style="--d: 320ms" x1="392" y1="36" x2="424" y2="20" />
 								<line class="ink stroke-draw" style="--d: 320ms" x1="392" y1="36" x2="424" y2="52" />
-								<rect class="ink stroke-draw fill" style="--d: 80ms" x="8" y="22" width="44" height="28" rx="2" />
-								<rect class="ink stroke-draw fill" style="--d: 240ms" x="128" y="22" width="96" height="28" rx="2" />
-								<rect class="ink stroke-draw fill" style="--d: 400ms" x="296" y="22" width="96" height="28" rx="2" />
-								<rect class="ink stroke-draw fill" style="--d: 560ms" x="424" y="8" width="128" height="24" rx="2" />
-								<rect class="ink stroke-draw fill" style="--d: 560ms" x="424" y="42" width="128" height="24" rx="2" />
+								<rect class="ink stroke-draw fill" style="--d: 80ms" x="8" y="22" width="44" height="28" rx="4" />
+								<rect class="ink stroke-draw fill" style="--d: 240ms" x="128" y="22" width="96" height="28" rx="4" />
+								<rect class="ink stroke-draw fill" style="--d: 400ms" x="296" y="22" width="96" height="28" rx="4" />
+								<rect class="ink stroke-draw fill" style="--d: 560ms" x="424" y="8" width="128" height="24" rx="4" />
+								<rect class="ink stroke-draw fill" style="--d: 560ms" x="424" y="42" width="128" height="24" rx="4" />
 								<text class="label" style="--d: 700ms" x="30" y="40" text-anchor="middle">YOU</text>
 								<text class="label" style="--d: 780ms" x="176" y="40" text-anchor="middle">BROWSER</text>
 								<text class="label" style="--d: 860ms" x="344" y="40" text-anchor="middle">WORKER</text>
@@ -94,48 +111,67 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 				</figure>
 			) : !centered && (
 				<figure class="hero-panel" aria-label="How EmDash is wired">
-					<svg viewBox="0 0 560 340" fill="none" role="img">
-						<title>System diagram</title>
-						<desc>A visitor's browser requests a page; the Astro Worker server-renders it and reads content from the D1 database and media from R2; the EmDash admin console writes to both.</desc>
-						<g class="schematic">
-							<!-- flow: visitor -> browser -> worker -->
-							<rect class="ink stroke-draw fill" style="--d: 0ms" x="12" y="150" width="96" height="44" rx="2" />
-							<text class="label" style="--d: 500ms" x="60" y="176" text-anchor="middle">VISITOR</text>
-							<line class="ink stroke-draw" style="--d: 160ms" x1="108" y1="172" x2="146" y2="172" />
-							<path class="ink head" style="--d: 400ms" d="M140 167 L148 172 L140 177" />
-							<rect class="ink stroke-draw fill" style="--d: 240ms" x="150" y="150" width="110" height="44" rx="2" />
-							<text class="label" style="--d: 620ms" x="205" y="176" text-anchor="middle">BROWSER</text>
-							<line class="ink stroke-draw" style="--d: 380ms" x1="260" y1="172" x2="298" y2="172" />
-							<path class="ink head" style="--d: 620ms" d="M292 167 L300 172 L292 177" />
-							<rect class="ink strong stroke-draw fill" style="--d: 460ms" x="302" y="150" width="110" height="44" rx="2" />
-							<text class="label" style="--d: 840ms" x="357" y="170" text-anchor="middle">WORKER</text>
-							<text class="sublabel" style="--d: 900ms" x="357" y="185" text-anchor="middle">ASTRO · SSR</text>
-							<!-- spine feeds the storage and admin nodes -->
-							<line class="ink stroke-draw" style="--d: 600ms" x1="412" y1="172" x2="426" y2="172" />
-							<line class="ink stroke-draw" style="--d: 700ms" x1="426" y1="60" x2="426" y2="282" />
-							<line class="ink stroke-draw" style="--d: 760ms" x1="426" y1="60" x2="444" y2="60" />
-							<path class="ink head" style="--d: 900ms" d="M438 55 L446 60 L438 65" />
-							<line class="ink stroke-draw" style="--d: 800ms" x1="426" y1="172" x2="444" y2="172" />
-							<path class="ink head" style="--d: 940ms" d="M438 167 L446 172 L438 177" />
-							<line class="ink stroke-draw" style="--d: 840ms" x1="426" y1="282" x2="444" y2="282" />
-							<path class="ink head" style="--d: 980ms" d="M438 277 L446 282 L438 287" />
-							<rect class="ink stroke-draw fill" style="--d: 860ms" x="448" y="40" width="100" height="40" rx="2" />
-							<text class="label" style="--d: 1060ms" x="498" y="58" text-anchor="middle">D1</text>
-							<text class="sublabel" style="--d: 1100ms" x="498" y="72" text-anchor="middle">CONTENT</text>
-							<rect class="ink stroke-draw fill" style="--d: 900ms" x="448" y="152" width="100" height="40" rx="2" />
-							<text class="label" style="--d: 1120ms" x="498" y="170" text-anchor="middle">R2</text>
-							<text class="sublabel" style="--d: 1160ms" x="498" y="184" text-anchor="middle">MEDIA</text>
-							<rect class="ink stroke-draw fill" style="--d: 940ms" x="448" y="262" width="100" height="40" rx="2" />
-							<text class="label" style="--d: 1200ms" x="498" y="280" text-anchor="middle">ADMIN</text>
-							<text class="sublabel" style="--d: 1240ms" x="498" y="294" text-anchor="middle">WRITES</text>
-							<!-- dimension annotation, drafting style -->
-							<line class="dim stroke-draw" style="--d: 1000ms" x1="150" y1="240" x2="412" y2="240" />
-							<line class="dim stroke-draw" style="--d: 1060ms" x1="150" y1="232" x2="150" y2="248" />
-							<line class="dim stroke-draw" style="--d: 1060ms" x1="412" y1="232" x2="412" y2="248" />
-							<text class="dimlabel" style="--d: 1300ms" x="281" y="230" text-anchor="middle">REQUEST / RESPONSE</text>
-						</g>
-					</svg>
-					<figcaption class="hero-fig">Fig. 00: how the pieces connect</figcaption>
+					<div class="panel-header">
+						<div class="panel-dots" aria-hidden="true">
+							<span class="p-dot p-red"></span>
+							<span class="p-dot p-yellow"></span>
+							<span class="p-dot p-green"></span>
+						</div>
+						<span class="panel-title">emdash-architecture.svg</span>
+						<span class="panel-badge">
+							<span class="panel-badge-dot" aria-hidden="true"></span>
+							EDGE SSR
+						</span>
+					</div>
+					<div class="panel-svg-wrap">
+						<svg viewBox="0 0 560 340" fill="none" role="img">
+							<title>System diagram</title>
+							<desc>A visitor's browser requests a page; the Astro Worker server-renders it and reads content from the D1 database and media from R2; the EmDash admin console writes to both.</desc>
+							<g class="schematic">
+								<!-- flow: visitor -> browser -> worker -->
+								<rect class="ink stroke-draw fill" style="--d: 0ms" x="12" y="150" width="96" height="44" rx="6" />
+								<text class="label" style="--d: 500ms" x="60" y="176" text-anchor="middle">VISITOR</text>
+								<line class="ink stroke-draw" style="--d: 160ms" x1="108" y1="172" x2="146" y2="172" />
+								<path class="ink head" style="--d: 400ms" d="M140 167 L148 172 L140 177" />
+								<rect class="ink stroke-draw fill" style="--d: 240ms" x="150" y="150" width="110" height="44" rx="6" />
+								<text class="label" style="--d: 620ms" x="205" y="176" text-anchor="middle">BROWSER</text>
+								<line class="ink stroke-draw" style="--d: 380ms" x1="260" y1="172" x2="298" y2="172" />
+								<path class="ink head" style="--d: 620ms" d="M292 167 L300 172 L292 177" />
+								<rect class="ink strong stroke-draw fill" style="--d: 460ms" x="302" y="150" width="110" height="44" rx="6" />
+								<circle class="status-indicator status-green" cx="398" cy="162" r="3" />
+								<text class="label" style="--d: 840ms" x="357" y="170" text-anchor="middle">WORKER</text>
+								<text class="sublabel" style="--d: 900ms" x="357" y="185" text-anchor="middle">ASTRO · SSR</text>
+								<!-- spine feeds the storage and admin nodes -->
+								<line class="ink stroke-draw" style="--d: 600ms" x1="412" y1="172" x2="426" y2="172" />
+								<line class="ink stroke-draw" style="--d: 700ms" x1="426" y1="60" x2="426" y2="282" />
+								<line class="ink stroke-draw" style="--d: 760ms" x1="426" y1="60" x2="444" y2="60" />
+								<path class="ink head" style="--d: 900ms" d="M438 55 L446 60 L438 65" />
+								<line class="ink stroke-draw" style="--d: 800ms" x1="426" y1="172" x2="444" y2="172" />
+								<path class="ink head" style="--d: 940ms" d="M438 167 L446 172 L438 177" />
+								<line class="ink stroke-draw" style="--d: 840ms" x1="426" y1="282" x2="444" y2="282" />
+								<path class="ink head" style="--d: 980ms" d="M438 277 L446 282 L438 287" />
+								<rect class="ink stroke-draw fill" style="--d: 860ms" x="448" y="40" width="100" height="40" rx="6" />
+								<circle class="status-indicator status-cyan" cx="534" cy="50" r="3" />
+								<text class="label" style="--d: 1060ms" x="498" y="58" text-anchor="middle">D1</text>
+								<text class="sublabel" style="--d: 1100ms" x="498" y="72" text-anchor="middle">CONTENT</text>
+								<rect class="ink stroke-draw fill" style="--d: 900ms" x="448" y="152" width="100" height="40" rx="6" />
+								<text class="label" style="--d: 1120ms" x="498" y="170" text-anchor="middle">R2</text>
+								<text class="sublabel" style="--d: 1160ms" x="498" y="184" text-anchor="middle">MEDIA</text>
+								<rect class="ink stroke-draw fill" style="--d: 940ms" x="448" y="262" width="100" height="40" rx="6" />
+								<text class="label" style="--d: 1200ms" x="498" y="280" text-anchor="middle">ADMIN</text>
+								<text class="sublabel" style="--d: 1240ms" x="498" y="294" text-anchor="middle">WRITES</text>
+								<!-- dimension annotation, drafting style -->
+								<line class="dim stroke-draw" style="--d: 1000ms" x1="150" y1="240" x2="412" y2="240" />
+								<line class="dim stroke-draw" style="--d: 1060ms" x1="150" y1="232" x2="150" y2="248" />
+								<line class="dim stroke-draw" style="--d: 1060ms" x1="412" y1="232" x2="412" y2="248" />
+								<text class="dimlabel" style="--d: 1300ms" x="281" y="230" text-anchor="middle">REQUEST / RESPONSE</text>
+							</g>
+						</svg>
+					</div>
+					<div class="panel-footer">
+						<span class="panel-caption">Fig. 00: live telemetry & architecture</span>
+						<span class="panel-latency">Edge response: &lt; 20ms</span>
+					</div>
 				</figure>
 			)
 		}
@@ -149,14 +185,50 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		border-bottom: var(--line-hair) solid var(--color-border);
 	}
 
+	.hero-glow-primary {
+		position: absolute;
+		top: 8%;
+		right: 4%;
+		width: 560px;
+		height: 440px;
+		border-radius: 50%;
+		background: radial-gradient(
+			circle,
+			color-mix(in srgb, var(--color-brand) 22%, transparent) 0%,
+			color-mix(in srgb, var(--color-accent) 12%, transparent) 42%,
+			transparent 72%
+		);
+		filter: blur(64px);
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	.hero-glow-secondary {
+		position: absolute;
+		top: 40%;
+		left: 5%;
+		width: 380px;
+		height: 300px;
+		border-radius: 50%;
+		background: radial-gradient(
+			circle,
+			color-mix(in srgb, var(--color-accent) 12%, transparent) 0%,
+			transparent 65%
+		);
+		filter: blur(56px);
+		pointer-events: none;
+		z-index: 0;
+	}
+
 	.hero {
 		position: relative;
+		z-index: 1;
 		max-width: var(--wide-width);
 		margin: 0 auto;
 		padding: clamp(3.5rem, 7vw, 6rem) var(--spacing-lg) clamp(3rem, 6vw, 5rem);
 		display: grid;
 		grid-template-columns: 1.05fr 0.95fr;
-		gap: var(--spacing-2xl);
+		gap: var(--spacing-3xl);
 		align-items: center;
 	}
 
@@ -177,7 +249,8 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 	}
 
 	.hero-centered .hero-actions,
-	.hero-centered .hero-meta {
+	.hero-centered .hero-badge,
+	.hero-centered .hero-specs {
 		justify-content: center;
 	}
 
@@ -190,21 +263,50 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		flex-direction: column;
 		align-items: flex-start;
 		gap: var(--spacing-lg);
-		max-width: 560px;
+		max-width: 580px;
 		animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
-	/* Title block: the meta strip reads like a drawing header. */
-	.hero-meta {
-		display: flex;
-		gap: var(--spacing-md);
-		width: 100%;
-		padding-top: var(--spacing-sm);
-		border-top: var(--line-ink) solid var(--color-text);
+	/* Hero badge: modern developer pill */
+	.hero-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 4px 14px;
+		background: color-mix(in srgb, var(--color-brand) 8%, var(--color-surface));
+		border: 1px solid color-mix(in srgb, var(--color-brand) 28%, var(--color-border));
+		border-radius: var(--radius-full);
+		box-shadow: var(--shadow-sm), inset 0 1px 0 0 var(--color-highlight);
+	}
+
+	.badge-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--color-brand);
+		box-shadow: 0 0 8px var(--color-brand);
+	}
+
+	.badge-text {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-brand-strong);
+	}
+
+	.badge-divider {
+		color: var(--color-muted);
+		opacity: 0.4;
+		font-size: var(--font-size-xs);
+	}
+
+	.badge-meta {
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
 		font-weight: 500;
-		letter-spacing: 0.08em;
+		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		color: var(--color-muted);
 	}
@@ -214,13 +316,13 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		font-size: clamp(2.5rem, 5vw, 3.75rem);
 		font-weight: var(--font-weight-display);
 		line-height: var(--leading-tight);
-		letter-spacing: -0.02em;
+		letter-spacing: -0.025em;
 		color: var(--color-text);
 		text-wrap: balance;
 	}
 
 	.hero-subheadline {
-		max-width: 55ch;
+		max-width: 52ch;
 		font-size: var(--font-size-lg);
 		line-height: var(--leading-normal);
 		color: var(--color-muted);
@@ -231,6 +333,47 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		display: flex;
 		gap: var(--spacing-md);
 		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.hero-cta-primary {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.hero-cta-arrow {
+		transition: transform var(--transition-base);
+	}
+
+	.hero-cta-primary:hover .hero-cta-arrow {
+		transform: translateX(4px);
+	}
+
+	/* Architecture highlights strip */
+	.hero-specs {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--spacing-lg);
+		padding-top: var(--spacing-sm);
+		border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+	}
+
+	.spec-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		color: var(--color-muted);
+	}
+
+	.spec-item svg {
+		color: var(--color-brand-strong);
+		opacity: 0.9;
 	}
 
 	/* Reference plate: a real screenshot framed as a figure. */
@@ -244,18 +387,108 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		width: 100%;
 		height: auto;
 		border-radius: var(--radius-lg);
-		border: var(--line-ink) solid var(--color-text);
+		border: 1px solid var(--color-border);
+		box-shadow: var(--shadow-xl);
 	}
 
-	/* The schematic panel: the drawing stands in when no plate exists. */
+	/* The schematic panel: elevated modern tech hub readout */
 	.hero-panel {
 		position: relative;
 		margin: 0;
-		padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
-		border: var(--line-hair) solid var(--color-border);
+		padding: var(--spacing-lg);
+		border: 1px solid color-mix(in srgb, var(--color-brand) 32%, var(--color-border));
 		border-radius: var(--radius-lg);
-		background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+		background: color-mix(in srgb, var(--color-surface) 84%, transparent);
+		backdrop-filter: blur(16px);
+		-webkit-backdrop-filter: blur(16px);
+		box-shadow:
+			var(--shadow-xl),
+			0 0 32px -8px color-mix(in srgb, var(--color-brand) 20%, transparent),
+			inset 0 1px 0 0 var(--color-highlight);
 		animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+	}
+
+	/* Console / Window chrome for panel */
+	.panel-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding-bottom: var(--spacing-md);
+		margin-bottom: var(--spacing-sm);
+		border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+	}
+
+	.panel-dots {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.p-dot {
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+	}
+
+	.p-red { background: #f87171; }
+	.p-yellow { background: #fbbf24; }
+	.p-green { background: #4ade80; }
+
+	.panel-title {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		letter-spacing: 0.05em;
+		color: var(--color-muted);
+	}
+
+	.panel-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		padding: 2px 7px;
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		color: var(--color-success);
+		background: color-mix(in srgb, var(--color-success) 12%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+		border-radius: var(--radius-sm);
+	}
+
+	.panel-badge-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: var(--color-success);
+		box-shadow: 0 0 6px var(--color-success);
+	}
+
+	.panel-svg-wrap {
+		width: 100%;
+	}
+
+	.panel-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: var(--spacing-md);
+		padding-top: var(--spacing-sm);
+		border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+	}
+
+	.panel-caption {
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	.panel-latency {
+		font-weight: 600;
+		color: var(--color-brand-strong);
 	}
 
 	/* Registration marks pin the panel to the sheet. */
@@ -391,10 +624,40 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		.hero-schematic .label,
 		.hero-panel .label,
 		.hero-panel .sublabel,
-		.hero-panel .dimlabel {
+		.hero-panel .dimlabel,
+		.hero-panel .status-indicator {
 			opacity: 0;
 			animation: sheet-ink 0.4s ease-out forwards;
 			animation-delay: var(--d, 0ms);
+		}
+	}
+
+	.status-indicator {
+		transform-origin: center;
+	}
+
+	.status-green {
+		fill: var(--color-success);
+	}
+
+	.status-cyan {
+		fill: var(--color-accent);
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.status-indicator {
+			animation:
+				sheet-ink 0.4s ease-out 1s forwards,
+				pulse-glow 2.5s ease-in-out 1.2s infinite;
+		}
+	}
+
+	@keyframes pulse-glow {
+		0%, 100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.35;
 		}
 	}
 

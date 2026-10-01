@@ -22,11 +22,11 @@ html:not(.light):not(.dark) {
 
 :root {
 	/* Paper and ink */
-	--color-bg: light-dark(#f6f8fb, #0d2340);
-	--color-text: light-dark(#0a1c38, #dbe7fb);
-	--color-muted: light-dark(#4b5f7f, #9fb0cc);
-	--color-border: light-dark(#c9d6ea, #2a4a7f);
-	--color-surface: light-dark(#ffffff, #10294d);
+	--color-bg: light-dark(#f6f8fb, #0a192f);
+	--color-text: light-dark(#0a1c38, #e2edfd);
+	--color-muted: light-dark(#475c7e, #8ea6cc);
+	--color-border: light-dark(#d3dfef, #1e3a66);
+	--color-surface: light-dark(#ffffff, #0f274a);
 
 	/* Ink (signal blue brand) */
 	--color-brand: light-dark(#1d4ed8, #60a5fa);
@@ -35,15 +35,22 @@ html:not(.light):not(.dark) {
 	--color-accent: light-dark(#0284c7, #22d3ee);
 	--color-accent-soft: light-dark(#38bdf8, #67e8f9);
 	--color-on-brand: #ffffff;
-	--color-brand-ring: color-mix(in srgb, var(--color-brand) 14%, transparent);
+	--color-brand-ring: color-mix(in srgb, var(--color-brand) 16%, transparent);
 	--color-success: light-dark(#15803d, #4ade80);
 	--color-warning: light-dark(#b45309, #fbbf24);
 
-	/* The drawing world is flat: gradients resolve to solid ink. */
-	--gradient-brand: linear-gradient(135deg, var(--color-brand-strong), var(--color-brand-strong));
-	--gradient-brand-strong: linear-gradient(135deg, var(--color-brand-strong), var(--color-brand-strong));
-	--gradient-brand-soft: linear-gradient(135deg, var(--color-brand-soft), var(--color-brand-soft));
+	/* Modern tech hub gradients */
+	--gradient-brand: linear-gradient(135deg, var(--color-brand-strong), var(--color-accent));
+	--gradient-brand-strong: linear-gradient(135deg, var(--color-brand-strong) 0%, color-mix(in srgb, var(--color-brand-strong) 70%, var(--color-accent)) 100%);
+	--gradient-brand-soft: linear-gradient(135deg, color-mix(in srgb, var(--color-brand) 18%, transparent), color-mix(in srgb, var(--color-accent) 12%, transparent));
 	--gradient-headline: none;
+	--gradient-card: light-dark(
+		linear-gradient(180deg, #ffffff 0%, #f8fbff 100%),
+		linear-gradient(180deg, #102a4e 0%, #0c203b 100%)
+	);
+
+	/* Specular & depth highlights */
+	--color-highlight: light-dark(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.08));
 
 	/* One voice for headings and body (Archivo via --font-body).
 	   --font-mono comes from the font pipeline (IBM Plex Mono). */
@@ -51,18 +58,32 @@ html:not(.light):not(.dark) {
 	--font-weight-heading: 700;
 	--font-weight-display: 800;
 
-	/* Line weights and sheet geometry */
+	/* Line weights and refined geometry */
 	--line-hair: 1px;
 	--line-ink: 1.5px;
-	--radius-sm: 2px;
-	--radius: 2px;
-	--radius-lg: 4px;
+	--radius-sm: 4px;
+	--radius: 8px;
+	--radius-lg: 12px;
+	--radius-full: 9999px;
 
-	/* The world is flat: no elevation. */
-	--shadow-sm: none;
-	--shadow: none;
-	--shadow-lg: none;
-	--shadow-xl: none;
+	/* Dimensional multi-layered shadows */
+	--shadow-sm: light-dark(
+		0 1px 3px rgba(10, 28, 56, 0.05),
+		0 1px 3px rgba(0, 0, 0, 0.35)
+	);
+	--shadow: light-dark(
+		0 4px 12px -2px rgba(10, 28, 56, 0.06), 0 2px 6px -1px rgba(10, 28, 56, 0.03),
+		0 4px 16px -2px rgba(0, 0, 0, 0.45), 0 2px 6px -1px rgba(0, 0, 0, 0.25)
+	);
+	--shadow-lg: light-dark(
+		0 12px 28px -4px rgba(10, 28, 56, 0.09), 0 4px 10px -2px rgba(10, 28, 56, 0.04),
+		0 14px 32px -4px rgba(0, 0, 0, 0.6), 0 4px 12px -2px rgba(0, 0, 0, 0.35)
+	);
+	--shadow-xl: light-dark(
+		0 20px 42px -6px rgba(10, 28, 56, 0.12), 0 8px 16px -3px rgba(10, 28, 56, 0.05),
+		0 22px 46px -6px rgba(0, 0, 0, 0.7), 0 8px 20px -3px rgba(0, 0, 0, 0.45)
+	);
+	--shadow-glow: 0 0 24px -4px color-mix(in srgb, var(--color-brand) 30%, transparent);
 }
 
 /* Type rhythm */
@@ -85,7 +106,7 @@ li {
 :focus-visible {
 	outline: 2px dashed var(--color-brand-strong);
 	outline-offset: 3px;
-	border-radius: 2px;
+	border-radius: var(--radius-sm);
 }
 
 [hidden] {
@@ -93,71 +114,91 @@ li {
 }
 
 .section {
-	padding: clamp(4rem, 8vw, 6.5rem) 0;
-}
-
-.section-headline {
-	font-family: var(--font-heading);
-	font-weight: var(--font-weight-display);
-	letter-spacing: -0.015em;
-	text-transform: none;
-	text-wrap: balance;
+	padding: clamp(3rem, 5vw, 4rem) 0;
 }
 
 /*
- * Section headers are title blocks: a meta strip (sheet number and
- * revision) over the headline, closed by a heavy ink rule. The numbers
- * are the set's navigation, so the sequence carries real information.
+ * Section headers: technical title block with brand accent rule
  */
 .section-header {
-	/* The base layer centers headers with auto side margins; hang the
-	   title block from the same left edge as the content below it. */
 	margin: 0 0 var(--spacing-2xl);
-	max-width: 44rem;
+	max-width: 48rem;
 	text-align: left;
-	border-top: var(--line-ink) solid var(--color-text);
+	position: relative;
 	padding-top: var(--spacing-sm);
 }
 
 .section-header::before {
 	content: "";
-	display: none;
-}
-
-.section-meta {
-	display: flex;
-	gap: var(--spacing-md);
-	font-family: var(--font-mono);
-	font-size: var(--font-size-xs);
-	font-weight: 500;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--color-muted);
+	display: block;
+	width: 36px;
+	height: 3px;
+	background: var(--gradient-brand);
+	border-radius: var(--radius-full);
 	margin-bottom: var(--spacing-sm);
 }
 
-.section-subheadline {
-	max-width: 62ch;
+.section-meta {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--spacing-xs);
+	font-family: var(--font-mono);
+	font-size: var(--font-size-xs);
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--color-brand-strong);
+	margin-bottom: var(--spacing-xs);
 }
 
-/* Cards are sheets: 1px ink line, square corners, no elevation. */
+.section-meta::before {
+	content: "//";
+	opacity: 0.45;
+	margin-right: 2px;
+}
+
+.section-headline {
+	font-family: var(--font-heading);
+	font-weight: var(--font-weight-display);
+	font-size: clamp(2rem, 3.5vw, 2.5rem);
+	letter-spacing: -0.02em;
+	line-height: var(--leading-tight);
+	color: var(--color-text);
+	text-wrap: balance;
+}
+
+.section-subheadline {
+	margin-top: var(--spacing-sm);
+	max-width: 62ch;
+	font-size: var(--font-size-lg);
+	line-height: var(--leading-normal);
+	color: var(--color-muted);
+}
+
+/* Cards: elevated with subtle specular edge and lift on hover */
 .hub-card {
 	position: relative;
-	background: var(--color-surface);
+	background: var(--gradient-card);
 	border: var(--line-hair) solid var(--color-border);
 	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow), inset 0 1px 0 0 var(--color-highlight);
 	transition:
 		border-color var(--transition-base),
 		background var(--transition-base),
-		transform var(--transition-base);
+		transform var(--transition-base),
+		box-shadow var(--transition-base);
 }
 
 .hub-card:hover {
-	border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-border));
-	background: color-mix(in srgb, var(--color-brand) 3%, var(--color-surface));
+	transform: translateY(-3px);
+	border-color: color-mix(in srgb, var(--color-brand) 65%, var(--color-border));
+	box-shadow:
+		var(--shadow-lg),
+		0 0 20px -4px color-mix(in srgb, var(--color-brand) 24%, transparent),
+		inset 0 1px 0 0 var(--color-highlight);
 }
 
-/* Registration marks appear at the sheet corners on hover. */
+/* Registration marks appear at the sheet corners on hover */
 .hub-card::before,
 .hub-card::after {
 	content: "";
@@ -170,22 +211,22 @@ li {
 }
 
 .hub-card::before {
-	top: 5px;
-	left: 5px;
+	top: 6px;
+	left: 6px;
 	border-top: var(--line-ink) solid var(--color-brand-strong);
 	border-left: var(--line-ink) solid var(--color-brand-strong);
 }
 
 .hub-card::after {
-	bottom: 5px;
-	right: 5px;
+	bottom: 6px;
+	right: 6px;
 	border-bottom: var(--line-ink) solid var(--color-brand-strong);
 	border-right: var(--line-ink) solid var(--color-brand-strong);
 }
 
 .hub-card:hover::before,
 .hub-card:hover::after {
-	opacity: 1;
+	opacity: 0.8;
 }
 
 /* Stretches a card title link over the whole card. */
@@ -223,55 +264,185 @@ li {
 	}
 }
 
-/* Bracket tags: [FREE] [TUTORIAL] -- annotation, not pill. */
+/* Badges: punchy, high-contrast, modern technical indicator tags */
 .badges {
 	display: flex;
 	flex-wrap: wrap;
+	align-items: center;
 	gap: var(--spacing-xs);
 }
 
 .badge {
-	display: inline-block;
-	padding: 1px var(--spacing-sm);
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 8px;
 	font-family: var(--font-mono);
 	font-size: var(--font-size-xs);
-	font-weight: 500;
-	letter-spacing: 0.06em;
+	font-weight: 600;
+	letter-spacing: 0.05em;
 	text-transform: uppercase;
 	color: var(--color-brand-strong);
-	background: color-mix(in srgb, var(--color-brand) 8%, transparent);
-	border: 1px solid color-mix(in srgb, var(--color-brand) 35%, transparent);
+	background: color-mix(in srgb, var(--color-brand) 10%, transparent);
+	border: 1px solid color-mix(in srgb, var(--color-brand) 30%, transparent);
 	border-radius: var(--radius-sm);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .badge::before {
-	content: "[";
-	color: inherit;
-	opacity: 0.55;
-}
-
-.badge::after {
-	content: "]";
-	color: inherit;
-	opacity: 0.55;
+	content: "";
+	display: inline-block;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: currentColor;
+	margin-right: 6px;
+	opacity: 0.85;
 }
 
 .badge-muted {
 	color: var(--color-muted);
-	background: color-mix(in srgb, var(--color-muted) 8%, transparent);
-	border-color: color-mix(in srgb, var(--color-muted) 30%, transparent);
+	background: color-mix(in srgb, var(--color-muted) 10%, transparent);
+	border-color: color-mix(in srgb, var(--color-muted) 28%, transparent);
 }
 
 .badge-free {
 	color: var(--color-success);
-	background: color-mix(in srgb, var(--color-success) 8%, transparent);
+	background: color-mix(in srgb, var(--color-success) 12%, transparent);
 	border-color: color-mix(in srgb, var(--color-success) 35%, transparent);
+}
+
+.badge-free::before {
+	box-shadow: 0 0 6px var(--color-success);
 }
 
 .badge-paid {
 	color: var(--color-warning);
-	background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+	background: color-mix(in srgb, var(--color-warning) 12%, transparent);
 	border-color: color-mix(in srgb, var(--color-warning) 35%, transparent);
+}
+
+.badge-paid::before {
+	box-shadow: 0 0 6px var(--color-warning);
+}
+
+/* Tactile, elevated buttons */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--spacing-sm);
+	padding: 0.625rem 1.25rem;
+	font-family: var(--font-mono);
+	font-size: var(--font-size-xs);
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	line-height: 1.2;
+	border-radius: var(--radius);
+	cursor: pointer;
+	position: relative;
+	transition:
+		background var(--transition-fast),
+		border-color var(--transition-fast),
+		color var(--transition-fast),
+		transform var(--transition-fast),
+		box-shadow var(--transition-fast);
+}
+
+.btn:active {
+	transform: translateY(1px);
+}
+
+.btn-primary {
+	color: var(--color-on-brand);
+	background: var(--gradient-brand-strong);
+	border: 1.5px solid transparent;
+	box-shadow:
+		0 2px 8px color-mix(in srgb, var(--color-brand-strong) 38%, transparent),
+		inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.btn-primary:hover {
+	background: var(--gradient-brand);
+	box-shadow:
+		0 4px 16px color-mix(in srgb, var(--color-brand-strong) 50%, transparent),
+		inset 0 1px 0 rgba(255, 255, 255, 0.35);
+	transform: translateY(-1px);
+}
+
+.btn-secondary {
+	color: var(--color-brand-strong);
+	background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	border: 1.5px solid color-mix(in srgb, var(--color-brand-strong) 35%, var(--color-border));
+	box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:hover {
+	border-color: var(--color-brand-strong);
+	background: color-mix(in srgb, var(--color-brand) 8%, var(--color-surface));
+	color: var(--color-brand-strong);
+	box-shadow: var(--shadow);
+	transform: translateY(-1px);
+}
+
+.btn-lg {
+	padding: 0.875rem 1.625rem;
+	font-size: var(--font-size-sm);
+}
+
+/* Filter chips */
+.filter-chip {
+	padding: 0.375rem 0.875rem;
+	font-family: var(--font-mono);
+	font-size: var(--font-size-xs);
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--color-muted);
+	background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	transition:
+		color var(--transition-fast),
+		border-color var(--transition-fast),
+		background var(--transition-fast),
+		transform var(--transition-fast),
+		box-shadow var(--transition-fast);
+}
+
+.filter-chip:hover {
+	color: var(--color-text);
+	border-color: var(--color-brand);
+	background: color-mix(in srgb, var(--color-brand) 8%, var(--color-surface));
+	transform: translateY(-1px);
+}
+
+.filter-chip[aria-pressed="true"] {
+	color: var(--color-on-brand);
+	background: var(--gradient-brand-strong);
+	border-color: transparent;
+	box-shadow: 0 2px 8px color-mix(in srgb, var(--color-brand-strong) 35%, transparent);
+}
+
+/* Modern header and footer chrome */
+.site-header {
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	border-bottom: 1px solid color-mix(in srgb, var(--color-brand-strong) 25%, var(--color-border));
+	box-shadow: 0 1px 8px rgba(10, 28, 56, 0.04);
+}
+
+.site-footer {
+	border-top: 3px solid var(--color-brand-strong);
+	box-shadow: 0 -8px 24px -8px color-mix(in srgb, var(--color-brand-strong) 25%, transparent);
+}
+
+/* Refined icon tiles */
+.icon-tile {
+	box-shadow: 0 2px 10px -2px color-mix(in srgb, var(--color-brand) 25%, transparent);
 }
 
 .section-link {

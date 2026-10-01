@@ -68,7 +68,7 @@ Eleven block types, mapped to `src/components/blocks/*.astro` in `src/components
 
 | Block | Purpose |
 | --- | --- |
-| `marketing_hero` | Headline, optional eyebrow (renders as the title-block SET token), two CTAs, image. With no image it shows the system-diagram panel; centered heroes get a compact diagram strip. |
+|`marketing_hero`|Headline, optional eyebrow (renders as the title-block SET token), two CTAs, image, and an optional `specs` repeater (icon select + label) for the architecture-highlights strip under the CTAs. With no image it shows the system-diagram panel; centered heroes get a compact diagram strip.|
 | `marketing_features`, `marketing_faq`, `marketing_pricing`, `marketing_testimonials` | Kept from the template. Testimonials and pricing are not seeded. |
 | `site_tutorials` | Cards from `tutorials`. Options: limit (0 = all), featured only, topic filter, section link. |
 | `site_videos` | Cards from `videos` with a click-to-load YouTube player (`VideoFacade.astro`). Optional large first video. |

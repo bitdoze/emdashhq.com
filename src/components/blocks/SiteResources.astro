@@ -1,5 +1,5 @@
 ---
-import { getEmDashCollection } from "emdash";
+import { getHubEntries } from "../../lib/hub-content";
 import { Image, type BlockComponentProps } from "emdash/ui";
 import type { PageContentBlock } from "../../../emdash-env";
 import { labelize } from "../../lib/format";
@@ -12,24 +12,9 @@ type ResourcesBlock = Extract<PageContentBlock, { _type: "site_resources" }>;
 type Props = BlockComponentProps<ResourcesBlock>;
 
 const { value } = Astro.props;
-const { anchor_id, headline, subheadline, featured_only, show_filters } = value;
-const kind = value.kind ?? "all";
-const price = value.price ?? "all";
-const limit = value.limit ?? 6;
+const { anchor_id, headline, subheadline, show_filters } = value;
 
-const { entries } = await getEmDashCollection("resources", {
-	status: "published",
-	orderBy: { published_at: "desc" },
-	limit: 100,
-});
-
-let resources = entries.filter(
-	(entry) =>
-		(kind === "all" || entry.data.kind === kind) &&
-		(price === "all" || entry.data.price_type === price) &&
-		(!featured_only || entry.data.featured),
-);
-if (limit > 0) resources = resources.slice(0, limit);
+const resources = await getHubEntries(Astro, "resources", value);
 
 const priceOptions = [...new Set(resources.map((entry) => entry.data.price_type))].map((type) => ({
 	value: type,

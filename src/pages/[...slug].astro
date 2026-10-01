@@ -1,19 +1,37 @@
 ---
-import { getEmDashEntry, getSeoMeta } from "emdash";
+import { getEmDashEntry, getSeoMeta, getContentSeo } from "emdash";
 import MarketingBlocks from "../components/MarketingBlocks.astro";
 import Base from "../layouts/Base.astro";
+import { getSiteChrome } from "../lib/site-data";
+import { preloadHubBlocks } from "../lib/hub-content";
+import { unavailableResponse } from "../lib/unavailable";
 
 // One route renders every entry in the pages collection. "/" is the page
 // with the slug "home".
 const requested = Astro.params.slug;
-if (requested === "home") return Astro.redirect("/", 301);
+if (requested === "home") return Astro.redirect(`/${Astro.url.search}`, 301);
+if (requested && !Astro.url.pathname.endsWith("/")) {
+	return Astro.redirect(`${Astro.url.pathname}/${Astro.url.search}`, 301);
+}
 
 const slug = requested ?? "home";
 const isHome = slug === "home";
 
-const { entry: page, cacheHint } = await getEmDashEntry("pages", slug);
-
-if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+let page: Awaited<ReturnType<typeof getEmDashEntry<"pages">>>["entry"];
+const started = performance.now();
+try {
+	const [result] = await Promise.all([getEmDashEntry("pages", slug), getSiteChrome(Astro)]);
+	if (result.error) throw result.error;
+	page = result.entry;
+	if (Astro.cache.enabled) Astro.cache.set(result.cacheHint);
+	await preloadHubBlocks(Astro, page?.data.content ?? []);
+} catch (error) {
+	console.error("Unable to render CMS page", { slug, error });
+	Astro.cache.set(false);
+	return unavailableResponse();
+}
+// The CMS replaces Server-Timing after rendering; keep this measurement separate.
+Astro.response.headers.set("X-Site-Data-Ms", (performance.now() - started).toFixed(1));
 
 if (!page && !isHome) return Astro.rewrite("/404");
 
@@ -26,7 +44,7 @@ const seo = page
 ---
 
 <Base
-	title={isHome ? undefined : seo?.title}
+	title={isHome ? (page ? getContentSeo(page)?.title || undefined : undefined) : seo?.title}
 	pageTitle={page?.data.title}
 	description={seo?.description}
 	image={seo?.ogImage}

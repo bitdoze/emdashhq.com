@@ -1,9 +1,9 @@
 ---
-import { getMenuWithCacheHint, sanitizeHref } from "emdash";
+import { getMenuWithCacheHint } from "emdash";
 import { Image, type BlockComponentProps } from "emdash/ui";
 import { Icon } from "astro-iconset/components";
 import type { PageContentBlock } from "../../../emdash-env";
-import { optionalLink } from "../../lib/links";
+import { optionalLink, isCurrentPath } from "../../lib/links";
 import { iconFor } from "../../lib/icons";
 
 type HeroBlock = Extract<PageContentBlock, { _type: "marketing_hero" }>;
@@ -26,17 +26,13 @@ const figLabel = image?.alt ? image.alt : "Reference";
  */
 const menuResult = await getMenuWithCacheHint("primary");
 if (Astro.cache?.enabled) Astro.cache.set(menuResult.cacheHint);
-const here = Astro.url.pathname.replace(/\/$/, "") || "/";
-const menuIndex = (menuResult.data?.items ?? []).findIndex((item) => {
-	const link = sanitizeHref(item.url);
-	return link === here || (link !== "/" && here.startsWith(`${link}/`));
-});
+const menuIndex = (menuResult.data?.items ?? []).findIndex((item) => isCurrentPath(item.url, Astro.url));
 const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "0")}` : "Cover";
 ---
 
 <section
 	id={anchor_id || undefined}
-	class:list={["hero-wrap", { "hero-centered": centered, "hero-with-image": !!image }]}
+	class:list={["hero-wrap", { "hero-centered": centered, "hero-with-image": !!image, "hero-cover": Astro.url.pathname === "/" }]}
 >
 	<div class="hero-glow-primary" aria-hidden="true"></div>
 	<div class="hero-glow-secondary" aria-hidden="true"></div>
@@ -169,8 +165,8 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 						</svg>
 					</div>
 					<div class="panel-footer">
-						<span class="panel-caption">Fig. 00: live telemetry & architecture</span>
-						<span class="panel-latency">Edge response: &lt; 20ms</span>
+						<span class="panel-caption">Fig. 00: CMS architecture</span>
+						<span class="panel-latency">Content served from the edge</span>
 					</div>
 				</figure>
 			)
@@ -264,7 +260,7 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		align-items: flex-start;
 		gap: var(--spacing-lg);
 		max-width: 580px;
-		animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+		/* Keep the heading and navigation actions visible immediately. */
 	}
 
 	/* Hero badge: modern developer pill */
@@ -380,7 +376,7 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 	.hero-image {
 		position: relative;
 		margin: 0;
-		animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+		/* Visible on the first paint. */
 	}
 
 	.hero-image :global(.hero-image-media) {
@@ -405,7 +401,7 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 			var(--shadow-xl),
 			0 0 32px -8px color-mix(in srgb, var(--color-brand) 20%, transparent),
 			inset 0 1px 0 0 var(--color-highlight);
-		animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+		/* Visible on the first paint. */
 	}
 
 	/* Console / Window chrome for panel */
@@ -613,19 +609,19 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 
 	/* The linework draws itself in; the resting state is complete. */
 	@media (prefers-reduced-motion: no-preference) {
-		.hero-schematic .stroke-draw,
-		.hero-panel .stroke-draw {
+		.hero-cover .hero-schematic .stroke-draw,
+		.hero-cover .hero-panel .stroke-draw {
 			stroke-dasharray: 340;
 			stroke-dashoffset: 340;
 			animation: sheet-draw 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 			animation-delay: var(--d, 0ms);
 		}
 
-		.hero-schematic .label,
-		.hero-panel .label,
-		.hero-panel .sublabel,
-		.hero-panel .dimlabel,
-		.hero-panel .status-indicator {
+		.hero-cover .hero-schematic .label,
+		.hero-cover .hero-panel .label,
+		.hero-cover .hero-panel .sublabel,
+		.hero-cover .hero-panel .dimlabel,
+		.hero-cover .hero-panel .status-indicator {
 			opacity: 0;
 			animation: sheet-ink 0.4s ease-out forwards;
 			animation-delay: var(--d, 0ms);
@@ -645,10 +641,8 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 	}
 
 	@media (prefers-reduced-motion: no-preference) {
-		.status-indicator {
-			animation:
-				sheet-ink 0.4s ease-out 1s forwards,
-				pulse-glow 2.5s ease-in-out 1.2s infinite;
+		.hero-cover .status-indicator {
+			animation: sheet-ink 0.4s ease-out 1s forwards;
 		}
 	}
 

@@ -1,5 +1,5 @@
 ---
-import { getEmDashCollection } from "emdash";
+import { getHubEntries } from "../../lib/hub-content";
 import type { BlockComponentProps } from "emdash/ui";
 import type { PageContentBlock } from "../../../emdash-env";
 import { linkAttrs } from "../../lib/links";
@@ -12,22 +12,17 @@ type VideosBlock = Extract<PageContentBlock, { _type: "site_videos" }>;
 type Props = BlockComponentProps<VideosBlock>;
 
 const { value } = Astro.props;
-const { anchor_id, headline, subheadline, featured_only } = value;
-const limit = value.limit ?? 3;
+const { anchor_id, headline, subheadline } = value;
 const spotlight = value.spotlight ?? true;
 
-const { entries } = await getEmDashCollection("videos", {
-	status: "published",
-	orderBy: { published_at: "desc" },
-	limit: 100,
-});
+const entries = await getHubEntries(Astro, "videos", value);
 
 const playable = entries.flatMap((entry) => {
 	const id = parseYouTubeId(entry.data.youtube_url);
-	return id && (!featured_only || entry.data.featured) ? [{ entry, id }] : [];
+	return id ? [{ entry, id }] : [];
 });
 
-const videos = limit > 0 ? playable.slice(0, limit) : playable;
+const videos = playable;
 const first = spotlight ? videos[0] : undefined;
 const grid = spotlight ? videos.slice(1) : videos;
 const firstArticle = first ? linkAttrs(first.entry.data.article_url) : undefined;

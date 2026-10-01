@@ -2,17 +2,19 @@
 name: EmDash HQ — Drawing Set
 description: Every page is a numbered sheet of engineering drawings for one working CMS; blue ink on paper, dark mode is a true blueprint.
 colors:
-  paper: "light-dark(#f6f8fb, #0d2340)"
-  ink: "light-dark(#0a1c38, #dbe7fb)"
-  ink-muted: "light-dark(#4b5f7f, #9fb0cc)"
-  rule: "light-dark(#c9d6ea, #2a4a7f)"
-  surface: "light-dark(#ffffff, #10294d)"
+  paper: "light-dark(#f6f8fb, #0a192f)"
+  ink: "light-dark(#0a1c38, #e2edfd)"
+  ink-muted: "light-dark(#475c7e, #8ea6cc)"
+  rule: "light-dark(#d3dfef, #1e3a66)"
+  surface: "light-dark(#ffffff, #0f274a)"
   signal-blue: "light-dark(#1d4ed8, #60a5fa)"
-  signal-blue-strong: "light-dark(#1e40af, #3b82f6)"
+  signal-blue-strong: "light-dark(#1e40af, #93c5fd)"
   signal-blue-soft: "light-dark(#3b82f6, #93c5fd)"
   cyan-accent: "light-dark(#0284c7, #22d3ee)"
   cyan-accent-soft: "light-dark(#38bdf8, #67e8f9)"
   on-brand: "#ffffff"
+  control: "#1e40af"
+  control-hover: "#1d4ed8"
   status-green: "light-dark(#15803d, #4ade80)"
   status-amber: "light-dark(#b45309, #fbbf24)"
 typography:
@@ -45,9 +47,9 @@ typography:
     lineHeight: 1.2
     letterSpacing: "0.07em"
 rounded:
-  sm: "4px"
-  md: "8px"
-  lg: "12px"
+  sm: "2px"
+  md: "2px"
+  lg: "4px"
 spacing:
   xs: "0.25rem"
   sm: "0.5rem"
@@ -60,13 +62,13 @@ spacing:
   5xl: "8rem"
 components:
   button-primary:
-    backgroundColor: "{colors.signal-blue-strong}"
+    backgroundColor: "{colors.control}"
     textColor: "{colors.on-brand}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
     padding: "0.625rem 1.25rem"
   button-primary-hover:
-    backgroundColor: "{colors.signal-blue}"
+    backgroundColor: "{colors.control-hover}"
     textColor: "{colors.on-brand}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
@@ -85,134 +87,44 @@ components:
     padding: "2px 8px"
 ---
 
-# Design System: EmDash HQ — Drawing Set
+# Design System: EmDash HQ, Drawing Set
 
 ## Overview
 
-**Creative North Star: "The Drawing Set"**
-
-The site is a set of engineering drawings, not a landing page. Each page is a numbered sheet documenting one working CMS: a paper ground with a faint drafting grid, blue ink line-work at 1–1.5 px, near-square corners, and no elevation anywhere. Light mode is a blue-ink sheet on paper; dark mode is a true blueprint (Prussian-blue ground, pale ink line-work). Blue is the brand family in both modes; depth comes from line weight and layered rules, never blur, glow, or shadow.
-
-It refuses the category-default arrangement: no centered hero, no icon-tile card grids, no gradient banners. Gradients resolve to solid ink. Metadata reads like instrument output in tabular mono; controls are mono-uppercase stamp and outline buttons; badges are bracket tags. The one authored motion is the hero schematic drawing itself on load (~1.2 s, once); reduced-motion renders it complete.
-
-**Key Characteristics:**
-- Drafting-sheet material: 28 px graph with a stronger 140 px major grid at ≤5.5% opacity; registration marks appear at card corners on hover.
-- Flat world: all shadow tokens are `none`; `--gradient-brand*` are solid-color gradients.
-- Two voices only: Archivo for display/body, IBM Plex Mono for annotations, metadata, labels, and buttons (mono confined to ≤ `sm` sizes and metadata).
-- Hover = response of the sheet: corner registration marks, paper-blue tint, drawn link underlines, 1 px button travel on press. No scroll-driven motion.
+The Drawing Set presents each page as a numbered sheet for one working CMS. Light mode uses blue ink on drafting paper; dark mode uses pale ink on a Prussian ground. The blueprint grid, rules, registration marks, and architecture diagram carry the visual character.
 
 ## Colors
 
-One blue ink family on paper — navy ink for text, signal blue for action, cyan for highlights — with functional green/amber reserved for status badges.
-
-### Primary
-- **Signal Blue Strong** (`light-dark(#1e40af, #3b82f6)`, `--color-brand-strong`): solid stamp buttons, active nav underlines, registration marks, selection ground, focus-adjacent emphasis. The ink that acts.
-- **Signal Blue** (`light-dark(#1d4ed8, #60a5fa)`, `--color-brand`): primary hover, authored-content links, badge tint at 8–35% mixes.
-- **Signal Blue Soft** (`light-dark(#3b82f6, #93c5fd)`): softer brand emphasis.
-
-### Secondary
-- **Cyan Accent** (`light-dark(#0284c7, #22d3ee)`, `--color-accent`): highlight and secondary accent; use sparingly, it reads as the bright mark on the sheet.
-- **Cyan Accent Soft** (`light-dark(#38bdf8, #67e8f9)`): accent tint.
-
-### Functional (status only)
-- **Status Green** (`light-dark(#15803d, #4ade80)`): `[FREE]`-class badges only.
-- **Status Amber** (`light-dark(#b45309, #fbbf24)`): `[PAID]`-class badges only.
-
-### Neutral
-- **Paper** (`light-dark(#f6f8fb, #0d2340)`): page ground; in dark mode it is the Prussian blueprint sheet.
-- **Ink** (`light-dark(#0a1c38, #dbe7fb)`): primary text and heavy rules (`border-top: 1.5px solid`).
-- **Ink Muted** (`light-dark(#4b5f7f, #9fb0cc)`): meta lines, secondary text, empty notes.
-- **Rule** (`light-dark(#c9d6ea, #2a4a7f)`): 1 px hairline card borders and dividers.
-- **Surface** (`light-dark(#ffffff, #10294d)`): card/sheet fills.
-- **On-Brand** (`#ffffff`): text on solid brand ink, both modes.
-
-### Named Rules
-**The Blue Family Rule.** Blue stays the brand in both modes: light mode is ink-on-paper, dark mode is pale ink on Prussian ground. No other hue joins except functional green/amber badges.
-
-**The Flat World Rule.** Every shadow token is `none` and every gradient resolves to a solid. Depth is line weight (1 px hair vs 1.5 px ink) and layered rules.
+Keep the existing blue and cyan family. Background, text, muted ink, rules, and surfaces use the paired light and dark tokens above. Filled controls use solid #1e40af with white labels, changing to #1d4ed8 on hover. These control colors remain distinct from the brighter dark-mode link ink.
 
 ## Typography
 
-**Display Font:** Archivo (system-ui fallback) — `--font-body` via the Astro font pipeline; `--font-heading` is the same family.
-**Body Font:** Archivo (same voice for headings and body).
-**Label/Mono Font:** IBM Plex Mono — annotations, metadata, labels, nav, buttons, badges, empty notes.
-
-**Character:** An engineering grotesque that documents; the mono voice annotates the drawing. Mono never speaks at display sizes — it is confined to ≤ `sm` sizes and metadata.
-
-### Hierarchy
-- **Display** (800, `--font-size-5xl` 3.5rem, 1.1, −0.015em): hero CMS headline. `text-wrap: balance`.
-- **Headline** (800, `--font-size-4xl` 2.5rem, 1.2): section headlines (`--font-weight-display`).
-- **Title** (700–800, `--font-size-2xl` 1.5rem, 1.2): card and spotlight titles.
-- **Body** (400, 1rem, 1.6): copy; subheadlines capped at 62ch. FAQ/long-form uses 1.7.
-- **Label** (500, mono, `--font-size-xs` 0.75rem, 0.05–0.08em, uppercase): sheet meta (`SET · SHEET 01 · REV …`), nav items with sheet numbers, buttons, badges, empty states.
-
-### Named Rules
-**The Annotation Rule.** IBM Plex Mono is annotation, never prose: ≤ `sm` sizes, metadata/labels/buttons only. Archivo carries headings and body.
+Archivo carries display headings and prose. IBM Plex Mono is for annotations, labels, metadata, and buttons, at small sizes. Keep section copy readable and left aligned.
 
 ## Layout
 
-The page is a sheet. A sticky ink title strip (border-bottom 1.5px solid ink, translucent paper ground) carries the wordmark and the mono nav; nav items carry zero-padded sheet numbers (`01`, `02`), the current sheet underlined. The body ground is the drafting grid: 28 px fine graph with a stronger line every fifth (140 px), ink at 3–5.5% opacity in light mode, pale ink at ≤5% in dark.
-
-Sections use `padding: clamp(4rem, 8vw, 6.5rem) 0` (≤768px: `--spacing-2xl` 3rem). Sheet columns are a flex grid, 3 across, gap `--spacing-lg` 1.5rem, breaking to 2 at 900px and 1 at 600px; a short last row starts at the left edge, never floats centered. The footer is the set's cover block on blueprint ground. Spacing rhythm: `--spacing-xs` 0.25rem → `--spacing-5xl` 8rem.
+Use the shared container and card grid. Sections, short final rows, lists, and section links start at the container's left edge. Only a hero explicitly marked centered uses centered alignment. Keep the 28px drawing grid and its 140px major rules faint.
 
 ## Elevation & Depth
 
-This system features **tactile, multi-layered dimensional depth**:
-- `--shadow-sm`: micro-shadow for subtle controls and buttons.
-- `--shadow`: medium elevation for cards (`hub-card`) with an inset top specular highlight (`--color-highlight`).
-- `--shadow-lg`: hover lift for cards, schematic panels, and interactive elements.
-- `--shadow-xl`: prominent elevation for featured spotlight, CTA banner, and modals.
-- `--shadow-glow`: soft brand-colored halo for active signals and hero atmosphere.
+All shadow tokens are `none`. Gradients resolve to solid ink or paper surfaces. Depth comes from 1px hairlines, 1.5px ink rules, and layered borders. Hover uses registration marks and tinted paper rather than moving surfaces.
 
 ## Shapes
 
-Modern developer tech hub geometry:
-- `--radius-sm`: 4px for badges, filter chips, and inner tags.
-- `--radius`: 8px for buttons, input controls, and list items.
-- `--radius-lg`: 12px for cards, spotlight panels, and schematic containers.
-- `--radius-full`: 9999px for pill accents.
-Focus remains a 2px dashed brand outline with a 3px offset for strong accessibility.
+Use 2px small and ordinary corners and 4px large corners. The circular video play affordance is retained.
 
 ## Components
 
-### Buttons
-Mono-uppercase tactile controls with dimensional elevation.
-- **Shape:** 8px radius (`--radius`).
-- **Primary:** solid brand gradient (`--gradient-brand-strong`), `--color-on-brand` text, subtle specular top inset and drop shadow. Hover shifts to `--gradient-brand` with lift.
-- **Secondary:** translucent surface with backdrop blur, brand-mixed hairline border, subtle shadow. Hover gains brand tint and lift.
-- **Active:** 1px travel (`translateY(1px)`).
+Primary buttons are solid ink with white mono labels. Secondary buttons use a ruled surface. Pressed filter chips use the same accessible control color. Cards use the current theme surface, a hairline rule, and corner registration marks on hover.
 
-### Badges
-- **Style:** punchy, modern technical indicator tags with a glowing dot prefix.
-- **State:** default (brand), `badge-muted`, `badge-free` (emerald), `badge-paid` (amber).
+Hero text and actions are readable immediately. Decorative schematic drawing is limited to the home cover; reduced-motion visitors see the completed drawing. Diagrams describe architecture without fabricated live measurements.
 
-### Cards / Containers
-- **Corner Style:** `--radius-lg` 12px.
-- **Background:** `--gradient-card`.
-- **Elevation:** `--shadow` plus inset top specular highlight (`--color-highlight`).
-- **Hover:** lifts `translateY(-3px)`, intensifies border color toward brand, gains elevated shadow and soft brand glow. Corner registration marks fade in smoothly.
-
-### Inputs / Filters
-- **Filter chips:** 4px radius, mono uppercase; pressed state is solid brand-strong gradient with on-brand text and glow shadow.
-
-### Signature Component: Hero Schematic
-An authored SVG of the EmDash stack (browser → Worker → D1/R2, admin branch) inside an elevated, glassmorphic panel with ambient hero glow. It features live pulsing telemetry indicators on Worker and D1 nodes, and staged line animations.
-
-### Title Blocks (section headers)
-Left-aligned technical title block with a sleek brand gradient bar accent, mono uppercase `// META` strip, and display headline.
-
-### Accordion FAQ
-Full-width interactive accordion rows spanning the entire container width. Each item features a monospace numeric badge (`01`, `02`), clean question typography, a smooth rotating chevron indicator, elevated card styling (`--gradient-card`), and comfortable reading line length (`75ch`).
+Mobile navigation is visible without JavaScript. Enhancement adds a toggle, Escape-to-close, and focus return. Video activation transfers focus to the attached player.
 
 ## Do's and Don'ts
 
-### Do:
-- **Do** maintain multi-layered depth with subtle offsets and soft blurs.
-- **Do** annotate in IBM Plex Mono at ≤ `sm` sizes; set metadata as instrument readouts.
-- **Do** respond to hover with decisive tactile lift (translateY) and subtle brand glow.
-- **Do** preserve WCAG AA contrast across both light and dark modes.
-
-### Don't:
-- **Don't** introduce random off-brand hues outside the blue/cyan family and status green/amber.
-- **Don't** use flat 0-offset muddy shadows.
-- **Don't** remove visible focus rings or reduce-motion support.
+- Do retain blue in both modes and use green and amber for functional states.
+- Do use visible dashed focus outlines and maintain readable control contrast.
+- Do render real content and label architecture diagrams accurately.
+- Don't add glow, elevated cards, lifting interactions, or decorative gradients.
+- Don't animate navigation-critical text or hide the only navigation when JavaScript is unavailable.

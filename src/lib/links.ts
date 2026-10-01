@@ -23,3 +23,15 @@ export function optionalLink(
 	if (!label || !url) return undefined;
 	return { label, ...linkAttrs(url) };
 }
+
+/** Compare canonical paths, including absolute links to this same origin. */
+export function isCurrentPath(raw: string, current: URL): boolean {
+	const safe = sanitizeHref(raw);
+	if (!safe || safe.startsWith("#")) return false;
+	if (!URL.canParse(safe, current)) return false;
+	const link = new URL(safe, current);
+	if (link.origin !== current.origin) return false;
+	const path = link.pathname.replace(/\/+$/, "") || "/";
+	const here = current.pathname.replace(/\/+$/, "") || "/";
+	return here === path || (path !== "/" && here.startsWith(`${path}/`));
+}

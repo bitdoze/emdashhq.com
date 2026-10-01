@@ -57,7 +57,7 @@ Seeded pages: `home`, `tutorials`, `videos`, `themes`, `plugins`, `services`, `c
 ## Schema
 
 - `pages`: `title`, `content` (a `blocks` field).
-- Content hub collections (grouped in the admin): `tutorials`, `videos`, `resources` (themes and plugins), `services`. Each has a `featured` boolean. Blocks query them with `getEmDashCollection` and filter in JavaScript.
+- Content hub collections (grouped in the admin): `tutorials`, `videos`, `resources` (themes and plugins), `services`. Each has a `featured` boolean. Blocks use `src/lib/hub-content.ts` for CMS filters, ordering, cache hints, and cursor traversal. The page preloads these reads before streaming so query errors return a noncached 503.
 - No taxonomies.
 - Menus: `primary` (header links), `header_cta` (only the first item is used, as the header button), `footer_learn`, `footer_resources`, `footer_company`. Footer column headings are the menu labels.
 - Site settings: `title`, `tagline`, `logo`, `social` (YouTube, GitHub, X). Social links render in the footer.

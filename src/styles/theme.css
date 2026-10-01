@@ -20,7 +20,8 @@ html:not(.light):not(.dark) {
 	color-scheme: light dark;
 }
 
-:root {
+/* Beat generic admin :root tokens without depending on stylesheet order. */
+html:root {
 	/* Paper and ink */
 	--color-bg: light-dark(#f6f8fb, #0a192f);
 	--color-text: light-dark(#0a1c38, #e2edfd);
@@ -30,7 +31,7 @@ html:not(.light):not(.dark) {
 
 	/* Ink (signal blue brand) */
 	--color-brand: light-dark(#1d4ed8, #60a5fa);
-	--color-brand-strong: light-dark(#1e40af, #3b82f6);
+	--color-brand-strong: light-dark(#1e40af, #93c5fd);
 	--color-brand-soft: light-dark(#3b82f6, #93c5fd);
 	--color-accent: light-dark(#0284c7, #22d3ee);
 	--color-accent-soft: light-dark(#38bdf8, #67e8f9);
@@ -39,18 +40,15 @@ html:not(.light):not(.dark) {
 	--color-success: light-dark(#15803d, #4ade80);
 	--color-warning: light-dark(#b45309, #fbbf24);
 
-	/* Modern tech hub gradients */
-	--gradient-brand: linear-gradient(135deg, var(--color-brand-strong), var(--color-accent));
-	--gradient-brand-strong: linear-gradient(135deg, var(--color-brand-strong) 0%, color-mix(in srgb, var(--color-brand-strong) 70%, var(--color-accent)) 100%);
-	--gradient-brand-soft: linear-gradient(135deg, color-mix(in srgb, var(--color-brand) 18%, transparent), color-mix(in srgb, var(--color-accent) 12%, transparent));
+	/* Solid ink. Filled controls keep white labels readable in both modes. */
+	--color-control: #1e40af;
+	--color-control-hover: #1d4ed8;
+	--gradient-brand: var(--color-control-hover);
+	--gradient-brand-strong: var(--color-control);
+	--gradient-brand-soft: color-mix(in srgb, var(--color-brand) 12%, var(--color-surface));
 	--gradient-headline: none;
-	--gradient-card: light-dark(
-		linear-gradient(180deg, #ffffff 0%, #f8fbff 100%),
-		linear-gradient(180deg, #102a4e 0%, #0c203b 100%)
-	);
-
-	/* Specular & depth highlights */
-	--color-highlight: light-dark(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.08));
+	--gradient-card: var(--color-surface);
+	--color-highlight: transparent;
 
 	/* One voice for headings and body (Archivo via --font-body).
 	   --font-mono comes from the font pipeline (IBM Plex Mono). */
@@ -61,29 +59,17 @@ html:not(.light):not(.dark) {
 	/* Line weights and refined geometry */
 	--line-hair: 1px;
 	--line-ink: 1.5px;
-	--radius-sm: 4px;
-	--radius: 8px;
-	--radius-lg: 12px;
+	--radius-sm: 2px;
+	--radius: 2px;
+	--radius-lg: 4px;
 	--radius-full: 9999px;
 
-	/* Dimensional multi-layered shadows */
-	--shadow-sm: light-dark(
-		0 1px 3px rgba(10, 28, 56, 0.05),
-		0 1px 3px rgba(0, 0, 0, 0.35)
-	);
-	--shadow: light-dark(
-		0 4px 12px -2px rgba(10, 28, 56, 0.06), 0 2px 6px -1px rgba(10, 28, 56, 0.03),
-		0 4px 16px -2px rgba(0, 0, 0, 0.45), 0 2px 6px -1px rgba(0, 0, 0, 0.25)
-	);
-	--shadow-lg: light-dark(
-		0 12px 28px -4px rgba(10, 28, 56, 0.09), 0 4px 10px -2px rgba(10, 28, 56, 0.04),
-		0 14px 32px -4px rgba(0, 0, 0, 0.6), 0 4px 12px -2px rgba(0, 0, 0, 0.35)
-	);
-	--shadow-xl: light-dark(
-		0 20px 42px -6px rgba(10, 28, 56, 0.12), 0 8px 16px -3px rgba(10, 28, 56, 0.05),
-		0 22px 46px -6px rgba(0, 0, 0, 0.7), 0 8px 20px -3px rgba(0, 0, 0, 0.45)
-	);
-	--shadow-glow: 0 0 24px -4px color-mix(in srgb, var(--color-brand) 30%, transparent);
+	/* Depth is supplied by rules and registration marks. */
+	--shadow-sm: none;
+	--shadow: none;
+	--shadow-lg: none;
+	--shadow-xl: none;
+	--shadow-glow: none;
 }
 
 /* Type rhythm */
@@ -175,13 +161,13 @@ li {
 	color: var(--color-muted);
 }
 
-/* Cards: elevated with subtle specular edge and lift on hover */
+/* Cards: ruled panels with registration marks on hover */
 .hub-card {
 	position: relative;
 	background: var(--gradient-card);
 	border: var(--line-hair) solid var(--color-border);
 	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow), inset 0 1px 0 0 var(--color-highlight);
+	box-shadow: none;
 	transition:
 		border-color var(--transition-base),
 		background var(--transition-base),
@@ -190,12 +176,9 @@ li {
 }
 
 .hub-card:hover {
-	transform: translateY(-3px);
+	transform: none;
 	border-color: color-mix(in srgb, var(--color-brand) 65%, var(--color-border));
-	box-shadow:
-		var(--shadow-lg),
-		0 0 20px -4px color-mix(in srgb, var(--color-brand) 24%, transparent),
-		inset 0 1px 0 0 var(--color-highlight);
+	box-shadow: none;
 }
 
 /* Registration marks appear at the sheet corners on hover */
@@ -285,7 +268,7 @@ li {
 	background: color-mix(in srgb, var(--color-brand) 10%, transparent);
 	border: 1px solid color-mix(in srgb, var(--color-brand) 30%, transparent);
 	border-radius: var(--radius-sm);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+	box-shadow: none;
 }
 
 .badge::before {
@@ -312,7 +295,7 @@ li {
 }
 
 .badge-free::before {
-	box-shadow: 0 0 6px var(--color-success);
+	box-shadow: none;
 }
 
 .badge-paid {
@@ -322,7 +305,7 @@ li {
 }
 
 .badge-paid::before {
-	box-shadow: 0 0 6px var(--color-warning);
+	box-shadow: none;
 }
 
 /* Tactile, elevated buttons */
@@ -350,24 +333,20 @@ li {
 }
 
 .btn:active {
-	transform: translateY(1px);
+	transform: none;
 }
 
 .btn-primary {
 	color: var(--color-on-brand);
 	background: var(--gradient-brand-strong);
 	border: 1.5px solid transparent;
-	box-shadow:
-		0 2px 8px color-mix(in srgb, var(--color-brand-strong) 38%, transparent),
-		inset 0 1px 0 rgba(255, 255, 255, 0.28);
+	box-shadow: none;
 }
 
 .btn-primary:hover {
 	background: var(--gradient-brand);
-	box-shadow:
-		0 4px 16px color-mix(in srgb, var(--color-brand-strong) 50%, transparent),
-		inset 0 1px 0 rgba(255, 255, 255, 0.35);
-	transform: translateY(-1px);
+	box-shadow: none;
+	transform: none;
 }
 
 .btn-secondary {
@@ -376,15 +355,15 @@ li {
 	backdrop-filter: blur(8px);
 	-webkit-backdrop-filter: blur(8px);
 	border: 1.5px solid color-mix(in srgb, var(--color-brand-strong) 35%, var(--color-border));
-	box-shadow: var(--shadow-sm);
+	box-shadow: none;
 }
 
 .btn-secondary:hover {
 	border-color: var(--color-brand-strong);
 	background: color-mix(in srgb, var(--color-brand) 8%, var(--color-surface));
 	color: var(--color-brand-strong);
-	box-shadow: var(--shadow);
-	transform: translateY(-1px);
+	box-shadow: none;
+	transform: none;
 }
 
 .btn-lg {
@@ -417,14 +396,14 @@ li {
 	color: var(--color-text);
 	border-color: var(--color-brand);
 	background: color-mix(in srgb, var(--color-brand) 8%, var(--color-surface));
-	transform: translateY(-1px);
+	transform: none;
 }
 
 .filter-chip[aria-pressed="true"] {
 	color: var(--color-on-brand);
 	background: var(--gradient-brand-strong);
 	border-color: transparent;
-	box-shadow: 0 2px 8px color-mix(in srgb, var(--color-brand-strong) 35%, transparent);
+	box-shadow: none;
 }
 
 /* Modern header and footer chrome */
@@ -432,17 +411,17 @@ li {
 	backdrop-filter: blur(16px);
 	-webkit-backdrop-filter: blur(16px);
 	border-bottom: 1px solid color-mix(in srgb, var(--color-brand-strong) 25%, var(--color-border));
-	box-shadow: 0 1px 8px rgba(10, 28, 56, 0.04);
+	box-shadow: none;
 }
 
 .site-footer {
 	border-top: 3px solid var(--color-brand-strong);
-	box-shadow: 0 -8px 24px -8px color-mix(in srgb, var(--color-brand-strong) 25%, transparent);
+	box-shadow: none;
 }
 
 /* Refined icon tiles */
 .icon-tile {
-	box-shadow: 0 2px 10px -2px color-mix(in srgb, var(--color-brand) 25%, transparent);
+	box-shadow: none;
 }
 
 .section-link {
@@ -464,7 +443,7 @@ li {
 
 /* Mirrors the light values above for browsers without light-dark(). */
 @supports not (color: light-dark(#000, #fff)) {
-	:root {
+	html:root {
 		--color-bg: #f6f8fb;
 		--color-text: #0a1c38;
 		--color-muted: #4b5f7f;
@@ -478,4 +457,76 @@ li {
 		--color-success: #15803d;
 		--color-warning: #b45309;
 	}
+}
+
+/* Component styles are layered below these shared theme rules. */
+.btn.btn-primary,
+.skip-link {
+	background: var(--color-control) !important;
+	border-color: var(--color-control) !important;
+}
+.btn.btn-primary:hover {
+	background: var(--color-control-hover) !important;
+	border-color: var(--color-control-hover) !important;
+}
+.video-play { background: var(--color-control) !important; }
+.video-facade:hover .video-play,
+.video-facade:focus-visible .video-play { background: var(--color-control-hover) !important; }
+.hub-card,
+.tutorial-row,
+.hero-badge,
+.hero-panel,
+.hero-image,
+.badge-dot,
+.panel-led,
+.site-header,
+.site-footer,
+.icon-tile {
+	box-shadow: none !important;
+}
+.hub-card:hover,
+.tutorial-row:hover,
+.btn:hover,
+.btn:active,
+.filter-chip:hover {
+	transform: none !important;
+	box-shadow: none !important;
+}
+.filter-chip[aria-pressed="true"] {
+	background: var(--color-control) !important;
+	border-color: var(--color-control) !important;
+	color: var(--color-on-brand) !important;
+}
+.hero-glow-primary,
+.hero-glow-secondary {
+	display: none !important;
+}
+.hero-panel {
+	background: var(--color-surface) !important;
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+}
+.site-header,
+.btn-secondary {
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+}
+.site-header { background: var(--color-bg) !important; }
+.spotlight,
+.cta-gradient {
+	background: #0f274a !important;
+	box-shadow: none !important;
+}
+.cta-banner,
+.btn-on-gradient {
+	box-shadow: none !important;
+}
+.btn-on-gradient,
+.btn-on-gradient:hover {
+	color: #1e40af !important;
+}
+/* Navigation remains available unless its toggle was successfully attached. */
+@media (max-width: 900px) {
+	.site-header:not(.nav-enhanced) .nav-panel { display: flex !important; }
+	.site-header:not(.nav-enhanced) .nav-toggle { display: none !important; }
 }

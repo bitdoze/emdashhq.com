@@ -24,7 +24,7 @@ export default defineConfig({
 		"/[...slug]": { maxAge: 3600, swr: 86400 },
 	},
 	build: {
-		inlineStylesheets: "always",
+		inlineStylesheets: "auto",
 	},
 	image: {
 		layout: "constrained",

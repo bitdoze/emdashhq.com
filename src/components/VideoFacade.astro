@@ -48,7 +48,7 @@ const { videoId, title, watchUrl, thumbnail, priority = false } = Astro.props;
 	// asks to play. Without JavaScript the link opens the video on YouTube.
 	document.addEventListener("click", (event) => {
 		const facade = (event.target as HTMLElement).closest<HTMLAnchorElement>("a.video-facade");
-		if (!facade || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+		if (!facade || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
 		const id = facade.dataset.videoId;
 		if (!id) return;
 		event.preventDefault();
@@ -58,7 +58,9 @@ const { videoId, title, watchUrl, thumbnail, priority = false } = Astro.props;
 		frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
 		frame.allowFullscreen = true;
 		frame.className = "video-frame";
+		const transferFocus = document.activeElement === facade;
 		facade.replaceWith(frame);
+		if (transferFocus) frame.focus({ preventScroll: true });
 	});
 </script>
 

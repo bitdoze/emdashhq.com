@@ -854,6 +854,7 @@
 	"collections": [
 		{
 			"slug": "pages",
+			"urlPattern": "/{slug}",
 			"label": "Pages",
 			"labelSingular": "Page",
 			"description": "Every page on the site, built from blocks. The slug becomes the URL.",

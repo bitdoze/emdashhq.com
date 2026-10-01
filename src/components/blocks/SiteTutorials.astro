@@ -1,5 +1,5 @@
 ---
-import { getEmDashCollection } from "emdash";
+import { getHubEntries } from "../../lib/hub-content";
 import { Icon } from "astro-iconset/components";
 import type { BlockComponentProps } from "emdash/ui";
 import type { PageContentBlock } from "../../../emdash-env";
@@ -13,17 +13,9 @@ type TutorialsBlock = Extract<PageContentBlock, { _type: "site_tutorials" }>;
 type Props = BlockComponentProps<TutorialsBlock>;
 
 const { value } = Astro.props;
-const { anchor_id, headline, subheadline, featured_only, show_filters } = value;
-const limit = value.limit ?? 6;
+const { anchor_id, headline, subheadline, show_filters } = value;
 
-const { entries } = await getEmDashCollection("tutorials", {
-	status: "published",
-	orderBy: { published_at: "desc" },
-	limit: 100,
-});
-
-let tutorials = featured_only ? entries.filter((entry) => entry.data.featured) : entries;
-if (limit > 0) tutorials = tutorials.slice(0, limit);
+const tutorials = await getHubEntries(Astro, "tutorials", value);
 
 const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boolean))].map((topic) => ({
 	value: topic as string,

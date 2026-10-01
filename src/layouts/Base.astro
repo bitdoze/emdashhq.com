@@ -1,10 +1,10 @@
 ---
-import { getMenuWithCacheHint, getSiteSettingsWithCacheHint } from "emdash";
+import { getSiteChrome } from "../lib/site-data";
 import { EmDashBodyEnd, EmDashBodyStart, EmDashHead } from "emdash/ui";
 import { createPublicPageContext } from "emdash/page";
 import { Font } from "astro:assets";
 import { Icon } from "astro-iconset/components";
-import { linkAttrs } from "../lib/links";
+import { linkAttrs, isCurrentPath } from "../lib/links";
 import "../styles/tokens.css";
 import "../styles/theme.css";
 
@@ -26,27 +26,7 @@ const [
 	footerLearnResult,
 	footerResourcesResult,
 	footerCompanyResult,
-] = await Promise.all([
-	getSiteSettingsWithCacheHint(),
-	getMenuWithCacheHint("primary"),
-	getMenuWithCacheHint("header_cta"),
-	getMenuWithCacheHint("footer_learn"),
-	getMenuWithCacheHint("footer_resources"),
-	getMenuWithCacheHint("footer_company"),
-]);
-
-if (Astro.cache?.enabled) {
-	for (const result of [
-		settingsResult,
-		menuResult,
-		headerCtaResult,
-		footerLearnResult,
-		footerResourcesResult,
-		footerCompanyResult,
-	]) {
-		Astro.cache.set(result.cacheHint);
-	}
-}
+] = await getSiteChrome(Astro);
 
 const settings = settingsResult.data;
 const siteTitle = settings?.title || "EmDash HQ";
@@ -75,8 +55,7 @@ const menuLink = (item: { url: string; target?: string | null }) => {
 
 const headerCtaLink = headerCta ? menuLink(headerCta) : undefined;
 
-const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
-const isCurrent = (url: string) => url === currentPath || (url !== "/" && currentPath.startsWith(`${url}/`));
+const isCurrent = (url: string) => isCurrentPath(url, Astro.url);
 
 const pageCtx = createPublicPageContext({
 	Astro,
@@ -108,9 +87,8 @@ const isLoggedIn = !!Astro.locals.user;
 			// Apply an explicit theme choice immediately to prevent flash.
 			// With no cookie, color-scheme: light dark follows the OS.
 			(function () {
-				var c = document.cookie;
-				var i = c.indexOf("theme=");
-				var theme = i >= 0 ? c.slice(i + 6).split(";")[0] : null;
+				var match = document.cookie.match(/(?:^|;\s*)theme=(light|dark)(?:;|$)/);
+				var theme = match ? match[1] : null;
 				if (theme === "dark" || theme === "light") {
 					document.documentElement.classList.add(theme);
 					document.documentElement.dataset.mode = theme;
@@ -283,16 +261,25 @@ const isLoggedIn = !!Astro.locals.user;
 			// Mobile menu
 			const navToggle = document.querySelector<HTMLButtonElement>(".nav-toggle");
 			const siteHeader = document.querySelector<HTMLElement>(".site-header");
-			navToggle?.addEventListener("click", () => {
-				const open = navToggle.getAttribute("aria-expanded") !== "true";
-				navToggle.setAttribute("aria-expanded", String(open));
-				siteHeader?.classList.toggle("nav-open", open);
-			});
+			if (navToggle && siteHeader) {
+				const setOpen = (open: boolean) => {
+					navToggle.setAttribute("aria-expanded", String(open));
+					siteHeader.classList.toggle("nav-open", open);
+				};
+				navToggle.addEventListener("click", () => setOpen(navToggle.getAttribute("aria-expanded") !== "true"));
+				siteHeader.addEventListener("keydown", (event) => {
+					if (event.key === "Escape" && navToggle.getAttribute("aria-expanded") === "true") {
+						setOpen(false);
+						navToggle.focus();
+					}
+				});
+				siteHeader.classList.add("nav-enhanced");
+			}
 		</script>
 
 		<script>
 			// Theme switcher
-			const THEME_REGEX = /theme=([^;]+)/;
+			const THEME_REGEX = /(?:^|;\s*)theme=(light|dark)(?:;|$)/;
 			const themeBtns =
 				document.querySelectorAll<HTMLButtonElement>(".theme-btn");
 			const root = document.documentElement;

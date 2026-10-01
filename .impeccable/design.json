@@ -1,44 +1,174 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-30",
-  "title": "Design System: EmDash HQ — Drawing Set",
+  "generatedAt": "2026-10-01T12:49:00Z",
+  "title": "Design System: EmDash HQ, Drawing Set",
   "extensions": {
     "colorMeta": {
-      "signal-blue-strong": { "role": "primary", "displayName": "Signal Blue Strong", "canonical": "light-dark(#1e40af, #3b82f6)", "tonalRamp": ["#1e40af", "#1d4ed8", "#3b82f6", "#60a5fa"] },
-      "signal-blue": { "role": "primary", "displayName": "Signal Blue", "canonical": "light-dark(#1d4ed8, #60a5fa)", "tonalRamp": ["#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd"] },
-      "cyan-accent": { "role": "secondary", "displayName": "Cyan Accent", "canonical": "light-dark(#0284c7, #22d3ee)", "tonalRamp": ["#0284c7", "#0ea5e9", "#38bdf8", "#22d3ee", "#67e8f9"] },
-      "paper": { "role": "neutral", "displayName": "Paper / Blueprint Ground", "canonical": "light-dark(#f6f8fb, #0d2340)", "tonalRamp": ["#f6f8fb", "#dbe7fb", "#2a4a7f", "#10294d", "#0d2340"] },
-      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "light-dark(#0a1c38, #dbe7fb)", "tonalRamp": ["#0a1c38", "#4b5f7f", "#9fb0cc", "#dbe7fb"] },
-      "ink-muted": { "role": "neutral", "displayName": "Ink Muted", "canonical": "light-dark(#4b5f7f, #9fb0cc)" },
-      "rule": { "role": "neutral", "displayName": "Rule (hairline)", "canonical": "light-dark(#c9d6ea, #2a4a7f)" },
-      "surface": { "role": "neutral", "displayName": "Sheet Surface", "canonical": "light-dark(#ffffff, #10294d)" },
-      "status-green": { "role": "functional", "displayName": "Status Green", "canonical": "light-dark(#15803d, #4ade80)", "purpose": "[FREE]-class badges only" },
-      "status-amber": { "role": "functional", "displayName": "Status Amber", "canonical": "light-dark(#b45309, #fbbf24)", "purpose": "[PAID]-class badges only" }
+      "signal-blue-strong": {
+        "role": "primary",
+        "displayName": "Signal Blue Strong",
+        "canonical": "light-dark(#1e40af, #93c5fd)",
+        "tonalRamp": [
+          "#1e40af",
+          "#1d4ed8",
+          "#3b82f6",
+          "#60a5fa"
+        ]
+      },
+      "signal-blue": {
+        "role": "primary",
+        "displayName": "Signal Blue",
+        "canonical": "light-dark(#1d4ed8, #60a5fa)",
+        "tonalRamp": [
+          "#1d4ed8",
+          "#3b82f6",
+          "#60a5fa",
+          "#93c5fd"
+        ]
+      },
+      "cyan-accent": {
+        "role": "secondary",
+        "displayName": "Cyan Accent",
+        "canonical": "light-dark(#0284c7, #22d3ee)",
+        "tonalRamp": [
+          "#0284c7",
+          "#0ea5e9",
+          "#38bdf8",
+          "#22d3ee",
+          "#67e8f9"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper / Blueprint Ground",
+        "canonical": "light-dark(#f6f8fb, #0a192f)"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "light-dark(#0a1c38, #e2edfd)"
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ink Muted",
+        "canonical": "light-dark(#475c7e, #8ea6cc)"
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule (hairline)",
+        "canonical": "light-dark(#d3dfef, #1e3a66)"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Sheet Surface",
+        "canonical": "light-dark(#ffffff, #0f274a)"
+      },
+      "status-green": {
+        "role": "functional",
+        "displayName": "Status Green",
+        "canonical": "light-dark(#15803d, #4ade80)",
+        "purpose": "[FREE]-class badges only"
+      },
+      "status-amber": {
+        "role": "functional",
+        "displayName": "Status Amber",
+        "canonical": "light-dark(#b45309, #fbbf24)",
+        "purpose": "[PAID]-class badges only"
+      },
+      "control": {
+        "role": "primary",
+        "displayName": "Filled Control Ink",
+        "canonical": "#1e40af"
+      },
+      "control-hover": {
+        "role": "primary",
+        "displayName": "Filled Control Hover",
+        "canonical": "#1d4ed8"
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Hero CMS headline; Archivo 800, balanced." },
-      "headline": { "displayName": "Headline", "purpose": "Section title-block headlines; Archivo 800." },
-      "title": { "displayName": "Title", "purpose": "Card and spotlight titles." },
-      "body": { "displayName": "Body", "purpose": "Prose; subheadlines capped 62ch." },
-      "label": { "displayName": "Annotation", "purpose": "IBM Plex Mono: meta strips, nav sheet numbers, buttons, badges, empty notes. Never display size." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero CMS headline; Archivo 800, balanced."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section title-block headlines; Archivo 800."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card and spotlight titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Prose; subheadlines capped 62ch."
+      },
+      "label": {
+        "displayName": "Annotation",
+        "purpose": "IBM Plex Mono: meta strips, nav sheet numbers, buttons, badges, empty notes. Never display size."
+      }
     },
     "shadows": [],
     "motion": [
-      { "name": "transition-fast", "value": "150ms ease", "purpose": "Hover/press state transitions on buttons, chips, cards." },
-      { "name": "transition-base", "value": "200ms ease", "purpose": "Card border/background/registration-mark fades." },
-      { "name": "transition-slow", "value": "300ms ease", "purpose": "Larger surface transitions." },
-      { "name": "schematic-draw", "value": "stroke-draw ~1.2s total, staged delays 0-760ms, once on load", "purpose": "The hero SVG draws itself; prefers-reduced-motion renders it complete. The only authored motion; no scroll-driven motion." },
-      { "name": "press-travel", "value": "translateY(1px) on :active", "purpose": "Decisive press state, no shadow theatre." }
+      {
+        "name": "transition-fast",
+        "value": "150ms ease",
+        "purpose": "Hover/press state transitions on buttons, chips, cards."
+      },
+      {
+        "name": "transition-base",
+        "value": "200ms ease",
+        "purpose": "Card border/background/registration-mark fades."
+      },
+      {
+        "name": "transition-slow",
+        "value": "300ms ease",
+        "purpose": "Larger surface transitions."
+      },
+      {
+        "name": "schematic-draw",
+        "value": "stroke-draw ~1.2s total, staged delays 0-760ms, once on load",
+        "purpose": "The hero SVG draws itself; prefers-reduced-motion renders it complete. The only authored motion; no scroll-driven motion."
+      },
+      {
+        "name": "press-travel",
+        "value": "translateY(1px) on :active",
+        "purpose": "Decisive press state, no shadow theatre."
+      }
     ],
     "breakpoints": [
-      { "name": "sm", "value": "600px", "purpose": "Card grid drops to 1 column." },
-      { "name": "md", "value": "768px", "purpose": "Section padding tightens to --spacing-2xl." },
-      { "name": "lg", "value": "900px", "purpose": "Card grid drops to 2 columns." }
+      {
+        "name": "sm",
+        "value": "600px",
+        "purpose": "Card grid drops to 1 column."
+      },
+      {
+        "name": "md",
+        "value": "768px",
+        "purpose": "Section padding tightens to --spacing-2xl."
+      },
+      {
+        "name": "lg",
+        "value": "900px",
+        "purpose": "Card grid drops to 2 columns."
+      }
     ],
     "texture": [
-      { "name": "drafting-grid", "value": "body background: 28px fine graph + 140px major grid, light-dark(rgba(30,64,175,0.055/0.03), rgba(219,231,251,0.05/0.028))", "purpose": "The sheet IS the measuring surface; keep lines at ~3-5.5% opacity." },
-      { "name": "registration-marks", "value": "10px L-shaped 1.5px brand-strong corner marks, opacity 0 -> 1 on hover (top-left ::before, bottom-right ::after)", "purpose": "Cards become measured sheets on hover." },
-      { "name": "line-weights", "value": "--line-hair: 1px; --line-ink: 1.5px", "purpose": "The only depth vocabulary." }
+      {
+        "name": "drafting-grid",
+        "value": "body background: 28px fine graph + 140px major grid, light-dark(rgba(30,64,175,0.055/0.03), rgba(219,231,251,0.05/0.028))",
+        "purpose": "The sheet IS the measuring surface; keep lines at ~3-5.5% opacity."
+      },
+      {
+        "name": "registration-marks",
+        "value": "10px L-shaped 1.5px brand-strong corner marks, opacity 0 -> 1 on hover (top-left ::before, bottom-right ::after)",
+        "purpose": "Cards become measured sheets on hover."
+      },
+      {
+        "name": "line-weights",
+        "value": "--line-hair: 1px; --line-ink: 1.5px",
+        "purpose": "The only depth vocabulary."
+      }
     ]
   },
   "components": [
@@ -48,7 +178,7 @@
       "refersTo": "button-primary",
       "description": "Solid-ink mono uppercase stamp; 1px travel on press.",
       "html": "<a class=\"btn btn-primary\" href=\"/contact\">Work with me</a>",
-      "css": ".btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.125rem; font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; line-height: 1.2; border-radius: 2px; border: 1.5px solid var(--color-brand-strong); cursor: pointer; transition: background 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease; } .btn:active { transform: translateY(1px); } .btn-primary { color: #fff; background: var(--color-brand-strong); } .btn-primary:hover { background: var(--color-brand); border-color: var(--color-brand); }"
+      "css": ".btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.125rem; font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; line-height: 1.2; border-radius: 2px; border: 1.5px solid var(--color-control); cursor: pointer; transition: background 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease; } .btn:active { transform: translateY(1px); } .btn-primary { color: #fff; background: var(--color-control); } .btn-primary:hover { background: var(--color-control-hover); border-color: var(--color-control-hover); }"
     },
     {
       "name": "Outline Button (secondary)",
@@ -87,7 +217,7 @@
       "kind": "custom",
       "refersTo": "",
       "description": "Drawing title block: mono meta strip over Archivo headline, closed by a heavy ink rule.",
-      "html": "<div class=\"section-header\"><p class=\"section-meta\">SET · SHEET 01 · REV 2026-09</p><h2 class=\"section-headline\">Headline</h2></div>",
+      "html": "<div class=\"section-header\"><p class=\"section-meta\">SET \u00b7 SHEET 01 \u00b7 REV 2026-09</p><h2 class=\"section-headline\">Headline</h2></div>",
       "css": ".section-header { max-width: 44rem; text-align: left; border-top: 1.5px solid var(--color-text); padding-top: 0.5rem; } .section-meta { font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); } .section-headline { font-weight: 800; letter-spacing: -0.015em; text-wrap: balance; }"
     },
     {
@@ -109,23 +239,35 @@
   ],
   "narrative": {
     "northStar": "The Drawing Set",
-    "overview": "The site is a set of engineering drawings, not a landing page. Each page is a numbered sheet documenting one working CMS: a paper ground with a faint drafting grid, blue ink line-work at 1-1.5px, near-square corners, and no elevation anywhere. Light mode is a blue-ink sheet on paper; dark mode is a true blueprint (Prussian-blue ground, pale ink line-work). It refuses the category-default arrangement: no centered hero, no icon-tile card grids, no gradient banners. Gradients resolve to solid ink. The one authored motion is the hero schematic drawing itself on load; reduced-motion renders it complete.",
+    "overview": "The site is a set of engineering drawings, Each page is a numbered sheet documenting one working CMS: a paper ground with a faint drafting grid, blue ink line-work at 1-1.5px, near-square corners, and no elevation anywhere. Light mode is a blue-ink sheet on paper; dark mode is a true blueprint (Prussian-blue ground, pale ink line-work). It refuses the category-default arrangement: no centered hero, no icon-tile card grids, no gradient banners. Gradients resolve to solid ink. The one authored motion is the hero schematic drawing itself on load; reduced-motion renders it complete.",
     "keyCharacteristics": [
       "Drafting-sheet material: 28px graph with a stronger 140px major grid at ~3-5.5% opacity",
       "Flat world: all shadow tokens none; gradients resolve to solid ink",
       "Two voices: Archivo display/body, IBM Plex Mono annotation confined to <= sm sizes and metadata",
-      "Hover = sheet response: registration marks, paper-blue tint, drawn underlines; 1px press travel",
-      "One authored motion: schematic draw-on, once, reduced-motion renders complete"
+      "Hover = sheet response: registration marks, paper-blue tint, drawn underlines",
+      "One authored motion: schematic draw-on on the home cover, reduced-motion renders complete"
     ],
     "rules": [
-      { "name": "The Blue Family Rule", "body": "Blue stays the brand in both modes: light mode is ink-on-paper, dark mode is pale ink on Prussian ground. No other hue joins except functional green/amber badges.", "section": "colors" },
-      { "name": "The Flat World Rule", "body": "Every shadow token is none and every gradient resolves to a solid. Depth is line weight (1px hair vs 1.5px ink) and layered rules.", "section": "elevation" },
-      { "name": "The Annotation Rule", "body": "IBM Plex Mono is annotation, never prose: <= sm sizes, metadata/labels/buttons only. Archivo carries headings and body.", "section": "typography" }
+      {
+        "name": "The Blue Family Rule",
+        "body": "Blue stays the brand in both modes: light mode is ink-on-paper, dark mode is pale ink on Prussian ground. No other hue joins except functional green/amber badges.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat World Rule",
+        "body": "Every shadow token is none and every gradient resolves to a solid. Depth is line weight (1px hair vs 1.5px ink) and layered rules.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Annotation Rule",
+        "body": "IBM Plex Mono is annotation, never prose: <= sm sizes, metadata/labels/buttons only. Archivo carries headings and body.",
+        "section": "typography"
+      }
     ],
     "dos": [
       "Do keep every surface flat: --shadow-*: none, gradients resolved to solid ink",
       "Do annotate in IBM Plex Mono at <= sm sizes; set metadata as instrument readouts",
-      "Do respond to hover with sheet behavior: registration marks, paper-blue tint, drawn underlines; 1px press travel",
+      "Do respond to hover with sheet behavior: registration marks, paper-blue tint, drawn underlines",
       "Do keep the background grid <= 5.5% opacity and schematic SVG semantic (title/desc, real labels)",
       "Do use dashed construction-line focus outlines (2px brand, 3px offset)"
     ],

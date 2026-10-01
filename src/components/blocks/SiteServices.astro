@@ -1,5 +1,5 @@
 ---
-import { getEmDashCollection } from "emdash";
+import { getHubEntries } from "../../lib/hub-content";
 import { Icon } from "astro-iconset/components";
 import type { BlockComponentProps } from "emdash/ui";
 import type { PageContentBlock } from "../../../emdash-env";
@@ -13,15 +13,10 @@ type ServicesBlock = Extract<PageContentBlock, { _type: "site_services" }>;
 type Props = BlockComponentProps<ServicesBlock>;
 
 const { value } = Astro.props;
-const { anchor_id, headline, subheadline, featured_only } = value;
-const limit = value.limit ?? 3;
+const { anchor_id, headline, subheadline } = value;
 
-const { entries } = await getEmDashCollection("services", { status: "published", limit: 100 });
+const services = await getHubEntries(Astro, "services", value);
 
-let services = entries
-	.filter((entry) => !featured_only || entry.data.featured)
-	.sort((a, b) => (a.data.sort_order ?? 100) - (b.data.sort_order ?? 100));
-if (limit > 0) services = services.slice(0, limit);
 ---
 
 <section class="section" id={anchor_id || undefined}>

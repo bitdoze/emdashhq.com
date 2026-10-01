@@ -68,8 +68,21 @@ npx wrangler login
 npm run deploy
 ```
 
-The first deploy creates the D1 database `emdashhq` and the R2 bucket `emdashhq-media` from `wrangler.jsonc`. Sandboxed plugins need Workers Paid (Worker Loader).
+The production account, existing D1 database, R2 bucket, and custom domain are configured in `wrangler.jsonc`. Sandboxed plugins need Workers Paid (Worker Loader). For another installation, provision its resources and update these identifiers before deploying.
 
-For the custom domain, add the `emdashhq.com` zone to the same Cloudflare account, uncomment `routes` in `wrangler.jsonc`, and redeploy. Set `EMDASH_SITE_URL=https://emdashhq.com` so passkeys, canonical URLs and the sitemap use the public origin. See [Deploy to Cloudflare](https://docs.emdashcms.com/deployment/cloudflare/) for production settings.
+`npm run deploy` builds, checks the generated EmDash migration manifest against the configured production D1 database, then uploads the Worker. Production uses `migrations.runtime: "manual"` to avoid schema/setup probes on visitor requests; development uses `"auto"`. A pending or unknown migration stops deployment. Always use the guarded deployment command.
+
+After an EmDash upgrade, if the check reports pending migrations:
+
+```bash
+npm run build
+npx emdash migrate --status --wrangler-config wrangler.jsonc
+npx emdash migrate --wrangler-config wrangler.jsonc
+npm run deploy
+```
+
+Review the account and database shown by the interactive migration command before confirming. Unknown migrations or an interrupted remote apply need investigation; inspect status before retrying. This manages core migrations, not changes to the site's content model. See [Core migrations](https://docs.emdashcms.com/deployment/core-migrations/).
+
+The custom domain is already enabled. Set `EMDASH_SITE_URL=https://emdashhq.com` so passkeys, canonical URLs and the sitemap use the public origin. See [Deploy to Cloudflare](https://docs.emdashcms.com/deployment/cloudflare/) for production settings and [the performance guide](emdash-perf-best-practices.md) for measured cases.
 
 `TODO.md` tracks what is done and what is left.

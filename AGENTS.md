@@ -5,6 +5,7 @@ This is an EmDash site -- a CMS built on Astro with a full admin UI.
 ```bash
 npm run dev              # Start the Astro dev server
 npx emdash types      # Regenerate TypeScript types from a running site
+npm run deploy           # Build, verify production core migrations, deploy
 ```
 
 The admin UI is at `http://localhost:4321/_emdash/admin`.
@@ -37,6 +38,7 @@ This template ships with `.mcp.json`, `.cursor/mcp.json`, and `.vscode/mcp.json`
 ## Rules
 
 - All content pages must be server-rendered (`output: "server"`). No `getStaticPaths()` for CMS content.
+- Production core migrations are deployment-managed (`migrations.runtime: "manual"`, dev `"auto"`). Use `npm run deploy`: its migration check must pass before uploading the Worker. See README for pending-migration handling.
 - Image fields are objects (`{ src, alt }`), not strings. Use `<Image image={...} />` from `"emdash/ui"`.
 - `entry.id` is the slug (for URLs). `entry.data.id` is the database ULID (for API calls like `getEntryTerms`).
 - When Astro's cache is enabled, pass content-query hints to `Astro.cache.set(cacheHint)`. Use the `WithCacheHint` variants for site settings, menus, taxonomies, and widget areas rendered by cached routes.

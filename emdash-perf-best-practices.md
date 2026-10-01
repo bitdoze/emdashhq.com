@@ -155,11 +155,21 @@ By default, Workers Cache partitions entries by Worker version, so a new deploym
 
 ### 4.3 Profile database trips, not just query totals
 
-D1 latency includes network and database work. A JavaScript `Promise.all` does not guarantee one physical call or parallel execution on a shared session. The installed adapter coalesces SELECTs and orders physical batches on the session. Measure statements, batches, and their boundaries before changing the CMS adapter.
+D1 latency includes network and database work. A JavaScript `Promise.all` does not guarantee one physical call or parallel execution on a shared session. The installed adapter offers SELECT coalescing, but **per-request coalescing defaults to false**. Its separate cold-runtime initialization already batches its reads; that does not enable batching for page rendering.
 
-This project keeps `d1({ binding: "DB", session: "auto" })`. D1 read replication requires the Sessions API; selecting this adapter option alone does not prove replicas are enabled or that a particular read reached one. Check deployment state and freshness requirements before changing it. See [D1 read replication](https://developers.cloudflare.com/d1/best-practices/read-replication/).
+**Case: parallel chrome reads were still serialized.** EmDash HQ had `session: "auto"` but omitted `coalesce`. The five menus each need a menu-row query followed by an items query. Concurrent calls therefore still paid for separate session calls. The follow-up enabled the documented adapter option:
 
-Worker placement is an experiment when repeated remote database trips dominate. Compare miss-path timings from representative visitor regions before enabling it. Moving compute nearer an origin changes the network tradeoff. No placement or database replication setting was changed in this implementation. See [Workers placement](https://developers.cloudflare.com/workers/configuration/placement/).
+```js
+database: d1({ binding: "DB", session: "auto", coalesce: true })
+```
+
+SELECTs issued in the same event-loop turn now share a per-request batch. Physical operations remain ordered on that session, and authenticated bookmark handling remains in the adapter. Logical query counts need not fall when batching succeeds. Summed query durations can exceed wall time because several queries report the same batch interval. The installed D1 driver does not expose physical batch counts in its public timing headers; do not label `db.count` a round-trip count. See [EmDash D1 configuration](https://docs.emdashcms.com/reference/configuration/).
+
+The installed adapter labels coalescing experimental. A buffered read and a concurrently issued write may execute write-first. Await reads that must observe pre-write state before issuing the write; retain sequential mutation workflows. Failed batches have individual-query fallback.
+
+**Case: replicas were not actually enabled.** The Cloudflare database API reported `read_replication.mode: "disabled"` on 1 October 2026 despite `session: "auto"` in site configuration. This follow-up keeps replication disabled. Enabling it would change anonymous freshness behavior and needs a publish/purge/refill check before relying on long-lived rendered HTML. The object-cache freshness guard is still enabled. See [D1 read replication](https://developers.cloudflare.com/d1/configuration/read-replication/) and [EmDash read replicas](https://docs.emdashcms.com/deployment/database/#read-replicas).
+
+Worker placement is an experiment when repeated remote database trips dominate. Compare miss-path timings from representative visitor regions before enabling it. Moving compute nearer an origin changes the network tradeoff. The inspected Worker had no placement configuration. A read-only D1 `SELECT 1` probe reported primary service in `EEUR`, colo `ARN`, and SQL execution of 0.1365 ms; the HTTP samples also entered through ARN. This is not a benchmark of CMS queries, but it does not support assuming this location's problem is an ocean-crossing database trip. Placement and replication were not changed. See [Workers placement](https://developers.cloudflare.com/workers/configuration/placement/).
 
 ### 4.4 Reduce runtime and asset weight separately
 
@@ -170,6 +180,22 @@ Restrict icon sets and avoid importing unused server integrations. Inspect the s
 ### 4.5 Keep scheduled maintenance working
 
 Retain the EmDash Worker entry and scheduled handler when wrapping the deployment. This site has a once-per-minute maintenance cron. Check scheduled publishing against the cache policy; warming all pages repeatedly is not a replacement for correct invalidation.
+
+### 4.6 Move core migration verification into deployment
+
+**Case: the setup probe added 146–355 ms to sampled cold requests.** The already initialized production database was still probed by new CMS runtimes under the default automatic migration policy. Runtime migration checking added another 11–43 ms in the follow-up baseline. Those checks belong in a controlled release step when the database is already provisioned.
+
+EmDash HQ now uses:
+
+```js
+migrations: { runtime: "manual", dev: "auto" }
+```
+
+Its guarded deployment command builds the application and `.emdash/migrations.json`, runs `emdash migrate --check --wrangler-config wrangler.jsonc`, then deploys only when the check passes. `wrangler.jsonc` pins the account and production database UUID used by both the check and deployment. The generated manifest stays ignored in Git. Production status showed no pending or unknown migrations; this release did not apply any database migrations or change content.
+
+`manual` is safe only with this release discipline. Do not bypass the check with a direct upload after a dependency upgrade. For pending core migrations, build, inspect status, run the interactive migration against the reviewed target, then run the guarded deploy. Unknown migration records or an ambiguous interrupted apply require investigation before another apply. The README contains the exact project commands. See [EmDash core migrations](https://docs.emdashcms.com/deployment/core-migrations/).
+
+Fresh production responses now omit `setup`, and cold `rt.db` reports 0 ms at header precision. Runtime initialization still reads plugin state, site information, and seed state; `manual` does not remove those reads or disable plugins. Development retains automatic migration/setup behavior. The same release pattern can be used with supported self-hosted database adapters, using their target configuration instead of Wrangler.
 
 ## 5. Self-hosting on Node.js
 
@@ -304,7 +330,7 @@ Continue sanitizing stored links, using appropriate new-tab relationships, and e
 
 1. Keep the lockfile and run the declared type/build checks.
 2. Record the current Worker version for rollback.
-3. Deploy the built application with its generated adapter configuration.
+3. Run `npm run deploy`: build, verify the paired migration manifest against production, then deploy with the generated adapter configuration. Resolve pending migrations as described in the README; do not skip the check.
 4. Verify version-specific markers such as `X-Site-Data-Ms`, stylesheet hashes, corrected diagram copy, and the sitemap. Do not infer a fresh release from a 200 alone.
 5. Check whether the host shares HTML across versions. The current Cloudflare default partitions by version; if cross-version caching is enabled, use an authenticated purge through the correct Worker/provider.
 6. Warm representative public routes with ordinary anonymous requests and record MISS versus HIT. Do not use random query parameters as the only benchmark.
@@ -319,13 +345,13 @@ A deployed-code smoke check is different from exercising real authenticated edit
 
 ### 8.3 Remaining work on this project
 
-The implementation fixes site-level work and cache correctness. Production miss latency still requires attribution after deployment. Do not label the CMS cold-start issue solved just because local D1 is fast or a cached route is fast. Compare setup/runtime/render timing, physical database trips, and the site data header from real MISS responses.
+The origin follow-up below enables page-query batching and removes production schema/setup probes through a guarded deployment. Those concrete costs are addressed. Cold CMS initialization still reads plugin/site/seed state, and total miss TTFB remains variable. Compare runtime/render timing and the site data header from real MISS responses; the CMS timing covers only part of client TTFB. Do not attribute all unmeasured time to SQL or claim all cold-start latency is solved.
 
 Visible archive pagination is a future option for large collections. Public CSP, actual authenticated editing/cache separation, and database/placement topology changes need their own scoped work. No unsupported claim of complete security or WCAG certification is made.
 
-### Post-deployment measurements from this case
+### Initial fix deployment measurements
 
-Final Worker version: `aad7ff53-dd8f-45ca-86ce-0b0591267af5`, deployed 1 October 2026. Two anonymous compressed GETs per route from one measurement location produced the following samples. Responses were served through the ARN Cloudflare region. Contact had already been warmed by the concurrent browser smoke check, so its first sample is a HIT.
+Initial fix Worker version: `aad7ff53-dd8f-45ca-86ce-0b0591267af5`, deployed 1 October 2026. Two anonymous compressed GETs per route from one measurement location produced the following samples. Responses were served through the ARN Cloudflare region. Contact had already been warmed by the concurrent browser smoke check, so its first sample is a HIT.
 
 | Route | First TTFB | First status | Repeat TTFB | Repeat status | Site data in stored response |
 | --- | ---: | --- | ---: | --- | ---: |
@@ -343,10 +369,44 @@ Live Chromium also confirmed the existing hover request and a Tutorials menu nav
 
 The production homepage decoded document was approximately 57.5 KB with approximately 11.2 KB inline CSS. The original reviewed document was approximately 100–125 KB with 79.3 KB inline CSS. Large shared styles now have separate reusable stylesheet URLs; this is directly observable even though production origin miss timings remain variable.
 
+### Origin follow-up measurements
+
+Follow-up baseline was deployed version `aad7ff53-dd8f-45ca-86ce-0b0591267af5`. Batching alone was deployed as `0d855634-422f-4631-bfa2-7f71f227ac91`. The final batching plus guarded manual-migration release is **`2ad627fa-74cc-4153-8f2a-988ed6de4898`**, deployed on 1 October 2026.
+
+First, fresh query-string URLs were used to obtain real anonymous MISS responses before and after enabling batching. Requests sent `Accept: text/html`, used compression, and were repeated to confirm HIT behavior. Each row is a single sample from ARN, not a percentile or controlled load benchmark. The query strings are cache probes, not recommended production URLs or the only measurement.
+
+| Route | Page data before batching | Page data with batching | Render before | Render with batching |
+| --- | ---: | ---: | ---: | ---: |
+| `/contact/` | 574 ms | 101 ms | 741 ms | 198 ms |
+| `/tutorials/` | 446 ms | 159 ms | 499 ms | 264 ms |
+| `/themes/` | 710 ms | 128 ms | 911 ms | 187 ms |
+| `/services/` | 629 ms | 199 ms | 817 ms | 293 ms |
+| `/` | 946 ms | 222 ms | 1141 ms | 329 ms |
+
+Contact still reported 23 logical queries in both of these responses. This illustrates why fewer physical calls, rather than fewer statements, was the useful optimization. Its total TTFB was 2415.3 ms before and 1293.2 ms after in these samples. Tutorials' total TTFB increased despite faster rendering, emphasizing the variability of startup and other time outside page-data loading.
+
+After the final release, ordinary canonical URLs were measured before browser checks could warm them:
+
+| Route | MISS TTFB | Repeat HIT TTFB | Page data | CMS runtime init | CMS render |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `/contact/` | 1159.6 ms | 80.9 ms | 108 ms | 264 ms | 201 ms |
+| `/tutorials/` | 1469.5 ms | 91.8 ms | 67 ms | 336 ms | 103 ms |
+| `/videos/` | 1366.7 ms | 88.4 ms | 140 ms | 311 ms | 217 ms |
+| `/themes/` | 488.8 ms | 99.3 ms | 210 ms | 0 ms | 260 ms |
+| `/plugins/` | 1625.3 ms | 89.9 ms | 256 ms | 260 ms | 661 ms |
+| `/services/` | 429.0 ms | 95.3 ms | 171 ms | 0 ms | 231 ms |
+| `/` | 1462.4 ms | 101.5 ms | 202 ms | 308 ms | 296 ms |
+
+All seven first canonical responses were MISS/200; all repeats were HIT/200. `setup` was absent throughout; cold `rt.db` was 0 ms at reported precision. Page-query filters, cache dependencies, the site-scripts purge, and the existing hover prefetch remain intact. No replication, placement, or production content change was made.
+
+A second unique-URL pass exposed both warm-runtime misses (331–443 ms) and cold-runtime misses (1440–2797 ms). The slowest was Videos: runtime initialization 653 ms, render 442 ms, TTFB 2797.4 ms. This outlier is retained here so the release is not presented as a complete cold-start fix. Remaining investigation should measure time before CMS middleware and compare cold initialization across regions, including its plugin/site/seed read batch. `rt.plugins`, `rt.site`, and `rt.seedcheck` overlap in that batch and must not be summed. The safe site configuration fixes here do not require a fork of EmDash or changes to cache freshness guarantees.
+
 ## 9. EmDash HQ case index
 
 | Concrete observation | Implemented change | Main category | Files |
 | --- | --- | --- | --- |
+| D1 page-query coalescing defaulted to false despite parallel chrome calls | Enable per-request `coalesce: true`; retain session ordering | Workers, queries | `astro.config.mjs` |
+| Already initialized production schema still probed on cold requests | Manual production migration policy plus pre-upload manifest check; automatic dev | Workers, deployment, self-hosting pattern | Config, `package.json`, `wrangler.jsonc`, README |
 | MISS/EXPIRED 1.47–2.46 s; HIT 70–112 ms | Overlap page/chrome reads; deduplicate fragment contexts; add data timing | General, Workers, code | `src/pages/[...slug].astro`, `src/lib/site-data.ts`, `src/middleware.ts` |
 | Lists discarded cache hints | Register every result/cursor hint | Caching | `src/lib/hub-content.ts`, four Site collection blocks |
 | Errors became empty 200/404 | Preload before streaming; 503/no-store | Code, security | Route, helper, `src/lib/unavailable.ts` |

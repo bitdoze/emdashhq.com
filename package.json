@@ -11,7 +11,8 @@
     "dev": "astro dev --host",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "astro build && wrangler deploy",
+    "deploy": "astro build && npm run migrate:check && wrangler deploy",
+    "migrate:check": "emdash migrate --check --wrangler-config wrangler.jsonc",
     "typecheck": "astro check"
   },
   "dependencies": {

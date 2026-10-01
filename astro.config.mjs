@@ -90,7 +90,12 @@ export default defineConfig({
 			},
 		}),
 		emdash({
-			database: d1({ binding: "DB", session: "auto" }),
+			// Collapse concurrent page/chrome reads into per-request D1 batches.
+			// Sessions preserve query ordering and authenticated bookmarks.
+			database: d1({ binding: "DB", session: "auto", coalesce: true }),
+			// npm run deploy verifies the build's migration manifest before upload.
+			// Production skips migration/setup probes; local dev stays automatic.
+			migrations: { runtime: "manual", dev: "auto" },
 			storage: r2({ binding: "MEDIA" }),
 			objectCache: kvCache({ binding: "CACHE" }),
 			toolbar: "client",

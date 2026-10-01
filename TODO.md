@@ -63,7 +63,9 @@ Legend: `[x]` done and checked, `[ ]` still to do, **(you)** needs an action fro
 - [ ] **(you)** Open `/_emdash/admin`, finish setup, register your passkey, and choose to include the sample content.
 - [ ] **(you)** Custom domain: put the `emdashhq.com` zone in the same Cloudflare account, uncomment `routes` in `wrangler.jsonc`, redeploy.
 - [ ] **(you)** Set `EMDASH_SITE_URL=https://emdashhq.com` so passkeys, sitemap and canonical URLs use the public origin. Check the Cloudflare deploy doc for any other production secrets.
-- [ ] Recommended after launch: Workers cache for `/` and list pages, and the KV object cache. See https://docs.emdashcms.com/deployment/cloudflare/.
+- [x] Workers cache for `/` and list pages (`routeRules`, 1 hour fresh, 7 days stale-while-revalidate, purged by tag on publish), and the KV object cache.
+- [x] `npm run deploy` warms every sitemap page after upload (`npm run cache:warm`). Each deploy empties the version-keyed Workers Cache, and an uncached page took 1 to 3 seconds on its first visit.
+- [ ] Later: warm the purged pages after a publish too. A content edit purges its tagged pages, so the next visit to each one is still a cold render.
 - [ ] Optional: the `cloudflareEmail` plugin for magic-link sign-in and invites.
 
 ## Phase 5: Content entry (in the admin)

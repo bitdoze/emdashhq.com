@@ -70,7 +70,7 @@ npm run deploy
 
 The production account, existing D1 database, R2 bucket, and custom domain are configured in `wrangler.jsonc`. Sandboxed plugins need Workers Paid (Worker Loader). For another installation, provision its resources and update these identifiers before deploying.
 
-`npm run deploy` builds, checks the generated EmDash migration manifest against the configured production D1 database, then uploads the Worker. Production uses `migrations.runtime: "manual"` to avoid schema/setup probes on visitor requests; development uses `"auto"`. A pending or unknown migration stops deployment. Always use the guarded deployment command.
+`npm run deploy` builds, checks the generated EmDash migration manifest against the configured production D1 database, uploads the Worker, then warms the page cache. Production uses `migrations.runtime: "manual"` to avoid schema/setup probes on visitor requests; development uses `"auto"`. A pending or unknown migration stops deployment. Always use the guarded deployment command.
 
 After an EmDash upgrade, if the check reports pending migrations:
 
@@ -82,6 +82,8 @@ npm run deploy
 ```
 
 Review the account and database shown by the interactive migration command before confirming. Unknown migrations or an interrupted remote apply need investigation; inspect status before retrying. This manages core migrations, not changes to the site's content model. See [Core migrations](https://docs.emdashcms.com/deployment/core-migrations/).
+
+Workers Cache keys pages by Worker version, so every deploy starts with an empty page cache. An uncached page takes about 1 to 3 seconds (Worker start, EmDash init, D1 reads); a cached one about 0.1 seconds. The last step of `npm run deploy`, `npm run cache:warm`, requests every sitemap URL until Cloudflare reports a cache hit, so visitors never pay the cold render after a release. Run it on its own after a large content change, or pass an origin: `node scripts/warm-cache.mjs https://emdashhq.com`. It exits with an error if a page does not return 2xx.
 
 The custom domain is already enabled. Set `EMDASH_SITE_URL=https://emdashhq.com` so passkeys, canonical URLs and the sitemap use the public origin. See [Deploy to Cloudflare](https://docs.emdashcms.com/deployment/cloudflare/) for production settings and [the performance guide](emdash-perf-best-practices.md) for measured cases.
 

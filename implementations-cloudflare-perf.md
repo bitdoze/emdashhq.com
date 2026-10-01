@@ -8,6 +8,29 @@ Changes and findings for keeping D1 reads low on the Cloudflare deployment. Last
 
 - `prefetch.defaultStrategy`: `viewport` -> `hover`. With `prefetchAll: true`, `viewport` was fetching every same-origin link that scrolled into view (nav, footer menus, card CTAs, about 10-15 URLs per pageview), including from Googlebot's tall render viewport. `hover` prefetches only on real navigation intent.
 - `routeRules` `maxAge`: `300` -> `3600` on `/` and `/[...slug]`. Publish already purges cached pages by tag, so the freshness window only controls how often a request triggers an SWR revalidation render. An hour instead of five minutes means fewer wasted renders kicked off by prefetches.
+- `routeRules` `swr`: `86400` -> `604800` on `/` and `/[...slug]`. A page with no visit for 25 hours used to fall out of cache and cost the next visitor a cold render. With seven days it answers stale from cache and refreshes in the background. Edits still show up right away because publishing purges by tag.
+
+### `package.json` and `scripts/warm-cache.mjs`
+
+- `npm run deploy` now ends with `npm run cache:warm`. The script reads the custom domain from `dist/server/wrangler.json`, collects every URL from `/sitemap.xml`, and requests each one (up to three passes) until `cf-cache-status` is a hit. A non-2xx page fails the command.
+
+## Slow first click on menu links (2026-10-01)
+
+Symptom: the first click on each header link took one to three seconds; the second click was instant.
+
+Measured on production from one location:
+
+| Request | TTFB | Notes |
+| --- | --- | --- |
+| Cache `HIT` | 0.07-0.13 s | Worker does not run |
+| Cache `MISS`, cold isolate | 0.9-1.7 s (outlier 2.8 s) | `mw` 570-670 ms, `db.count` 20-24; the rest is isolate start for the 18 MB server bundle |
+| Cache `MISS`, warm isolate | 0.3-0.4 s | `rt` 0, `mw` 140-200 ms |
+
+Cause: [Workers Cache](https://developers.cloudflare.com/workers/cache/cache-keys/#invalidating-cache-across-deployments) puts the Worker version in the cache key, so every `wrangler deploy` starts from an empty cache. Several deploys on 2026-10-01 meant every page's first visit after each one was a cold render. Hover prefetch cannot hide it: it fires 80 ms after hover, and the render takes longer than the gap between hover and click.
+
+Fix: warm the cache from the sitemap as the last deploy step. The cache is tiered, so one fill from any location stores the page in the upper tier for every data center. `cross_version_cache` was rejected: cached HTML from an older version can reference hashed `/_astro/` files the new version no longer serves.
+
+Still cold: the first visit to a page after a publish purges it, and pages Cloudflare evicts for low traffic.
 
 ## Read-path layering (verified in `node_modules/emdash` and live KV)
 

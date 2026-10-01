@@ -18,10 +18,12 @@ export default defineConfig({
 		provider: cacheCloudflare(),
 	},
 	routeRules: {
-		"/": { maxAge: 3600, swr: 86400 },
+		// Publishing purges pages by tag, so a long stale window only lets a page
+		// idle for days answer from cache while it refreshes, not a cold render.
+		"/": { maxAge: 3600, swr: 604800 },
 		"/_emdash/api/media/[...path]": { maxAge: 86400, swr: 604800 },
 		"/_emdash/[...path]": { maxAge: 0 },
-		"/[...slug]": { maxAge: 3600, swr: 86400 },
+		"/[...slug]": { maxAge: 3600, swr: 604800 },
 	},
 	build: {
 		inlineStylesheets: "auto",

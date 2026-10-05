@@ -7,6 +7,12 @@ dist/
 # Astro
 .astro/
 .emdash/migrations.json
+.emdash/schema.json
+.emdash/types.ts
+
+# Scratch projects inside the repo dir
+emdashoffblog/
+.impeccable/
 
 # Data
 data.db

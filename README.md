@@ -33,15 +33,19 @@ Every page is an entry in the `pages` collection, built from blocks. The slug is
 
 The tutorials, videos, themes and plugins, and services blocks read from the collections, so a new entry shows up on the home page and on its list page.
 
-## Analytics and header scripts
+## Plugins
 
-The local plugin in `plugins/site-scripts` adds a settings page at Plugins, Site Scripts, Settings. It supports:
+Two plugins ship with the site, one of each EmDash format:
 
-- Plausible, Cloudflare Web Analytics and Google Analytics 4. For Plausible, paste the script URL from your Plausible site (for example `https://plausible.io/js/pa-XXXX.js`, or the same path on a self-hosted domain). A `pa-XXXX.js` URL is loaded together with its `plausible.init()` call. The older `script.js` format also needs the site domain.
-- Free-form HTML in `<head>`, at the start of `<body>` and at the end of `<body>`
-- A master switch that turns every script off without deleting it
+- **`plugins/emdashhq-contact-forms`** — sandboxed plugin, published to the registry as `@bitdoze.com/emdashhq-contact-forms`. Registered under `sandboxed:` in `astro.config.mjs` and runs in a Worker Loader isolate. Provides the form builder admin pages (Forms, Submissions, Email log), a dashboard widget, public `form`/`submit` routes, and settings (recipient, rate limit, retention, debug logging). Pages embed a form through the `contact_form` block type (seed) rendered by `src/components/blocks/ContactForm.astro`. Mail goes through `ctx.email.send()`, so it uses whichever email provider is active — Cloudflare Email Sending or an SMTP plugin. See `plugins/emdashhq-contact-forms/README.md` for routes, storage and development commands (`emdash-plugin validate/build/bundle/publish`, vitest suite running inside workerd).
+- **`plugins/site-scripts`** — native (trusted) plugin, registered under `plugins:`. Adds a settings page at Plugins, Site Scripts, Settings:
+  - Plausible, Cloudflare Web Analytics and Google Analytics 4. For Plausible, paste the script URL from your Plausible site (for example `https://plausible.io/js/pa-XXXX.js`, or the same path on a self-hosted domain). A `pa-XXXX.js` URL is loaded together with its `plausible.init()` call. The older `script.js` format also needs the site domain.
+  - Free-form HTML in `<head>`, at the start of `<body>` and at the end of `<body>`
+  - A master switch that turns every script off without deleting it
 
-Scripts load on public pages only, never under `/_emdash/`. The HTML fields are inserted exactly as written, so only administrators should have access to them.
+Site Scripts' HTML fields are inserted exactly as written and load on public pages only, never under `/_emdash/` — administrator-only input.
+
+The sandbox runner (`sandboxRunner: sandbox()`) plus the `LOADER` Worker Loader binding and the exported `PluginBridge` in `src/worker.ts` are what let sandboxed plugins — the contact forms plugin now, registry installs later — execute. Requires Workers Paid.
 
 ## Design
 

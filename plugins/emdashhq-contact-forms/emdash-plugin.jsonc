@@ -1,0 +1,82 @@
+{
+	"$schema": "./node_modules/@emdash-cms/plugin-cli/schemas/emdash-plugin.schema.json",
+
+	"slug": "emdashhq-contact-forms",
+	"publisher": "did:plc:qr4gckwrgatg5h3lzc57bsnp", // bitdoze.com
+
+	"license": "MIT",
+	"author": { "name": "Bitdoze", "url": "https://bitdoze.com" },
+	"security": { "email": "dragos@emdashhq.com" },
+	"name": "Contact Forms",
+	"description": "Contact form builder: embed forms on pages, store every submission, send email through the site's provider.",
+	"keywords": ["forms", "contact", "email", "submissions"],
+
+	"capabilities": ["email:send"],
+	"allowedHosts": [],
+	"storage": {
+		"forms": {
+			"indexes": ["slug", "enabled", "createdAt"],
+			"uniqueIndexes": ["slug"]
+		},
+		"submissions": {
+			"indexes": ["formId", "status", "createdAt", "ip", "emailStatus", ["formId", "status"]]
+		},
+		"email_log": {
+			"indexes": ["submissionId", "formId", "status", "createdAt", "kind"]
+		}
+	},
+
+	"admin": {
+		"pages": [
+			{ "path": "/forms", "label": "Forms", "icon": "clipboard-text" },
+			{ "path": "/submissions", "label": "Submissions", "icon": "inbox" },
+			{ "path": "/log", "label": "Email log", "icon": "envelope" }
+		],
+		"widgets": [{ "id": "contact-forms", "title": "Contact forms", "size": "half" }],
+		"settingsSchema": {
+			"defaultNotifyEmail": {
+				"type": "email",
+				"label": "Default notification email",
+				"description": "Where new submissions are emailed when a form does not set its own recipient. Replies go to the visitor's email field.",
+				"placeholder": "you@example.com"
+			},
+			"notifyName": {
+				"type": "string",
+				"label": "Notification sender name hint",
+				"description": "Shown in the email subject and body. Leave empty to use the site name."
+			},
+			"defaultSubject": {
+				"type": "string",
+				"label": "Default email subject",
+				"description": "Used when a form leaves its subject empty. Supports {form}, {site} and {field_key} placeholders from submitted fields.",
+				"default": "New {form} submission"
+			},
+			"rateLimitPerHour": {
+				"type": "number",
+				"label": "Rate limit per IP per hour",
+				"description": "Maximum submissions accepted from one IP address per hour, across all forms. Blocks floods without needing CAPTCHA. Range 1-1000.",
+				"default": 20,
+				"min": 1,
+				"max": 1000
+			},
+			"retentionDays": {
+				"type": "number",
+				"label": "Keep submissions for (days)",
+				"description": "Submissions and email log entries older than this are deleted by an hourly cleanup task. 0 keeps everything forever.",
+				"default": 0,
+				"min": 0,
+				"max": 3650
+			},
+			"extraDebug": {
+				"type": "boolean",
+				"label": "Verbose logging",
+				"description": "Log each submission step (validation, rate limit, email delivery) at debug level. Useful while wiring a new provider; leave off in production.",
+				"default": false
+			}
+		}
+	},
+
+	"release": {
+		"requires": { "env:emdash": ">=1.0.0" }
+	}
+}

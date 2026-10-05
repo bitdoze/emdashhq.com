@@ -101,7 +101,7 @@ const isLoggedIn = !!Astro.locals.user;
 		<EmDashBodyStart page={pageCtx} />
 		<header class="site-header">
 			<nav class="nav" aria-label="Main">
-				<a href="/" class="site-logo">
+				<a href="/" class="site-logo" data-astro-prefetch="load">
 					{siteLogo
 						? <img
 							src={siteLogo.url}
@@ -133,6 +133,7 @@ const isLoggedIn = !!Astro.locals.user;
 										href={link.href}
 										target={link.target}
 										rel={link.rel}
+										data-astro-prefetch="load"
 										aria-current={isCurrent(item.url) ? "page" : undefined}
 									>
 										<span class="nav-no" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
@@ -151,6 +152,7 @@ const isLoggedIn = !!Astro.locals.user;
 									target={headerCtaLink.target}
 									rel={headerCtaLink.rel}
 									class="btn btn-primary nav-cta"
+									data-astro-prefetch="load"
 								>
 									{headerCta.label}
 								</a>
@@ -208,7 +210,7 @@ const isLoggedIn = !!Astro.locals.user;
 								{column.items.map((item) => {
 									const link = menuLink(item);
 									return (
-										<a href={link.href} target={link.target} rel={link.rel}>
+										<a href={link.href} target={link.target} rel={link.rel} data-astro-prefetch="load">
 											{item.label}
 										</a>
 									);

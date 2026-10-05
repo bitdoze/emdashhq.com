@@ -26,16 +26,24 @@
 			"id": "415f01d2b42c4740b56818ff28e7eaa6",
 		},
 	],
+	// Cloudflare Email Sending for the cloudflareEmail() plugin (magic links,
+	// invites, recovery). Requires the Workers paid plan and emdashhq.com
+	// onboarded under Compute > Email Service > Email Sending.
+	"send_email": [
+		{
+			"name": "EMAIL"
+		}
+	],
 	// Sandboxed plugins require Worker Loader, available on Workers paid plans.
 	"worker_loaders": [
 		{
 			"binding": "LOADER"
 		}
 	],
-	// General maintenance cron trigger
+	// General maintenance cron trigger (hourly; must match generalCron in src/worker.ts)
 	"triggers": {
 		"crons": [
-			"* * * * *"
+			"0 * * * *"
 		],
 	},
 	"routes": [{ "pattern": "emdashhq.com", "custom_domain": true }],

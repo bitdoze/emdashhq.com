@@ -72,7 +72,12 @@ npx wrangler d1 execute emdashhq --remote --json --command \
 npx wrangler kv key list --namespace-id 415f01d2b42c4740b56818ff28e7eaa6 --prefix "em:"
 ```
 
+## Hourly cron and eager nav prefetch (2026-10-02)
+
+- `triggers.crons`: `* * * * *` -> `0 * * * *`, and `createScheduledHandler({ generalCron: "0 * * * *" })` in `src/worker.ts` (the two must match or the trigger is ignored). The per-minute tick ran ~20-30 statements of maintenance (cron claim, stale locks, publish sweep with `listCollections`, 10 cleanup subsystems including the `_emdash_404_log` cap and transfer-approval expiry, heartbeat) — ~30-40k queries/day on an idle site. Now once an hour. Trade-off: scheduled publishing precision is ~1 h, and the admin "scheduled publishing needs attention" notice can show while an overdue entry waits for the next run.
+- `data-astro-prefetch="load"` on the logo, primary nav links, header CTA, and footer menu links (`Base.astro`). The fixed nav set now prefetches at page load instead of 80 ms after hover, so the first click hits the browser prefetch cache rather than starting a cold render. Global strategy stays `hover` for other links; on slow connections the `load` links degrade to prefetch-at-tap.
+
 ## Watch items
 
-- If `_emdash_menu_items` / `_emdash_menus` stay near the top of D1 insights after the `hover` + `maxAge` deploy, the residual is KV misses (cold regions, TTL expiry) rather than missing caching. A longer KV TTL would reduce it; menu invalidation is epoch-based so a long TTL is safe.
-- `_emdash_404_log` DELETE and `_emdash_migrations` COUNT are the per-minute system cleanup cron; they are cheap and expected.
+- If `_emdash_menu_items` / `_emdash_menus` stay near the top of D1 insights after the `hover` + `maxAge` deploy, the residual is KV misses (cold regions, TTL expiry) rather than missing caching. A longer KV TTL would reduce it; menu invalidation is epoch-based so a long TTL is safe. Note: route-cache fills bypass the KV object cache by design (`routeCacheFill` in request-context.ts; documented at docs.emdashcms.com/deployment/object-cache/), so public renders always read D1 — the KV entries serve authenticated/editor requests only.
+- `_emdash_404_log` DELETE, `_emdash_transfer_approvals` expiry UPDATE, `_emdash_cron_tasks` claims, `_emdash_collections` list, and `_emdash_migrations` COUNT are the hourly system cleanup cron; they are cheap and expected once per hour.

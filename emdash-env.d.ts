@@ -162,7 +162,19 @@ export interface PageContentSiteContactV1Block {
 
 export type PageContentSiteContactBlock = PageContentSiteContactV1Block;
 
-export type PageContentBlock = PageContentMarketingHeroBlock | PageContentMarketingFeaturesBlock | PageContentMarketingTestimonialsBlock | PageContentMarketingPricingBlock | PageContentMarketingFaqBlock | PageContentSiteTutorialsBlock | PageContentSiteVideosBlock | PageContentSiteResourcesBlock | PageContentSiteServicesBlock | PageContentSiteCtaBlock | PageContentSiteContactBlock;
+export interface PageContentContactFormV1Block {
+  _type: "contact_form";
+  _version: 1;
+  _key: string;
+  "anchor_id"?: string | null;
+  "headline"?: string | null;
+  "subheadline"?: string | null;
+  "form": string;
+}
+
+export type PageContentContactFormBlock = PageContentContactFormV1Block;
+
+export type PageContentBlock = PageContentMarketingHeroBlock | PageContentMarketingFeaturesBlock | PageContentMarketingTestimonialsBlock | PageContentMarketingPricingBlock | PageContentMarketingFaqBlock | PageContentSiteTutorialsBlock | PageContentSiteVideosBlock | PageContentSiteResourcesBlock | PageContentSiteServicesBlock | PageContentSiteCtaBlock | PageContentSiteContactBlock | PageContentContactFormBlock;
 
 export interface Page {
   id: string;

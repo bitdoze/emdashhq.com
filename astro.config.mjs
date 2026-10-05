@@ -1,10 +1,12 @@
 import cloudflare from "@astrojs/cloudflare";
 import { cacheCloudflare } from "@astrojs/cloudflare/cache";
 import react from "@astrojs/react";
-import { d1, kvCache, r2 } from "@emdash-cms/cloudflare";
+import { d1, kvCache, r2, sandbox } from "@emdash-cms/cloudflare";
+import { cloudflareEmail } from "@emdash-cms/cloudflare/plugins";
 import icon from "astro-iconset";
 import { defineConfig, fontProviders } from "astro/config";
 import emdash from "emdash/astro";
+import contactFormsPlugin from "emdashhq-contact-forms";
 import { siteScriptsPlugin } from "@emdashhq/plugin-site-scripts";
 
 export default defineConfig({
@@ -101,7 +103,22 @@ export default defineConfig({
 			storage: r2({ binding: "MEDIA" }),
 			objectCache: kvCache({ binding: "CACHE" }),
 			toolbar: "client",
-			plugins: [siteScriptsPlugin()],
+			plugins: [
+				siteScriptsPlugin(),
+				// Sends magic links, invites, and recovery mail through the
+				// send_email binding in wrangler.jsonc. Any address on
+				// emdashhq.com works once the domain is onboarded for Email
+				// Sending.
+				cloudflareEmail({
+					from: { email: "dragos@emdashhq.com", name: "EmDash HQ" },
+				}),
+			],
+			// Form builder + submissions inbox. Runs in a Worker Loader
+			// isolate (the same format the plugin registry distributes). Mail
+			// goes through ctx.email, so it uses whichever provider is active
+			// (Cloudflare send_email binding or an SMTP plugin).
+			sandboxed: [contactFormsPlugin],
+			sandboxRunner: sandbox(),
 		}),
 	],
 	fonts: [

@@ -1,0 +1,42 @@
+{
+	"slug": "contact_form",
+	"label": "Contact form",
+	"description": "Renders a form managed by the Contact forms plugin. Create the form under Plugins, Contact forms, then paste its slug here.",
+	"category": "Forms",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "anchor_id",
+					"label": "Anchor ID",
+					"type": "string",
+					"validation": {
+						"pattern": "^(?:$|[a-z][a-z0-9_-]*)$"
+					}
+				},
+				{
+					"slug": "headline",
+					"label": "Headline",
+					"type": "string"
+				},
+				{
+					"slug": "subheadline",
+					"label": "Subheadline",
+					"type": "text"
+				},
+				{
+					"slug": "form",
+					"label": "Form slug",
+					"description": "The slug of a form created under Plugins, Contact forms (for example \"contact\").",
+					"type": "string",
+					"required": true,
+					"validation": {
+						"pattern": "^[a-z][a-z0-9_-]*$"
+					}
+				}
+			]
+		}
+	]
+}

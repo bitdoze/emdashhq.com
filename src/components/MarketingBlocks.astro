@@ -1,6 +1,7 @@
 ---
 import { Blocks, defineBlockComponents } from "emdash/ui";
 import type { PageContentBlock } from "../../emdash-env";
+import ContactForm from "./blocks/ContactForm.astro";
 import FAQ from "./blocks/FAQ.astro";
 import Features from "./blocks/Features.astro";
 import Hero from "./blocks/Hero.astro";
@@ -31,6 +32,7 @@ const blockComponents = defineBlockComponents<PageContentBlock>({
 	site_services: SiteServices,
 	site_cta: SiteCta,
 	site_contact: SiteContact,
+	contact_form: ContactForm,
 });
 ---
 

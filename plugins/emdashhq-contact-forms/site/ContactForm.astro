@@ -1,0 +1,330 @@
+---
+/**
+ * ContactForm.astro — renders a form defined in the emdashhq-contact-forms
+ * plugin. Copy this file into your site's components and register it for the
+ * `contact_form` block type in your blocks component map (see README).
+ *
+ * The component resolves the form definition in-process via
+ * `Astro.locals.emdash.handlePublicPluginApiRoute` — no HTTP roundtrip — and
+ * posts straight to the plugin's public submit route, which answers with a
+ * same-origin 303 redirect carrying cf/cf_status query params.
+ *
+ * Styling is intentionally plain: it reads common CSS custom properties when
+ * they exist and falls back to system defaults, so it slots into any theme.
+ * Restyle the .cf-* classes to match your design system.
+ */
+
+type Props = {
+	value: {
+		anchor_id?: string;
+		headline?: string;
+		subheadline?: string;
+		form: string;
+	};
+};
+
+interface PublicFormField {
+	key: string;
+	label: string;
+	type: "text" | "email" | "tel" | "url" | "number" | "textarea" | "select" | "checkbox";
+	required?: boolean;
+	placeholder?: string;
+	options?: string[];
+	help?: string;
+}
+interface PublicForm {
+	slug: string;
+	name: string;
+	description?: string;
+	submitLabel?: string;
+	successMessage?: string;
+	fields: PublicFormField[];
+}
+
+const { value } = Astro.props;
+const { anchor_id, headline, subheadline, form: slug } = value;
+
+const PLUGIN_ID = "emdashhq-contact-forms";
+let form: PublicForm | null = null;
+const emdash = Astro.locals.emdash;
+if (emdash?.handlePublicPluginApiRoute && slug) {
+	const res = await emdash.handlePublicPluginApiRoute(
+		PLUGIN_ID,
+		"GET",
+		"form",
+		new Request(`${Astro.url.origin}/_emdash/api/plugins/${PLUGIN_ID}/form?slug=${encodeURIComponent(slug)}`),
+	);
+	if (res.success && res.data && typeof res.data === "object") {
+		form = (res.data as { form?: PublicForm }).form ?? null;
+	}
+}
+
+const params = Astro.url.searchParams;
+const forThisForm = params.get("cf") === slug;
+const status = forThisForm ? params.get("cf_status") : null;
+const invalidFields = new Set((forThisForm ? params.get("cf_fields") : null)?.split(",") ?? []);
+
+const submitUrl = `/_emdash/api/plugins/${PLUGIN_ID}/submit`;
+const inputId = (key: string) => `cf-${slug}-${key}`;
+---
+
+<section class="cf-section" id={anchor_id || undefined}>
+	{
+		form ? (
+			<>
+				{(headline || subheadline || form.description) && (
+					<header class="cf-header">
+						<h2 class="cf-title">{headline || form.name}</h2>
+						{(subheadline ?? form.description) && (
+							<p class="cf-sub">{subheadline ?? form.description}</p>
+						)}
+					</header>
+				)}
+				<form class="cf-form" method="post" action={submitUrl}>
+					<input type="hidden" name="cf_slug" value={form.slug} />
+					<input type="hidden" name="cf_page" value={Astro.url.pathname} />
+					<input type="hidden" name="cf_ts" value={Date.now()} />
+					<p class="cf-hp" aria-hidden="true">
+						<label>
+							Leave this field empty
+							<input type="text" name="cf_hp" tabindex="-1" autocomplete="off" />
+						</label>
+					</p>
+
+					{(status === "sent" || status === "saved") && (
+						<p class="cf-note cf-ok" role="status">
+							{form.successMessage || "Thanks — your message was sent."}
+						</p>
+					)}
+					{status === "invalid" && (
+						<p class="cf-note cf-err" role="alert">
+							Some fields need attention. Check the highlighted fields and try again.
+						</p>
+					)}
+					{status === "rate_limited" && (
+						<p class="cf-note cf-err" role="alert">
+							Too many attempts. Please wait a while and try again.
+						</p>
+					)}
+					{status === "error" && (
+						<p class="cf-note cf-err" role="alert">
+							This form is not accepting submissions right now.
+						</p>
+					)}
+
+					<div class="cf-fields">
+						{form.fields.map((field) => {
+							const invalid = invalidFields.has(field.key);
+							return (
+								<p class:list={["cf-field", { "cf-field-bad": invalid }]}>
+									<label for={inputId(field.key)}>
+										{field.label}
+										{field.required && <span class="cf-req" aria-hidden="true"> *</span>}
+									</label>
+									{field.type === "textarea" ? (
+										<textarea
+											id={inputId(field.key)}
+											name={field.key}
+											rows={5}
+											required={field.required}
+											placeholder={field.placeholder}
+											aria-invalid={invalid || undefined}
+										/>
+									) : field.type === "select" ? (
+										<select
+											id={inputId(field.key)}
+											name={field.key}
+											required={field.required}
+											aria-invalid={invalid || undefined}
+										>
+											<option value="">Choose…</option>
+											{(field.options ?? []).map((option) => (
+												<option value={option}>{option}</option>
+											))}
+										</select>
+									) : field.type === "checkbox" ? (
+										<span class="cf-check">
+											<input
+												type="checkbox"
+												id={inputId(field.key)}
+												name={field.key}
+												required={field.required}
+												aria-invalid={invalid || undefined}
+											/>
+										</span>
+									) : (
+										<input
+											type={
+												field.type === "email"
+													? "email"
+													: field.type === "url"
+														? "url"
+														: field.type === "tel"
+															? "tel"
+															: field.type === "number"
+																? "number"
+																: "text"
+											}
+											id={inputId(field.key)}
+											name={field.key}
+											required={field.required}
+											placeholder={field.placeholder}
+											aria-invalid={invalid || undefined}
+										/>
+									)}
+									{field.help && <span class="cf-help">{field.help}</span>}
+								</p>
+							);
+						})}
+					</div>
+
+					<button type="submit" class="cf-submit">
+						{form.submitLabel || "Send"}
+					</button>
+				</form>
+			</>
+		) : (
+			<p class="cf-note cf-closed">This form is not available right now.</p>
+		)
+	}
+</section>
+
+<style>
+	.cf-section {
+		padding: var(--spacing-2xl, 2rem) 0;
+	}
+
+	.cf-form {
+		max-width: 36rem;
+		font-family: var(--font-body, inherit);
+	}
+
+	.cf-header {
+		margin-bottom: var(--spacing-xl, 1.5rem);
+	}
+
+	.cf-title {
+		font-family: var(--font-heading, inherit);
+		font-size: var(--font-size-2xl, 1.6rem);
+		font-weight: var(--font-weight-heading, 700);
+		margin: 0 0 0.35rem;
+		color: var(--color-text, inherit);
+	}
+
+	.cf-sub {
+		color: var(--color-muted, #666);
+		margin: 0;
+		font-size: var(--font-size-base, 1rem);
+	}
+
+	.cf-fields {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-lg, 1rem);
+		margin: var(--spacing-xl, 1.5rem) 0;
+	}
+
+	.cf-field {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-xs, 0.3rem);
+		margin: 0;
+	}
+
+	.cf-field > label {
+		font-family: var(--font-mono, inherit);
+		font-size: var(--font-size-xs, 0.8rem);
+		font-weight: 500;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-muted, #666);
+	}
+
+	.cf-req {
+		color: var(--color-brand-strong, #1a56db);
+	}
+
+	.cf-field input:not([type="checkbox"]),
+	.cf-field textarea,
+	.cf-field select {
+		font: inherit;
+		color: var(--color-text, inherit);
+		background: var(--color-surface, #fff);
+		border: 1px solid var(--color-border, #d0d0d0);
+		border-radius: var(--radius, 4px);
+		padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 0.75rem);
+	}
+
+	.cf-field input:focus-visible,
+	.cf-field textarea:focus-visible,
+	.cf-field select:focus-visible {
+		outline: none;
+		border-color: var(--color-brand-strong, #1a56db);
+	}
+
+	.cf-field textarea {
+		resize: vertical;
+		min-height: 7rem;
+	}
+
+	.cf-check input {
+		width: 1.1rem;
+		height: 1.1rem;
+		accent-color: var(--color-brand-strong, #1a56db);
+	}
+
+	.cf-help {
+		font-size: var(--font-size-xs, 0.8rem);
+		color: var(--color-muted, #666);
+	}
+
+	.cf-field-bad input:not([type="checkbox"]),
+	.cf-field-bad textarea,
+	.cf-field-bad select {
+		border-color: var(--color-danger, #c00);
+	}
+
+	.cf-note {
+		font-size: var(--font-size-sm, 0.9rem);
+		padding: var(--spacing-sm, 0.5rem) var(--spacing-md, 0.75rem);
+		border: 1px solid var(--color-border, #d0d0d0);
+		border-left: 3px solid var(--color-brand-strong, #1a56db);
+		background: var(--color-surface, #f7f7f7);
+	}
+
+	.cf-err {
+		border-left-color: var(--color-danger, #c00);
+	}
+
+	.cf-closed {
+		max-width: 36rem;
+		color: var(--color-muted, #666);
+	}
+
+	.cf-hp {
+		position: absolute;
+		left: -100vw;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		margin: 0;
+	}
+
+	.cf-submit {
+		font-family: var(--font-mono, inherit);
+		font-size: var(--font-size-sm, 0.9rem);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-on-brand, #fff);
+		background: var(--color-brand-strong, #1a56db);
+		border: 1px solid var(--color-brand-strong, #1a56db);
+		border-radius: var(--radius, 4px);
+		padding: var(--spacing-sm, 0.5rem) var(--spacing-xl, 1.5rem);
+		cursor: pointer;
+	}
+
+	.cf-submit:hover {
+		background: var(--color-brand, #1e429f);
+	}
+</style>

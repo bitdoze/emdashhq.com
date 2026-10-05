@@ -25,27 +25,49 @@ is already configured — Cloudflare Email Sending or any SMTP provider via
 
 ## Install
 
-This is a **sandboxed** plugin — it runs in an isolated Worker, not in the
-host process. Your site needs a sandbox runner: on Cloudflare that's
-`sandboxRunner: sandbox()` plus the `LOADER` Worker Loader binding and an
-exported `PluginBridge` class (see the
-[plugin sandbox docs](https://docs.emdashcms.com/deployment/plugin-sandbox/);
-requires Workers Paid).
+The package is a **standard-format** plugin: the same build runs isolated in
+a sandbox or in-process with no sandbox at all. Pick the mode per site.
 
-### From the registry (recommended)
+### Registry install (isolated — Cloudflare or Node.js)
 
-The plugin is published as `@bitdoze.com/emdashhq-contact-forms`. With a
-sandbox runner configured, open **Registry** in the admin, search
+Published as `@bitdoze.com/emdashhq-contact-forms`. Registry installs need a
+sandbox runner:
+
+- **Cloudflare**: `sandboxRunner: sandbox()` from `@emdash-cms/cloudflare`,
+  the `LOADER` Worker Loader binding, `PluginBridge` exported from the
+  Worker entry point, Workers Paid plan.
+- **Self-hosted Node.js**: `npm i @emdash-cms/sandbox-workerd workerd`, then
+  `sandboxRunner: "@emdash-cms/sandbox-workerd/sandbox"`.
+
+With a runner configured, open **Registry** in the admin, search
 `@bitdoze.com/emdashhq-contact-forms`, and select **Install**.
 
-### From source / npm
+### In-process, no sandbox (self-hosted or Workers Free)
+
+The package isn't on npm — install it from a checkout, a git URL or the
+release tarball under `dist/`:
 
 ```bash
-npm install emdashhq-contact-forms
+npm install <path-or-git-url>/emdashhq-contact-forms
 ```
 
-Register the generated descriptor in `astro.config.mjs` under `sandboxed`
-(not `plugins`):
+Register the generated descriptor under `plugins:` — it adapts to in-process
+execution automatically:
+
+```js
+import contactForms from "emdashhq-contact-forms";
+
+emdash({
+  plugins: [
+    contactForms, // descriptor object, not a factory call
+  ],
+});
+```
+
+Same routes, storage and admin UI — just no isolation or resource limits,
+which is fine for a plugin you wrote and control.
+
+### Config-driven sandboxed (alternative to the registry)
 
 ```js
 import { sandbox } from "@emdash-cms/cloudflare";
@@ -53,10 +75,7 @@ import contactForms from "emdashhq-contact-forms";
 
 emdash({
   sandboxRunner: sandbox(),
-  sandboxed: [
-    contactForms, // descriptor object, not a factory call
-    // ...your other plugins, including the email provider
-  ],
+  sandboxed: [contactForms],
 });
 ```
 

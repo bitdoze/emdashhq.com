@@ -36,6 +36,11 @@ Astro.response.headers.set("X-Site-Data-Ms", (performance.now() - started).toFix
 
 if (!page && !isHome) return Astro.rewrite("/404");
 
+// On the home page the stats strip sits directly under the hero block.
+const blocks = page?.data.content ?? [];
+const heroIndex = blocks.findIndex((b) => b._type === "marketing_hero");
+const statsAfter = isHome && blocks.length ? (heroIndex >= 0 ? heroIndex + 1 : 1) : -1;
+
 const seo = page
 	? getSeoMeta(page, {
 			siteUrl: Astro.url.origin,
@@ -57,9 +62,12 @@ const seo = page
 		page?.data.content ? (
 			<>
 				<div {...page.edit.content}>
-					<MarketingBlocks value={page.data.content} />
+					<MarketingBlocks value={statsAfter > 0 ? blocks.slice(0, statsAfter) : blocks} />
+					{statsAfter > 0 && <SiteStats />}
+					{statsAfter > 0 && statsAfter < blocks.length && (
+						<MarketingBlocks value={blocks.slice(statsAfter)} />
+					)}
 				</div>
-				{isHome && <SiteStats />}
 			</>
 		) : (
 			<div class="empty-state">

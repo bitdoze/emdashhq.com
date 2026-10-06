@@ -96,6 +96,17 @@ async function fetchNpmDownloads(): Promise<number | null> {
 
 export async function refreshSiteStats(db: D1Like): Promise<void> {
 	await ensureTable(db);
+	/*
+	 * The cron runs hourly — bail while every tracked row is under a day
+	 * old so external APIs are hit once a day, not once an hour. Keying on
+	 * the oldest stamp lets a row whose fetch failed retry next hour.
+	 */
+	const { results: stamps } = await db
+		.prepare("SELECT updated_at FROM site_stats WHERE source <> 'manual'")
+		.all<{ updated_at: string | null }>();
+	const oldest = Math.min(...stamps.map((r) => new Date(r.updated_at ?? 0).getTime()));
+	if (stamps.length && Date.now() - oldest < TTL_MS) return;
+
 	const now = new Date().toISOString();
 	const weekAgo = new Date(Date.now() - WEEK_MS).toISOString();
 	const writes: D1Prepared[] = [];
@@ -151,8 +162,8 @@ export async function getSiteStats(db: D1Like, waitUntil?: (p: Promise<unknown>)
 		}>();
 
 	const tracked = results.filter((r) => r.source !== "manual");
-	const newest = Math.max(0, ...tracked.map((r) => new Date(r.updated_at ?? 0).getTime()));
-	const stale = tracked.length === 0 || Date.now() - newest > TTL_MS;
+	const oldest = Math.min(...tracked.map((r) => new Date(r.updated_at ?? 0).getTime()));
+	const stale = tracked.length === 0 || Date.now() - oldest > TTL_MS;
 
 	if (stale) {
 		const job = refreshSiteStats(db).catch(() => {});

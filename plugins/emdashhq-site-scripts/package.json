@@ -1,0 +1,54 @@
+{
+	"name": "emdashhq-site-scripts",
+	"version": "1.0.0",
+	"description": "Analytics and custom head/body code injection for EmDash CMS, editable in the admin: Plausible, Cloudflare Web Analytics, GA4, plus free-form HTML areas.",
+	"type": "module",
+	"main": "dist/index.mjs",
+	"exports": {
+		".": {
+			"import": "./dist/index.mjs",
+			"types": "./dist/index.d.mts"
+		},
+		"./sandbox": "./dist/plugin.mjs"
+	},
+	"files": [
+		"dist",
+		"emdash-plugin.jsonc",
+		"README.md"
+	],
+	"keywords": [
+		"emdash",
+		"emdash-plugin",
+		"analytics",
+		"plausible",
+		"google-analytics"
+	],
+	"license": "MIT",
+	"author": "Bitdoze <dragos@emdashhq.com> (https://emdashhq.com)",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/bitdoze/emdashhq.com.git",
+		"directory": "plugins/emdashhq-site-scripts"
+	},
+	"homepage": "https://emdashhq.com",
+	"bugs": "https://github.com/bitdoze/emdashhq.com/issues",
+	"scripts": {
+		"validate": "emdash-plugin validate",
+		"build": "emdash-plugin build",
+		"dev": "emdash-plugin dev",
+		"typecheck": "tsc --noEmit",
+		"bundle": "emdash-plugin bundle",
+		"test": "emdash-plugin validate && vitest run",
+		"prepublishOnly": "npm run validate && npm run build"
+	},
+	"peerDependencies": {
+		"emdash": ">=1.0.0"
+	},
+	"devDependencies": {
+		"@emdash-cms/plugin-cli": "0.13.2",
+		"@emdash-cms/plugin-test": "^0.2.7",
+		"emdash": ">=1.0.0",
+		"typescript": "^5.9.0",
+		"vitest": "^4.1.0"
+	}
+}

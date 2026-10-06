@@ -1,0 +1,70 @@
+{
+	"$schema": "./node_modules/@emdash-cms/plugin-cli/schemas/emdash-plugin.schema.json",
+
+	"slug": "emdashhq-site-scripts",
+	"publisher": "did:plc:qr4gckwrgatg5h3lzc57bsnp", // bitdoze.com
+
+	"license": "MIT",
+	"author": { "name": "Bitdoze", "url": "https://bitdoze.com" },
+	"security": { "email": "dragos@emdashhq.com" },
+	"name": "Site Scripts & Analytics",
+	"description": "Analytics and custom code on public pages: Plausible, Cloudflare Web Analytics, GA4 and free-form head/body HTML, all editable in the admin.",
+	"keywords": ["analytics", "plausible", "cloudflare", "scripts", "tracking"],
+
+	"capabilities": ["hooks.page-fragments:register"],
+	"allowedHosts": [],
+
+	"admin": {
+		"settingsSchema": {
+			"enabled": {
+				"type": "boolean",
+				"label": "Inject scripts on public pages",
+				"description": "Master switch. Turn it off to stop every script below without deleting them.",
+				"default": true
+			},
+			"plausibleSrc": {
+				"type": "url",
+				"label": "Plausible: script URL",
+				"description": "The script URL from your Plausible site, for example https://plausible.io/js/pa-XXXX.js or the same path on your self-hosted domain. A pa-XXXX.js URL is loaded together with its init call, so nothing else is needed. For the older script.js format, also fill in the domain below. Leave empty to use https://plausible.io/js/script.js when only a domain is set.",
+				"placeholder": "https://plausible.io/js/pa-XXXX.js"
+			},
+			"plausibleDomain": {
+				"type": "string",
+				"label": "Plausible: site domain (older script format only)",
+				"description": "For example emdashhq.com. Not used with a pa-XXXX.js script URL."
+			},
+			"cloudflareBeaconToken": {
+				"type": "string",
+				"label": "Cloudflare Web Analytics: token",
+				"description": "The token from Cloudflare, Web Analytics, your site. Leave empty to disable."
+			},
+			"gaMeasurementId": {
+				"type": "string",
+				"label": "Google Analytics 4: measurement ID",
+				"description": "For example G-XXXXXXXXXX. Leave empty to disable."
+			},
+			"headHtml": {
+				"type": "string",
+				"label": "Custom HTML in <head>",
+				"description": "Raw HTML inserted as written: script tags, link tags, meta tags (site verification, fonts, preconnect).",
+				"multiline": true
+			},
+			"bodyStartHtml": {
+				"type": "string",
+				"label": "Custom HTML at the start of <body>",
+				"description": "For example a Google Tag Manager noscript iframe.",
+				"multiline": true
+			},
+			"bodyEndHtml": {
+				"type": "string",
+				"label": "Custom HTML at the end of <body>",
+				"description": "Chat widgets, deferred scripts, anything that should load last.",
+				"multiline": true
+			}
+		}
+	},
+
+	"release": {
+		"requires": { "env:emdash": ">=1.0.0" }
+	}
+}

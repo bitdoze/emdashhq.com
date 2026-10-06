@@ -1,6 +1,7 @@
 ---
 import { getEmDashEntry, getSeoMeta, getContentSeo } from "emdash";
 import MarketingBlocks from "../components/MarketingBlocks.astro";
+import SiteStats from "../components/blocks/SiteStats.astro";
 import Base from "../layouts/Base.astro";
 import { getSiteChrome } from "../lib/site-data";
 import { preloadHubBlocks } from "../lib/hub-content";
@@ -54,9 +55,12 @@ const seo = page
 >
 	{
 		page?.data.content ? (
-			<div {...page.edit.content}>
-				<MarketingBlocks value={page.data.content} />
-			</div>
+			<>
+				<div {...page.edit.content}>
+					<MarketingBlocks value={page.data.content} />
+				</div>
+				{isHome && <SiteStats />}
+			</>
 		) : (
 			<div class="empty-state">
 				<h1>Welcome to EmDash HQ</h1>

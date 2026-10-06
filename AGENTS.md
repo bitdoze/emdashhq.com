@@ -58,6 +58,10 @@ One route, `src/pages/[...slug].astro`, renders every entry in the `pages` colle
 
 Seeded pages: `home`, `tutorials`, `videos`, `themes`, `plugins`, `services`, `contact`.
 
+## Site stats strip
+
+`src/components/blocks/SiteStats.astro` renders the "By the numbers" ledger on the home page (after the content blocks). Counters live in a `site_stats` D1 table (`key`, `label`, `value`, `suffix`, `source`, `updated_at`) managed by `src/lib/site-stats.ts`: the table self-creates and seeds on first read, `npm_downloads` refreshes from the npm downloads API and `plugins`/`themes` recount `ec_resources` at most once every 24 h — via `refreshSiteStats` in the worker `scheduled` handler (`src/worker.ts`, hourly cron) or lazily on a stale page read. Bindings come from `cloudflare:workers` (`env.DB`); `Astro.locals.runtime` does not exist in Astro 6 — `waitUntil` is `Astro.locals.cfContext`. The `sites` row is manual: update it with `npx wrangler d1 execute emdashhq --remote --command "UPDATE site_stats SET value=<n>, updated_at=datetime('now') WHERE key='sites'"`.
+
 ## Schema
 
 - `pages`: `title`, `content` (a `blocks` field).

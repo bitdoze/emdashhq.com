@@ -101,30 +101,33 @@ export async function refreshSiteStats(db: D1Like): Promise<void> {
 	const writes: D1Prepared[] = [];
 
 	/*
-	 * Rotate the weekly baseline before writing the new value — only when
-	 * the prior snapshot is at least a week old, so the delta is honestly
-	 * "since last week" rather than since whenever the table was seeded.
+	 * Maintain the weekly baseline on every refresh. A row with no
+	 * baseline stamps prev_at only — prev_value stays NULL, so the delta
+	 * stays hidden until a real week of history exists. Once prev_at is
+	 * a week old the current value becomes the new baseline and the
+	 * clock restarts.
 	 */
-	const rotate = (key: string) =>
+	const rotate = (key: string) => [
 		db
-			.prepare(
-				`UPDATE site_stats SET prev_value=value, prev_at=?
-				 WHERE key=? AND (prev_at < ? OR (prev_at IS NULL AND updated_at IS NOT NULL AND updated_at < ?))`,
-			)
-			.bind(now, key, weekAgo, weekAgo);
+			.prepare("UPDATE site_stats SET prev_value=value, prev_at=? WHERE key=? AND prev_at < ?")
+			.bind(now, key, weekAgo),
+		db.prepare("UPDATE site_stats SET prev_at=? WHERE key=? AND prev_at IS NULL").bind(now, key),
+	];
 	const set = (key: string, value: number) =>
 		db.prepare("UPDATE site_stats SET value=?, updated_at=? WHERE key=?").bind(value, now, key);
 
+	for (const s of DEFAULT_STATS) writes.push(...rotate(s.key));
+
 	try {
 		const downloads = await fetchNpmDownloads();
-		if (downloads !== null) writes.push(rotate("npm_downloads"), set("npm_downloads", downloads));
+		if (downloads !== null) writes.push(set("npm_downloads", downloads));
 	} catch {
 		// Keep the last good value; a failed fetch must never blank the counters.
 	}
 
 	try {
 		const plugins = await countRegistryPlugins();
-		if (plugins !== null) writes.push(rotate("plugins"), set("plugins", plugins));
+		if (plugins !== null) writes.push(set("plugins", plugins));
 	} catch {
 		// Same — registry unreachable this run.
 	}

@@ -10,11 +10,13 @@ const { headline, subheadline, meta } = Astro.props;
 ---
 
 {
-	(headline || subheadline) && (
+	headline || subheadline ? (
 		<header class="section-header">
 			{meta && <p class="section-meta">{meta}</p>}
-			{headline && <h2 class="section-headline">{headline}</h2>}
+			{headline ? <h2 class="section-headline">{headline}</h2> : meta && <h2 class="sr-only">{meta}</h2>}
 			{subheadline && <p class="section-subheadline">{subheadline}</p>}
 		</header>
+	) : (
+		meta && <h2 class="sr-only">{meta}</h2>
 	)
 }

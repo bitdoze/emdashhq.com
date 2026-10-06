@@ -1,5 +1,5 @@
 ---
-version: 1
+version: 2
 slug: "src-pages-slug-astro"
 primary_target: "src/pages/[...slug].astro"
 related_targets: []
@@ -11,30 +11,29 @@ Scope: every public page. Visitor mode: Persuade (evaluate EmDash, grab a resour
 
 ## THESIS
 
-The site is a drawing set, not a landing page: each page is a numbered sheet of engineering drawings for one working CMS, and the offer is proved by showing how the thing is wired. It refuses the category-default arrangement of centered hero, icon-tile card grids, and gradient banners.
+The site is a magazine issue about one working CMS, not a landing page: each page is a cover in the Bitdoze cover style — cream stock, indigo serif display, rose highlighter marks, pill chips and paper cards resting on a desk. The offer is proved by showing how the thing is wired, dressed like print.
 
 ## OWN-WORLD
 
-Drafting-sheet material: paper ground with a faint 5 mm grid, blue ink lines at 1–1.5 px, near-square corners, no shadows. Light mode is a blue-ink sheet on paper; dark mode is a true blueprint (Prussian-blue ground, pale ink line-work). Type: Archivo for display and body (engineering grotesque), IBM Plex Mono for annotations, metadata, labels, buttons. Controls: solid-ink stamp buttons and outlined buttons, both mono uppercase; badges are bracket tags. Phosphor icons bare in ink. Depth comes from line weight and layered rules, never blur or glow.
+Print material: cream paper ground with faint fiber texture, deep-indigo ink, dusty-rose marker accents, warm-amber detail. Light mode is a printed cover; dark mode is the ink plate (deep navy, cream ink, same rose). Type: Playfair Display for headlines (high-contrast serif, italic inside the `.hl` swash), Archivo for body, IBM Plex Mono for eyebrows, metadata, pills and buttons. Controls: solid stamp buttons and outlined paper buttons, mono uppercase; badges and filter chips are pills. Cards: paper surfaces with soft indigo-tinted shadows, small lift on hover. Featured surfaces are the always-dark "plate" (video spotlight, highlighted tier, dark CTA, footer). Decorations: `.hl` marker swash, washi tape, postal stamp — hero/CTA features only.
 
 ## STORY
 
-The visitor sees a working system documented by the person who builds with it, concludes the tutorials are real, and hires or follows. Every section ends in a concrete action; the approval block (CTA) asks for sign-off.
+The visitor sees a working system documented by the person who builds with it — but dressed like a beloved tutorial cover — concludes the tutorials are real, and hires or follows. Every section ends in a concrete action; the CTA banner is the issue's mail-in card.
 
 ## FIRST VIEWPORT
 
-Home, 1440 px: sticky ink title strip carries the EMDASH HQ wordmark and a mono nav whose items carry sheet numbers, current sheet underlined. Left column: a title block under a heavy rule — mono meta line (SET · SHEET 01 · REV date), the CMS headline at 3–3.5rem Archivo 800, subhead, then stamp button "Work with me" and outlined "Watch on YouTube". Right column: an authored SVG schematic of the EmDash stack (browser → Worker → D1/R2, admin branch) in thin ink strokes with mono node labels; it draws itself on load over ~1.2 s. Registration marks sit at the sheet corners.
+Home, 1440 px: translucent masthead carries the serif EMDASH HQ wordmark and a mono nav with issue numbers, current page underlined in rose. Left column: mono eyebrow with rose dot ("EMDASH CMS HUB BY BITDOZE · VOL. 2026"), the Playfair headline with the key phrase italic inside a rose highlighter swash, subhead, then indigo stamp button and outlined button, and pill spec chips below. Right column: a paper collage — a rotated figure card taped down, a postal stamp ("EDGE SSR") on its corner, the semantic stack diagram inside window chrome, and a dark terminal card ("$ wrangler deploy → Deployed!") overlapping its foot.
 
 ## FORM
 
-Code-led build. Signature interaction: the hero schematic draws on load, once; reduced-motion renders it complete. Hover language: registration marks appear at card corners, link underlines draw, rows tint paper-blue. No scroll-driven motion. Navigation is the sheet index; the footer is the set's cover block on blueprint ground.
+Code-led build. Signature interaction: the marker swash and the diagram draw on first paint, once; reduced-motion renders them complete. Hover language: cards and chips lift a few pixels with deeper paper shadow. No scroll-driven motion. Navigation is the issue's masthead; the footer is the back cover — always the ink plate with a rose top edge.
 
 ## RAISES (from the roll's declined challengers)
 
-- From seven-segment: metadata (dates, durations, counts) set as instrument readouts in tabular mono; empty states designed deliberately.
-- From dong-ho print: flat color-block discipline with precise keylines; entries reveal in order on first paint.
-- From neubrutalist: decisive press state on buttons (1 px travel, no shadow theatre).
+- Keep the Drawing Set's truth: the diagram stays semantic (title, desc, real labels) and must not fake numbers.
+- Keep left-edge discipline: every section child starts at the container's left edge; only a centered hero centers.
 
 ## RISKS
 
-Mono overload (confine to ≤ sm sizes and metadata); grid texture must stay ≤ 5% opacity; the schematic must stay semantic (title, desc, real labels) and must not fake numbers; services copy stays the existing placeholder-truthful content.
+Rose overload (it is a marker, not a fill — confine to marks, annotations, small accents); mono overload (confine to ≤ sm sizes and metadata); Playfair must stay at display sizes — body stays Archivo; collage elements (tape/stamp/tilt) only on hero and CTA, never per-card; services copy stays the existing placeholder-truthful content.

@@ -6,6 +6,7 @@ import type { PageContentBlock } from "../../../emdash-env";
 import { lines } from "../../lib/format";
 import { iconFor } from "../../lib/icons";
 import { optionalLink } from "../../lib/links";
+import NewTab from "../NewTab.astro";
 import SectionHeader from "./SectionHeader.astro";
 import SectionLink from "./SectionLink.astro";
 
@@ -21,7 +22,7 @@ const services = await getHubEntries(Astro, "services", value);
 
 <section class="section" id={anchor_id || undefined}>
 	<div class="container">
-		<SectionHeader headline={headline} subheadline={subheadline} meta="Scope of work" />
+		<SectionHeader headline={headline} subheadline={subheadline} meta="Services" />
 
 		{
 			services.length > 0 ? (
@@ -37,7 +38,7 @@ const services = await getHubEntries(Astro, "services", value);
 									</span>
 									{entry.data.price_label && <span class="service-price">{entry.data.price_label}</span>}
 								</div>
-								<p class="service-no">Scope {String(index + 1).padStart(2, "0")}</p>
+								<p class="service-no">Service {String(index + 1).padStart(2, "0")}</p>
 								<h3 class="service-title">{entry.data.title}</h3>
 								<p class="service-summary">{entry.data.summary}</p>
 								{included.length > 0 && (
@@ -54,6 +55,7 @@ const services = await getHubEntries(Astro, "services", value);
 									<a href={cta.href} target={cta.target} rel={cta.rel} class="btn btn-secondary service-cta">
 										{cta.label}
 										<Icon name="ph:arrow-right" aria-hidden="true" class="service-cta-arrow" />
+										{cta.target === "_blank" && <NewTab />}
 									</a>
 								)}
 							</article>
@@ -85,17 +87,15 @@ const services = await getHubEntries(Astro, "services", value);
 		margin-bottom: var(--spacing-sm);
 	}
 
+	/* Price metadata reads as a caption, not a chip: pills that do
+	   nothing shouldn't wear interactive chrome. */
 	.service-price {
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
 		font-weight: 600;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		color: var(--color-brand-strong);
-		padding: 4px 10px;
-		background: color-mix(in srgb, var(--color-brand) 10%, transparent);
-		border: 1px solid color-mix(in srgb, var(--color-brand) 28%, transparent);
-		border-radius: var(--radius-sm);
+		color: var(--color-muted);
 		text-align: right;
 		text-wrap: balance;
 	}
@@ -104,15 +104,9 @@ const services = await getHubEntries(Astro, "services", value);
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
 		font-weight: 600;
-		letter-spacing: 0.08em;
+		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: var(--color-muted);
-	}
-
-	.service-no::before {
-		content: "// ";
-		color: var(--color-brand-strong);
-		opacity: 0.6;
+		color: var(--color-accent-text);
 	}
 
 	.service-title {

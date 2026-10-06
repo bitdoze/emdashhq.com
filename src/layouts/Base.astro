@@ -5,6 +5,7 @@ import { createPublicPageContext } from "emdash/page";
 import { Font } from "astro:assets";
 import { Icon } from "astro-iconset/components";
 import { linkAttrs, isCurrentPath } from "../lib/links";
+import NewTab from "../components/NewTab.astro";
 import "../styles/tokens.css";
 import "../styles/theme.css";
 
@@ -82,7 +83,9 @@ const isLoggedIn = !!Astro.locals.user;
 		<title>{fullTitle}</title>
 		<EmDashHead page={pageCtx} />
 		<Font cssVariable="--font-body" preload />
+		<Font cssVariable="--font-display" preload />
 		<Font cssVariable="--font-mono" preload />
+		<link rel="alternate" type="application/rss+xml" title={`${siteTitle} — new items`} href="/rss.xml" />
 		<script is:inline>
 			// Apply an explicit theme choice immediately to prevent flash.
 			// With no cookie, color-scheme: light dark follows the OS.
@@ -138,6 +141,7 @@ const isLoggedIn = !!Astro.locals.user;
 									>
 										<span class="nav-no" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
 										{item.label}
+										{link.target === "_blank" && <NewTab />}
 									</a>
 								);
 							})
@@ -155,6 +159,7 @@ const isLoggedIn = !!Astro.locals.user;
 									data-astro-prefetch="load"
 								>
 									{headerCta.label}
+									{headerCtaLink.target === "_blank" && <NewTab />}
 								</a>
 							)
 						}
@@ -192,7 +197,7 @@ const isLoggedIn = !!Astro.locals.user;
 											href={linkAttrs(social.url).href}
 											target="_blank"
 											rel="noopener noreferrer"
-											aria-label={social.label}
+											aria-label={`${social.label} (opens in a new tab)`}
 										>
 											<Icon name={social.icon} aria-hidden="true" />
 										</a>
@@ -206,12 +211,13 @@ const isLoggedIn = !!Astro.locals.user;
 					{
 						footerColumns.map((column) => (
 							<div class="footer-col">
-								<h4>{column.label}</h4>
+								<h3>{column.label}</h3>
 								{column.items.map((item) => {
 									const link = menuLink(item);
 									return (
 										<a href={link.href} target={link.target} rel={link.rel} data-astro-prefetch="load">
 											{item.label}
+											{link.target === "_blank" && <NewTab />}
 										</a>
 									);
 								})}
@@ -224,7 +230,7 @@ const isLoggedIn = !!Astro.locals.user;
 				<p>
 					&copy; {new Date().getFullYear()} {siteTitle}. All rights reserved.
 				</p>
-				<p class="footer-status" aria-label="Site status">
+				<p class="footer-status">
 					<span class="status-dot" aria-hidden="true"></span>
 					Built with EmDash
 				</p>
@@ -252,7 +258,11 @@ const isLoggedIn = !!Astro.locals.user;
 					>
 				</div>
 				<p class="footer-powered">
-					Powered by <a href="https://emdashcms.com">EmDash</a>
+					Powered by
+					<a href="https://emdashcms.com" target="_blank" rel="noopener noreferrer">
+						<img src="/brand/emdash-light-text.svg" alt="EmDash" class="footer-emdash" width="44" height="11" />
+						<NewTab />
+					</a>
 				</p>
 			</div>
 		</footer>
@@ -385,17 +395,6 @@ const isLoggedIn = !!Astro.locals.user;
 					line-height: var(--leading-normal);
 					color: var(--color-text);
 					background-color: var(--color-bg);
-					/* The sheet's 5mm graph: fine grid with a stronger line every fifth. */
-					background-image:
-						linear-gradient(light-dark(rgba(30, 64, 175, 0.055), rgba(219, 231, 251, 0.05)) 1px, transparent 1px),
-						linear-gradient(90deg, light-dark(rgba(30, 64, 175, 0.055), rgba(219, 231, 251, 0.05)) 1px, transparent 1px),
-						linear-gradient(light-dark(rgba(30, 64, 175, 0.03), rgba(219, 231, 251, 0.028)) 1px, transparent 1px),
-						linear-gradient(90deg, light-dark(rgba(30, 64, 175, 0.03), rgba(219, 231, 251, 0.028)) 1px, transparent 1px);
-					background-size:
-						140px 140px,
-						140px 140px,
-						28px 28px,
-						28px 28px;
 					-webkit-font-smoothing: antialiased;
 					min-height: 100vh;
 				}
@@ -505,10 +504,9 @@ const isLoggedIn = !!Astro.locals.user;
 					justify-content: center;
 					flex-shrink: 0;
 					font-size: 1.35rem;
-					color: var(--color-brand-strong);
-					background: color-mix(in srgb, var(--color-brand) 6%, var(--color-surface));
-					border: var(--line-hair) solid color-mix(in srgb, var(--color-brand) 35%, transparent);
-					border-radius: var(--radius);
+					color: var(--color-on-control);
+					background: var(--color-control);
+					border-radius: 12px;
 				}
 
 				.btn {
@@ -571,8 +569,6 @@ const isLoggedIn = !!Astro.locals.user;
 				position: sticky;
 				top: 0;
 				z-index: 100;
-				background: color-mix(in srgb, var(--color-bg) 92%, transparent);
-				border-bottom: var(--line-ink) solid var(--color-text);
 			}
 
 			.nav {
@@ -588,8 +584,8 @@ const isLoggedIn = !!Astro.locals.user;
 			.site-logo {
 				font-family: var(--font-heading);
 				font-size: var(--font-size-2xl);
-				font-weight: var(--font-weight-display);
-				letter-spacing: 0.02em;
+				font-weight: 900;
+				letter-spacing: 0.01em;
 				text-transform: uppercase;
 				color: var(--color-text);
 			}
@@ -667,8 +663,9 @@ const isLoggedIn = !!Astro.locals.user;
 				left: 0;
 				right: 100%;
 				bottom: -4px;
-				height: 2px;
-				background: var(--color-brand-strong);
+				height: 3px;
+				background: var(--color-accent);
+				border-radius: 40% 60% 55% 45% / 60% 45% 55% 40%;
 				transition: right var(--transition-base);
 			}
 
@@ -701,7 +698,7 @@ const isLoggedIn = !!Astro.locals.user;
 			.nav-admin {
 				font-size: var(--font-size-sm);
 				color: var(--color-muted);
-				opacity: 0.5;
+				opacity: 0.8;
 			}
 
 			/* Compact variant of .btn.btn-primary for the header */
@@ -715,14 +712,10 @@ const isLoggedIn = !!Astro.locals.user;
 			}
 
 			.site-footer {
-				/* The set's cover sheet: blueprint ground in both modes. */
-				background:
-					linear-gradient(rgba(219, 231, 251, 0.035) 1px, transparent 1px),
-					linear-gradient(90deg, rgba(219, 231, 251, 0.035) 1px, transparent 1px),
-					light-dark(#0d2340, #081a33);
-				background-size: 28px 28px, 28px 28px, auto;
-				border-top: 3px solid var(--color-brand-strong);
-				color: #cdddf5;
+				/* The back cover: the ink plate in both modes. */
+				background: var(--color-plate);
+				border-top: 3px solid var(--color-accent);
+				color: var(--color-plate-muted);
 			}
 
 			.footer-content {
@@ -737,10 +730,10 @@ const isLoggedIn = !!Astro.locals.user;
 			.footer-logo {
 				font-family: var(--font-heading);
 				font-size: var(--font-size-lg);
-				font-weight: var(--font-weight-display);
-				letter-spacing: 0.02em;
+				font-weight: 900;
+				letter-spacing: 0.01em;
 				text-transform: uppercase;
-				color: #fff;
+				color: var(--color-plate-ink);
 			}
 
 			.footer-logo-img {
@@ -751,7 +744,7 @@ const isLoggedIn = !!Astro.locals.user;
 			.footer-tagline {
 				margin-top: var(--spacing-sm);
 				font-size: var(--font-size-sm);
-				color: #8fa8cd;
+				color: var(--color-plate-muted);
 			}
 
 			.footer-social {
@@ -768,9 +761,9 @@ const isLoggedIn = !!Astro.locals.user;
 				width: 40px;
 				height: 40px;
 				font-size: 1.25rem;
-				color: #8fa8cd;
-				border: 1px solid rgb(219 231 251 / 0.25);
-				border-radius: var(--radius);
+				color: var(--color-plate-muted);
+				border: 1px solid color-mix(in srgb, var(--color-plate-ink) 25%, transparent);
+				border-radius: var(--radius-full);
 				transition:
 					color var(--transition-fast),
 					border-color var(--transition-fast),
@@ -778,9 +771,9 @@ const isLoggedIn = !!Astro.locals.user;
 			}
 
 			.footer-social a:hover {
-				color: #fff;
-				border-color: #cdddf5;
-				background: rgb(219 231 251 / 0.08);
+				color: var(--color-plate);
+				border-color: var(--color-plate-ink);
+				background: var(--color-plate-ink);
 			}
 
 			.footer-links {
@@ -789,26 +782,26 @@ const isLoggedIn = !!Astro.locals.user;
 				gap: var(--spacing-xl);
 			}
 
-			.footer-col h4 {
+			.footer-col h3 {
 				font-family: var(--font-mono);
 				font-size: var(--font-size-xs);
 				font-weight: 600;
-				letter-spacing: 0.08em;
+				letter-spacing: 0.18em;
 				text-transform: uppercase;
 				margin-bottom: var(--spacing-md);
-				color: #fff;
+				color: var(--color-accent-soft);
 			}
 
 			.footer-col a {
 				display: block;
 				font-size: var(--font-size-sm);
-				color: #8fa8cd;
+				color: var(--color-plate-muted);
 				padding: var(--spacing-xs) 0;
 				transition: color var(--transition-fast);
 			}
 
 			.footer-col a:hover {
-				color: #fff;
+				color: var(--color-plate-ink);
 				text-decoration: underline;
 				text-underline-offset: 3px;
 			}
@@ -823,12 +816,27 @@ const isLoggedIn = !!Astro.locals.user;
 				font-family: var(--font-mono);
 				font-size: var(--font-size-xs);
 				letter-spacing: 0.04em;
-				color: #8fa8cd;
-				border-top: 1px solid rgb(219 231 251 / 0.16);
+				color: var(--color-plate-muted);
+				border-top: 1px solid color-mix(in srgb, var(--color-plate-ink) 16%, transparent);
 			}
 
 			.footer-powered a {
-				color: #fff;
+				display: inline-flex;
+				align-items: center;
+				gap: 0.4em;
+				margin-left: 0.6em;
+				color: var(--color-plate-ink);
+			}
+
+			.footer-emdash {
+				display: block;
+				height: 2em;
+				width: auto;
+				opacity: 0.85;
+			}
+
+			.footer-powered a:hover .footer-emdash {
+				opacity: 1;
 			}
 
 			.footer-status {
@@ -839,15 +847,14 @@ const isLoggedIn = !!Astro.locals.user;
 				font-weight: 600;
 				letter-spacing: 0.06em;
 				text-transform: uppercase;
-				color: #8fa8cd;
+				color: var(--color-plate-muted);
 			}
 
 			.status-dot {
 				width: 8px;
 				height: 8px;
-				background: #4ade80;
-				border: 1px solid rgb(219 231 251 / 0.4);
-				border-radius: 1px;
+				background: var(--color-plate-ok);
+				border-radius: 50%;
 			}
 
 			.theme-switcher {
@@ -857,27 +864,30 @@ const isLoggedIn = !!Astro.locals.user;
 
 			.theme-btn {
 				background: transparent;
-				border: 1px solid rgb(219 231 251 / 0.25);
-				color: #8fa8cd;
+				border: 1px solid color-mix(in srgb, var(--color-plate-ink) 25%, transparent);
+				color: var(--color-plate-muted);
 				font-family: var(--font-mono);
 				font-size: var(--font-size-xs);
-				letter-spacing: 0.05em;
+				letter-spacing: 0.08em;
 				text-transform: uppercase;
 				padding: var(--spacing-xs) var(--spacing-sm);
-				border-radius: var(--radius-sm);
+				border-radius: var(--radius-full);
 				cursor: pointer;
-				transition: all var(--transition-fast);
+				transition:
+					color var(--transition-fast),
+					border-color var(--transition-fast),
+					background var(--transition-fast);
 			}
 
 			.theme-btn:hover {
-				color: #fff;
-				border-color: #cdddf5;
+				color: var(--color-plate-ink);
+				border-color: var(--color-plate-ink);
 			}
 
 			.theme-btn.active {
-				background: rgb(219 231 251 / 0.12);
-				color: #fff;
-				border-color: var(--color-accent-soft);
+				background: var(--color-plate-ink);
+				color: var(--color-plate);
+				border-color: var(--color-plate-ink);
 			}
 
 			@media (max-width: 768px) {

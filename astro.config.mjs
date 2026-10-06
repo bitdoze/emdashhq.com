@@ -132,6 +132,14 @@ export default defineConfig({
 		},
 		{
 			provider: fontProviders.google(),
+			name: "Playfair Display",
+			cssVariable: "--font-display",
+			weights: [500, 700, 800, 900],
+			styles: ["normal", "italic"],
+			fallbacks: ["Georgia", "serif"],
+		},
+		{
+			provider: fontProviders.google(),
 			name: "IBM Plex Mono",
 			cssVariable: "--font-mono",
 			weights: [400, 500, 600],

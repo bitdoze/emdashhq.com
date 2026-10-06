@@ -13,7 +13,7 @@ const { anchor_id, headline, items } = value;
 	<div class="container">
 		{headline && (
 			<header class="section-header">
-				<p class="section-meta">Questions & answers</p>
+				<p class="section-meta">Q&amp;A</p>
 				<h2 class="section-headline">{headline}</h2>
 			</header>
 		)}
@@ -45,19 +45,19 @@ const { anchor_id, headline, items } = value;
 	}
 
 	.faq-item {
-		background: var(--gradient-card);
+		background: var(--color-surface);
 		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
-		box-shadow: var(--shadow-sm), inset 0 1px 0 0 var(--color-highlight);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-sm);
 		transition:
 			border-color var(--transition-base),
-			background var(--transition-base),
+			transform var(--transition-base),
 			box-shadow var(--transition-base);
 		overflow: hidden;
 	}
 
 	.faq-item:hover {
-		border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-border));
+		border-color: color-mix(in srgb, var(--color-brand) 45%, var(--color-border));
 		box-shadow: var(--shadow);
 	}
 
@@ -89,15 +89,16 @@ const { anchor_id, headline, items } = value;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 32px;
-		height: 32px;
-		font-family: var(--font-mono);
-		font-size: var(--font-size-xs);
-		font-weight: 600;
-		color: var(--color-brand-strong);
-		background: color-mix(in srgb, var(--color-brand) 8%, transparent);
-		border: 1px solid color-mix(in srgb, var(--color-brand) 25%, transparent);
-		border-radius: var(--radius-sm);
+		width: 34px;
+		height: 34px;
+		font-family: var(--font-heading);
+		font-size: var(--font-size-sm);
+		font-weight: 800;
+		font-style: italic;
+		color: var(--color-accent-text);
+		background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+		border-radius: 50%;
 		flex-shrink: 0;
 		font-variant-numeric: tabular-nums;
 	}
@@ -120,7 +121,7 @@ const { anchor_id, headline, items } = value;
 	}
 
 	.faq-answer {
-		padding: 0 var(--spacing-lg) var(--spacing-lg) calc(var(--spacing-lg) + 32px + var(--spacing-md));
+		padding: 0 var(--spacing-lg) var(--spacing-lg) calc(var(--spacing-lg) + 34px + var(--spacing-md));
 	}
 
 	.faq-answer p {
@@ -138,7 +139,7 @@ const { anchor_id, headline, items } = value;
 		}
 
 		.faq-answer {
-			padding: 0 var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) + 32px + var(--spacing-sm));
+			padding: 0 var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) + 34px + var(--spacing-sm));
 		}
 	}
 </style>

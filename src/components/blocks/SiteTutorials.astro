@@ -5,6 +5,7 @@ import type { BlockComponentProps } from "emdash/ui";
 import type { PageContentBlock } from "../../../emdash-env";
 import { hostOf, labelize } from "../../lib/format";
 import { linkAttrs } from "../../lib/links";
+import NewTab from "../NewTab.astro";
 import FilterBar from "./FilterBar.astro";
 import SectionHeader from "./SectionHeader.astro";
 import SectionLink from "./SectionLink.astro";
@@ -25,7 +26,7 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 
 <section class="section" id={anchor_id || undefined}>
 	<div class="container" data-filter-root>
-		<SectionHeader headline={headline} subheadline={subheadline} meta="Set index" />
+		<SectionHeader headline={headline} subheadline={subheadline} meta="Guides" />
 		{show_filters && <FilterBar options={topics} label="Filter tutorials by topic" />}
 
 		{
@@ -46,6 +47,7 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 									<h3 class="tutorial-title">
 										<a href={link.href} target={link.target} rel={link.rel} class="card-link">
 											{entry.data.title}
+											{link.target === "_blank" && <><span class="ext-arrow" aria-hidden="true">↗</span><NewTab /></>}
 										</a>
 									</h3>
 									{entry.data.summary && <p class="tutorial-summary">{entry.data.summary}</p>}
@@ -69,13 +71,13 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 
 <style>
 	/*
-	 * The set index: elevated interactive cards with numbered index badges
+	 * The contents page: numbered rows like a magazine table of contents.
 	 */
 	.tutorial-index {
 		list-style: none;
 		display: flex;
 		flex-direction: column;
-		gap: var(--spacing-sm);
+		gap: var(--spacing-md);
 	}
 
 	/* Positioned so the stretched .card-link overlay stays inside its row. */
@@ -86,37 +88,36 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 		gap: var(--spacing-lg);
 		align-items: center;
 		padding: var(--spacing-lg);
-		background: var(--gradient-card);
+		background: var(--color-surface);
 		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
-		box-shadow: var(--shadow-sm), inset 0 1px 0 0 var(--color-highlight);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-sm);
 		transition:
 			border-color var(--transition-base),
-			background var(--transition-base),
 			transform var(--transition-base),
 			box-shadow var(--transition-base);
 	}
 
 	.tutorial-row:hover {
-		transform: translateX(4px);
-		border-color: color-mix(in srgb, var(--color-brand) 60%, var(--color-border));
-		background: color-mix(in srgb, var(--color-brand) 4%, var(--color-surface));
-		box-shadow: var(--shadow), 0 0 16px -4px color-mix(in srgb, var(--color-brand) 20%, transparent);
+		transform: translateY(-2px);
+		border-color: color-mix(in srgb, var(--color-brand) 45%, var(--color-border));
+		box-shadow: var(--shadow-lg);
 	}
 
 	.row-no {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 32px;
-		height: 32px;
-		font-family: var(--font-mono);
-		font-size: var(--font-size-xs);
-		font-weight: 600;
-		color: var(--color-brand-strong);
-		background: color-mix(in srgb, var(--color-brand) 8%, transparent);
-		border: 1px solid color-mix(in srgb, var(--color-brand) 25%, transparent);
-		border-radius: var(--radius-sm);
+		width: 34px;
+		height: 34px;
+		font-family: var(--font-heading);
+		font-size: var(--font-size-sm);
+		font-weight: 800;
+		font-style: italic;
+		color: var(--color-accent-text);
+		background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+		border-radius: 50%;
 		font-variant-numeric: tabular-nums;
 		flex-shrink: 0;
 	}
@@ -135,6 +136,17 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 		text-wrap: pretty;
 	}
 
+	/* inline-block keeps the marker out of the underline on mobile. */
+	.ext-arrow {
+		display: inline-block;
+		margin-left: 0.3em;
+		font-family: var(--font-body);
+		font-size: 0.65em;
+		font-style: normal;
+		vertical-align: 0.15em;
+		color: var(--color-accent-text);
+	}
+
 	.tutorial-summary {
 		font-size: var(--font-size-sm);
 		color: var(--color-muted);
@@ -149,13 +161,13 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
 		font-weight: 600;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		color: var(--color-brand-strong);
-		padding: 6px 12px;
+		padding: 6px 14px;
 		background: color-mix(in srgb, var(--color-brand) 6%, transparent);
-		border: 1px solid color-mix(in srgb, var(--color-brand) 20%, transparent);
-		border-radius: var(--radius-sm);
+		border: 1px solid color-mix(in srgb, var(--color-brand) 22%, transparent);
+		border-radius: var(--radius-full);
 		transition:
 			background var(--transition-fast),
 			color var(--transition-fast),
@@ -184,6 +196,14 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 
 		.row-source {
 			display: none;
+		}
+
+		/* With the host pill hidden, the title carries the affordance. */
+		.tutorial-title a {
+			text-decoration: underline;
+			text-decoration-color: var(--color-accent);
+			text-decoration-thickness: 1.5px;
+			text-underline-offset: 4px;
 		}
 	}
 </style>

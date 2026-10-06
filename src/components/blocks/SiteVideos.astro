@@ -1,10 +1,12 @@
 ---
+import { getSiteSettingsWithCacheHint } from "emdash";
 import { getHubEntries } from "../../lib/hub-content";
 import type { BlockComponentProps } from "emdash/ui";
 import type { PageContentBlock } from "../../../emdash-env";
 import { linkAttrs } from "../../lib/links";
 import { parseYouTubeId } from "../../lib/youtube";
 import VideoFacade from "../VideoFacade.astro";
+import NewTab from "../NewTab.astro";
 import SectionHeader from "./SectionHeader.astro";
 import SectionLink from "./SectionLink.astro";
 
@@ -26,11 +28,15 @@ const videos = playable;
 const first = spotlight ? videos[0] : undefined;
 const grid = spotlight ? videos.slice(1) : videos;
 const firstArticle = first ? linkAttrs(first.entry.data.article_url) : undefined;
+
+const settingsResult = await getSiteSettingsWithCacheHint();
+if (Astro.cache?.enabled) Astro.cache.set(settingsResult.cacheHint);
+const channel = settingsResult.data?.social?.youtube ? linkAttrs(settingsResult.data.social.youtube) : undefined;
 ---
 
 <section class="section" id={anchor_id || undefined}>
 	<div class="container">
-		<SectionHeader headline={headline} subheadline={subheadline} meta="Screenings" />
+		<SectionHeader headline={headline} subheadline={subheadline} meta="On YouTube" />
 
 		{
 			videos.length === 0 && <p class="empty-note">No videos published yet.</p>
@@ -58,6 +64,7 @@ const firstArticle = first ? linkAttrs(first.entry.data.article_url) : undefined
 						{first.entry.data.article_url && firstArticle && (
 							<a class="btn btn-secondary" href={firstArticle.href} target={firstArticle.target} rel={firstArticle.rel}>
 								Read the companion article
+								{firstArticle.target === "_blank" && <NewTab />}
 							</a>
 						)}
 					</div>
@@ -87,7 +94,16 @@ const firstArticle = first ? linkAttrs(first.entry.data.article_url) : undefined
 					))}
 				</div>
 			) : first ? (
-				<p class="empty-note">End of reel. The full back catalogue lives on YouTube.</p>
+				<p class="empty-note">
+					End of reel. The full back catalogue lives on{" "}
+					{channel ? (
+						<a href={channel.href} target={channel.target} rel={channel.rel}>
+							YouTube{channel.target === "_blank" && <NewTab />}
+						</a>
+					) : (
+						"YouTube"
+					)}.
+				</p>
 			) : null
 		}
 
@@ -103,16 +119,11 @@ const firstArticle = first ? linkAttrs(first.entry.data.article_url) : undefined
 		align-items: center;
 		margin-bottom: var(--spacing-2xl);
 		padding: var(--spacing-xl);
-		color: #ffffff;
-		background:
-			radial-gradient(ellipse at 90% 15%, color-mix(in srgb, var(--color-accent) 20%, transparent) 0%, transparent 60%),
-			linear-gradient(145deg, #0f274a 0%, #08172c 100%);
-		border: 1px solid color-mix(in srgb, var(--color-brand-strong) 45%, var(--color-border));
+		color: var(--color-plate-ink);
+		background: var(--color-plate);
+		border: 1px solid var(--color-plate-border);
 		border-radius: var(--radius-lg);
-		box-shadow:
-			var(--shadow-xl),
-			0 0 32px -8px color-mix(in srgb, var(--color-brand) 30%, transparent),
-			inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+		box-shadow: var(--shadow-xl);
 	}
 
 	.spotlight-text {
@@ -126,43 +137,36 @@ const firstArticle = first ? linkAttrs(first.entry.data.article_url) : undefined
 		font-family: var(--font-heading);
 		font-size: var(--font-size-2xl);
 		line-height: 1.25;
-		color: #ffffff;
+		color: var(--color-plate-ink);
 		text-wrap: balance;
 	}
 
 	.spotlight .video-summary {
-		color: #cdddf5;
+		color: var(--color-plate-muted);
 	}
 
 	.spotlight .badge-muted {
-		color: #cdddf5;
-		background: rgba(219, 231, 251, 0.12);
-		border-color: rgba(219, 231, 251, 0.3);
+		color: var(--color-plate-muted);
+		background: color-mix(in srgb, var(--color-plate-ink) 10%, transparent);
+		border-color: color-mix(in srgb, var(--color-plate-ink) 28%, transparent);
 	}
 
 	.spotlight .badge {
-		color: var(--color-brand-strong);
-		background: #ffffff;
-		border-color: #ffffff;
-		font-weight: 700;
-	}
-
-	.spotlight .badge::before {
-		background: var(--color-brand-strong);
+		color: var(--color-plate);
+		background: var(--color-plate-ink);
+		border-color: var(--color-plate-ink);
 	}
 
 	.spotlight .btn-secondary {
-		color: #ffffff;
-		background: rgba(255, 255, 255, 0.08);
-		border-color: rgba(255, 255, 255, 0.4);
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
+		color: var(--color-plate-ink);
+		background: color-mix(in srgb, var(--color-plate-ink) 8%, transparent);
+		border-color: color-mix(in srgb, var(--color-plate-ink) 40%, transparent);
 	}
 
 	.spotlight .btn-secondary:hover {
-		background: rgba(255, 255, 255, 0.18);
-		border-color: #ffffff;
-		color: #ffffff;
+		background: color-mix(in srgb, var(--color-plate-ink) 16%, transparent);
+		border-color: var(--color-plate-ink);
+		color: var(--color-plate-ink);
 		transform: translateY(-1px);
 	}
 

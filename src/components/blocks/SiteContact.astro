@@ -4,6 +4,7 @@ import type { BlockComponentProps } from "emdash/ui";
 import type { PageContentBlock } from "../../../emdash-env";
 import { iconFor } from "../../lib/icons";
 import { linkAttrs } from "../../lib/links";
+import NewTab from "../NewTab.astro";
 import SectionHeader from "./SectionHeader.astro";
 
 type ContactBlock = Extract<PageContentBlock, { _type: "site_contact" }>;
@@ -15,7 +16,7 @@ const { anchor_id, headline, subheadline, methods } = value;
 
 <section class="section" id={anchor_id || undefined}>
 	<div class="container">
-		<SectionHeader headline={headline} subheadline={subheadline} meta="Transmittal" />
+		<SectionHeader headline={headline} subheadline={subheadline} meta="Say hello" />
 		<ul class="card-grid contact-grid">
 			{
 				methods.map((method) => {
@@ -27,11 +28,16 @@ const { anchor_id, headline, subheadline, methods } = value;
 									<span class="icon-tile">
 										<Icon name={iconFor(method.icon)} aria-hidden="true" />
 									</span>
-									<Icon name="ph:arrow-right" class="contact-arrow" aria-hidden="true" />
+									{link.target === "_blank" ? (
+										<span class="contact-arrow" aria-hidden="true">↗</span>
+									) : (
+										<Icon name="ph:arrow-right" class="contact-arrow" aria-hidden="true" />
+									)}
 								</span>
 								<span class="contact-title">{method.title}</span>
 								{method.description && <span class="contact-desc">{method.description}</span>}
 								<span class="contact-label">{method.label}</span>
+								{link.target === "_blank" && <NewTab />}
 							</a>
 						</li>
 					);

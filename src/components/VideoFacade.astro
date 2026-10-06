@@ -90,26 +90,30 @@ const { videoId, title, watchUrl, thumbnail, priority = false } = Astro.props;
 		width: 64px;
 		height: 64px;
 		font-size: 1.75rem;
-		color: #fff;
-		background: var(--color-brand-strong);
-		border: 2px solid rgb(255 255 255 / 0.85);
+		color: var(--color-plate);
+		background: var(--color-plate-ink);
+		border: none;
 		border-radius: var(--radius-full);
-		transition: background var(--transition-base);
+		box-shadow: var(--shadow-lg);
+		transition:
+			background var(--transition-base),
+			transform var(--transition-base);
 	}
 
-	/* A static registration ring frames the button; hover answers with the lighter ink. */
+	/* A marker ring frames the paper button. */
 	.video-play::after {
 		content: "";
 		position: absolute;
-		inset: -6px;
-		border: var(--line-ink) solid color-mix(in srgb, #fff 55%, transparent);
+		inset: -7px;
+		border: 2px solid color-mix(in srgb, var(--color-accent) 85%, transparent);
 		border-radius: var(--radius-full);
 		pointer-events: none;
 	}
 
 	.video-facade:hover .video-play,
 	.video-facade:focus-visible .video-play {
-		background: var(--color-brand);
+		background: var(--color-plate-ink-bright);
+		transform: scale(1.06);
 	}
 </style>
 

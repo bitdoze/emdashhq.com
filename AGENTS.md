@@ -50,11 +50,11 @@ This template ships with `.mcp.json`, `.cursor/mcp.json`, and `.vscode/mcp.json`
 
 The site for emdashhq.com: a hub for EmDash CMS. It links to tutorials on bitdoze.com, shows YouTube videos, lists free and paid themes and plugins, and sells EmDash services. It started from the EmDash marketing template and keeps its block editor.
 
-Voice: plain and specific. No hype, no invented testimonials, no em dashes. Seeded tutorials and the video are real (bitdoze.com and its YouTube channel). Service copy and `hello@emdashhq.com` are placeholders until the owner confirms them.
+Voice: plain and specific. No hype, no invented testimonials, no em dashes. Seeded tutorials and the video are real (bitdoze.com and its YouTube channel). Service copy is placeholder until the owner confirms it; the contact email is `dragos@emdashhq.com`.
 
 ## Pages
 
-One route, `src/pages/[...slug].astro`, renders every entry in the `pages` collection. The slug is the URL, `home` is `/`, and `/home` redirects to `/`. A missing slug rewrites to `404.astro`. New pages need no code.
+One route, `src/pages/[...slug].astro`, renders every entry in the `pages` collection. The slug is the URL, `home` is `/`, and `/home` redirects to `/`. A missing slug rewrites to `404.astro`. New pages need no code. `src/pages/rss.xml.ts` serves an RSS 2.0 feed of published tutorials, videos and resources (items link to their real destinations); it is advertised via `<link rel="alternate">` in the head.
 
 Seeded pages: `home`, `tutorials`, `videos`, `themes`, `plugins`, `services`, `contact`.
 
@@ -63,7 +63,7 @@ Seeded pages: `home`, `tutorials`, `videos`, `themes`, `plugins`, `services`, `c
 - `pages`: `title`, `content` (a `blocks` field).
 - Content hub collections (grouped in the admin): `tutorials`, `videos`, `resources` (themes and plugins), `services`. Each has a `featured` boolean. Blocks use `src/lib/hub-content.ts` for CMS filters, ordering, cache hints, and cursor traversal. The page preloads these reads before streaming so query errors return a noncached 503.
 - No taxonomies.
-- Menus: `primary` (header links), `header_cta` (only the first item is used, as the header button), `footer_learn`, `footer_resources`, `footer_company`. Footer column headings are the menu labels.
+- Menus: `primary` (header links), `header_cta` (only the first item is used, as the header button — currently an external link to docs.emdashcms.com), `footer_learn`, `footer_resources`, `footer_company`. Footer column headings are the menu labels.
 - Site settings: `title`, `tagline`, `logo`, `social` (YouTube, GitHub, X). Social links render in the footer.
 
 ## Blocks
@@ -91,6 +91,7 @@ Constraints worth remembering:
 - `.card-grid`, `.hub-card`, `.badge` and the filter chips are shared classes in `src/styles/theme.css` and `FilterBar.astro`. Reuse them.
 - Everything in a section starts at the container's left edge: `.section-header` (use `SectionHeader.astro`), `.card-grid` (a short last row stays left), lists, `.section-link` and `.empty-note`. Do not add `margin: auto` or `text-align: center` to a section child. Only a hero with `centered` set is centered.
 - A row or card that contains a stretched `.card-link::after` must be `position: relative`, or the overlay covers the page above it.
+- External links (`target="_blank"`) get a visible `↗` marker via a rule in `theme.css` and a screen-reader `(opens in a new tab)` via `src/components/NewTab.astro` — add `<NewTab />` inside any new `_blank` anchor. Stretched `.card-link`s, `.video-facade`s, `.contact-card`s and `aria-label`ed icon links are excluded from the marker rule because they carry their own affordances.
 - Block and collection fields are defined in `seed/seed.json`. After changing them, start the dev server so it rewrites `emdash-env.d.ts`.
 
 ## Plugin: Site Scripts
@@ -103,7 +104,7 @@ Constraints worth remembering:
 
 ## Visual character
 
-The Drawing Set: every page is a numbered sheet of engineering drawings for one working CMS. Blue ink on drafting paper in light mode; a true blueprint (Prussian ground, pale ink line-work) in dark mode. Archivo for display and body, IBM Plex Mono for annotations, metadata, labels and buttons. The world is flat: shadows are off and gradients resolve to solid ink; depth comes from line weight (1px hairlines, 1.5px ink rules) and layered rules. Hover speaks in registration marks and paper-blue tints, never lifts or glow. Blue carries the header rule, sheet numbers, stamp buttons, hero schematic, approval blocks and the footer cover sheet.
+The Print Edition: every page is a magazine cover about one working CMS, in the style of the Bitdoze tutorial covers. Cream stock with faint fiber texture and indigo serif display type in light mode; the ink plate (deep navy ground, cream ink, same rose marker) in dark mode. Playfair Display for headlines (`--font-heading` maps to `--font-display`), Archivo for body, IBM Plex Mono for eyebrows, metadata, pills and buttons. Paper cards rest on the desk with soft indigo-tinted shadows and lift a few pixels on hover. The rose accent is a marker: it appears as the `.hl` highlighter swash on the hero's key phrase, section-header marks, small annotations and the footer's top edge — never as a large fill. Featured surfaces (video spotlight, highlighted pricing tier, dark CTAs, footer) use `--color-plate`, an always-dark panel with cream ink.
 
 ## Customisation
 
@@ -111,20 +112,22 @@ Design tokens live in `src/styles/tokens.css` with their default values. To rest
 
 Colours are defined with `light-dark(<light>, <dark>)`, so each token carries both modes. Overriding with a plain colour changes light and dark at once; use `light-dark()` in the override to keep them distinct. There is no separate dark palette to maintain.
 
-Webfonts are configured in `astro.config.mjs` under `fonts:`. Archivo is bound to `--font-body` (headings follow via `--font-heading: var(--font-body)`); IBM Plex Mono is bound to `--font-mono` for annotations, metadata and buttons. If you swap a face, keep the mono/annotation voice separate from the text voice.
+Webfonts are configured in `astro.config.mjs` under `fonts:`. Archivo is bound to `--font-body`, Playfair Display to `--font-display` (headings follow via `--font-heading: var(--font-display)` in theme.css); IBM Plex Mono is bound to `--font-mono` for annotations, metadata and buttons. If you swap a face, keep the mono/annotation voice separate from the text voice.
 
-CSS variables worth knowing (see `tokens.css` for the full list):
+CSS variables worth knowing (see `tokens.css` for the full list, `theme.css` for the overrides):
 
-- `--color-brand`, `--color-brand-strong`, `--color-brand-soft`, `--color-on-brand`, `--color-brand-ring`
-- `--color-accent`, `--color-accent-soft`
-- `--gradient-brand`, `--gradient-brand-strong`, `--gradient-brand-soft`, `--gradient-headline` (all resolve to solid ink in this theme)
+- `--color-brand`, `--color-brand-strong`, `--color-brand-soft`, `--color-on-brand`, `--color-brand-ring` (indigo ink)
+- `--color-accent`, `--color-accent-soft` (dusty rose marker), `--color-highlight` (the `.hl` swash), `--color-warm` (amber detail)
+- `--color-control`, `--color-control-hover`, `--color-on-control` (filled buttons; indigo on paper in light, paper on plate in dark)
+- `--color-plate`, `--color-plate-ink`, `--color-plate-muted`, `--color-plate-border` (the always-dark featured panel)
+- `--gradient-brand`, `--gradient-brand-strong`, `--gradient-brand-soft`, `--gradient-headline` (resolve to solid fields in this theme)
 - `--color-bg`, `--color-surface`, `--color-text`, `--color-muted`, `--color-border`
 - `--color-success`, `--color-warning`, `--color-danger`
-- `--font-body`, `--font-heading`, `--font-mono` (from the font pipeline), `--font-weight-heading` (700), `--font-weight-display` (800)
+- `--font-body`, `--font-display`, `--font-heading`, `--font-mono` (from the font pipeline), `--font-weight-heading` (700), `--font-weight-display` (800)
 - `--font-size-{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl}` -- type scale up to 4.5rem for the largest hero
-- `--line-hair` (1px), `--line-ink` (1.5px) -- the drawing line weights
-- `--radius-sm` (2px), `--radius` (2px), `--radius-lg` (4px), `--radius-full`
-- `--shadow-sm`, `--shadow`, `--shadow-lg`, `--shadow-xl` (all `none` in this theme)
+- `--line-hair` (1px), `--line-ink` (1.5px)
+- `--radius-sm` (6px), `--radius` (10px), `--radius-lg` (16px), `--radius-full` (pills)
+- `--shadow-sm`, `--shadow`, `--shadow-lg`, `--shadow-xl` (soft paper shadows, tinted indigo)
 
 To re-brand, the highest-leverage moves are:
 

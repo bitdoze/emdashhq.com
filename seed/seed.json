@@ -1284,8 +1284,9 @@
 			"items": [
 				{
 					"type": "custom",
-					"label": "Work with me",
-					"url": "/services/"
+					"label": "EmDash docs",
+					"url": "https://docs.emdashcms.com/",
+					"target": "_blank"
 				}
 			]
 		},
@@ -1486,7 +1487,7 @@
 							"_key": "tutorials-hero",
 							"eyebrow": "Learn",
 							"headline": "EmDash CMS tutorials",
-							"subheadline": "Guides on bitdoze.com that take you from install to a deployed site. Filter by topic.",
+							"subheadline": "Guides on bitdoze.com that take you from install to a deployed site.",
 							"centered": true
 						},
 						{
@@ -1558,7 +1559,7 @@
 							"_key": "themes-hero",
 							"eyebrow": "Themes",
 							"headline": "EmDash themes",
-							"subheadline": "Free and paid themes for EmDash. Each card links to where you get it.",
+							"subheadline": "Free and paid themes for EmDash.",
 							"centered": true
 						},
 						{
@@ -1596,7 +1597,7 @@
 							"_key": "plugins-hero",
 							"eyebrow": "Plugins",
 							"headline": "EmDash plugins",
-							"subheadline": "Free and paid plugins for EmDash. Each card links to where you get it.",
+							"subheadline": "Free and paid plugins for EmDash.",
 							"centered": true
 						},
 						{
@@ -1698,8 +1699,8 @@
 									"icon": "mail",
 									"title": "Email",
 									"description": "Project questions, quotes and anything else.",
-									"label": "hello@emdashhq.com",
-									"url": "mailto:hello@emdashhq.com"
+									"label": "dragos@emdashhq.com",
+									"url": "mailto:dragos@emdashhq.com"
 								},
 								{
 									"icon": "youtube",

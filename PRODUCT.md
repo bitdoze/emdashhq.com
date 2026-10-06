@@ -32,13 +32,13 @@ Content flows from bitdoze.com and its YouTube channel. Services are quoted per 
 - All pages server-rendered; no `getStaticPaths()`.
 - Stored blocks carry immutable `_type`, `_version`, `_key`; components must not restructure them.
 - Menus: `primary`, `header_cta` (first item only), three footer columns. Site settings: title, tagline, logo, socials.
-- Placeholder content (services copy, `hello@emdashhq.com`) must not be replaced with invented facts.
+- Placeholder content (services copy) must not be replaced with invented facts. The contact email is confirmed: `dragos@emdashhq.com`.
 
 ## Brand Commitments
 
 - Voice: plain and specific. No hype, no invented testimonials, no em dashes.
-- Colors are binding: the current blue palette (deep navy + signal blue + cyan, light/dark) stays. The user confirmed colors are OK in this redesign.
-- Type: Archivo for display and body, IBM Plex Mono for annotations, metadata, labels and buttons (see `DESIGN.md`). Light and dark mode with footer switcher must keep working.
+- Colors are binding: the Print Edition palette (cream paper, deep indigo, dusty-rose marker, ink plate, light/dark) stays — it mirrors the bitdoze.com tutorial covers.
+- Type: Playfair Display for headlines, Archivo for body, IBM Plex Mono for annotations, metadata, labels and buttons (see `DESIGN.md`). Light and dark mode with footer switcher must keep working.
 
 ## Evidence on Hand
 

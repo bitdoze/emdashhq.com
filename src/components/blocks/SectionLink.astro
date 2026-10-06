@@ -1,5 +1,6 @@
 ---
 import { optionalLink } from "../../lib/links";
+import NewTab from "../NewTab.astro";
 
 interface Props {
 	label?: string | null;
@@ -14,6 +15,7 @@ const link = optionalLink(Astro.props.label, Astro.props.url);
 		<p class="section-link">
 			<a href={link.href} target={link.target} rel={link.rel} class="btn btn-secondary">
 				{link.label}
+				{link.target === "_blank" && <NewTab />}
 			</a>
 		</p>
 	)

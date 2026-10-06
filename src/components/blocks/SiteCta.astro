@@ -2,6 +2,7 @@
 import type { BlockComponentProps } from "emdash/ui";
 import type { PageContentBlock } from "../../../emdash-env";
 import { optionalLink } from "../../lib/links";
+import NewTab from "../NewTab.astro";
 
 type CtaBlock = Extract<PageContentBlock, { _type: "site_cta" }>;
 type Props = BlockComponentProps<CtaBlock>;
@@ -16,6 +17,12 @@ const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_ur
 <section class="section cta-section" id={anchor_id || undefined}>
 	<div class="container">
 		<div class:list={["cta-banner", { "cta-gradient": gradient }]}>
+			{gradient && (
+				<div class="cta-stamp" aria-hidden="true">
+					<span>EmDash</span>
+					<span>HQ</span>
+				</div>
+			)}
 			<div class="cta-text">
 				<h2 class="cta-headline">{headline}</h2>
 				{subheadline && <p class="cta-sub">{subheadline}</p>}
@@ -31,6 +38,7 @@ const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_ur
 								class:list={["btn btn-lg", gradient ? "btn-on-gradient" : "btn-primary"]}
 							>
 								{primary.label}
+								{primary.target === "_blank" && <NewTab />}
 							</a>
 						)}
 						{secondary && (
@@ -41,6 +49,7 @@ const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_ur
 								class:list={["btn btn-lg", gradient ? "btn-outline-on-gradient" : "btn-secondary"]}
 							>
 								{secondary.label}
+								{secondary.target === "_blank" && <NewTab />}
 							</a>
 						)}
 					</div>
@@ -56,8 +65,8 @@ const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_ur
 	}
 
 	/*
-	 * The approval block: the sign-off table from a drawing title
-	 * block. Heavy ink frame, inner hairline, flat ground.
+	 * The back-cover panel: a paper card, or the ink plate with a
+	 * postal stamp when the banner runs dark.
 	 */
 	.cta-banner {
 		position: relative;
@@ -66,36 +75,63 @@ const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_ur
 		align-items: center;
 		gap: var(--spacing-2xl);
 		padding: clamp(var(--spacing-xl), 5vw, var(--spacing-3xl));
-		background: var(--gradient-card);
+		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-lg);
-		box-shadow: var(--shadow-lg), inset 0 1px 0 0 var(--color-highlight);
+		box-shadow: var(--shadow-lg);
+		overflow: hidden;
 	}
 
 	.cta-banner::before {
 		content: "";
 		position: absolute;
-		inset: 6px;
-		border: var(--line-hair) solid color-mix(in srgb, var(--color-brand) 25%, transparent);
-		border-radius: var(--radius);
+		top: 18px;
+		left: 0;
+		width: 42px;
+		height: 5px;
+		background: var(--color-accent);
+		border-radius: 0 40% 40% 0;
+		transform: rotate(-1.5deg);
 		pointer-events: none;
 	}
 
 	.cta-gradient {
-		color: #ffffff;
-		background:
-			radial-gradient(ellipse at 80% 20%, color-mix(in srgb, var(--color-accent) 25%, transparent) 0%, transparent 60%),
-			radial-gradient(ellipse at 15% 90%, color-mix(in srgb, var(--color-brand-strong) 40%, transparent) 0%, transparent 65%),
-			linear-gradient(145deg, #0f274a 0%, #08172c 100%);
-		border: 1px solid color-mix(in srgb, var(--color-brand-strong) 50%, var(--color-border));
-		box-shadow:
-			var(--shadow-xl),
-			0 0 35px -8px color-mix(in srgb, var(--color-brand-strong) 35%, transparent),
-			inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+		color: var(--color-plate-ink);
+		background: var(--color-plate);
+		border: 1px solid var(--color-plate-border);
+		box-shadow: var(--shadow-xl);
 	}
 
 	.cta-gradient::before {
-		border-color: rgba(255, 255, 255, 0.15);
+		display: none;
+	}
+
+	/* The postal stamp on the banner's edge, like the covers' SENT mark. */
+	.cta-stamp {
+		position: absolute;
+		top: -18px;
+		right: 8%;
+		width: 82px;
+		height: 82px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 2px;
+		font-family: var(--font-heading);
+		font-size: 0.85rem;
+		font-weight: 700;
+		font-style: italic;
+		line-height: 1.15;
+		color: var(--color-accent-soft);
+		background: transparent;
+		border: 2px solid var(--color-accent);
+		border-radius: 50%;
+		box-shadow: inset 0 0 0 3px var(--color-plate), inset 0 0 0 4px color-mix(in srgb, var(--color-accent) 55%, transparent);
+		transform: rotate(10deg);
+		opacity: 0.9;
+		pointer-events: none;
+		z-index: 0;
 	}
 
 	.cta-text {
@@ -116,7 +152,7 @@ const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_ur
 	}
 
 	.cta-gradient .cta-headline {
-		color: #ffffff;
+		color: var(--color-plate-ink);
 	}
 
 	.cta-sub {
@@ -127,7 +163,7 @@ const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_ur
 	}
 
 	.cta-gradient .cta-sub {
-		color: #cdddf5;
+		color: var(--color-plate-muted);
 	}
 
 	.cta-actions {
@@ -143,37 +179,43 @@ const secondary = optionalLink(value.secondary_cta_label, value.secondary_cta_ur
 		width: 100%;
 	}
 
-	/* High-contrast tactile action buttons on gradient CTA */
+	/* Paper labels on the ink plate */
 	.btn-on-gradient {
-		color: var(--color-brand-strong);
-		background: #ffffff;
-		border: 1.5px solid #ffffff;
+		color: var(--color-plate);
+		background: var(--color-plate-ink);
+		border: 1.5px solid var(--color-plate-ink);
 		font-weight: 700;
-		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-		transition: all var(--transition-fast);
+		box-shadow: var(--shadow);
+		transition:
+			background var(--transition-fast),
+			border-color var(--transition-fast),
+			color var(--transition-fast),
+			transform var(--transition-fast),
+			box-shadow var(--transition-fast);
 	}
 
 	.btn-on-gradient:hover {
-		background: #eef4ff;
-		border-color: #eef4ff;
-		color: var(--color-brand-strong);
+		background: var(--color-plate-ink-bright);
+		border-color: var(--color-plate-ink-bright);
+		color: var(--color-plate);
 		transform: translateY(-1px);
-		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+		box-shadow: var(--shadow-lg);
 	}
 
 	.btn-outline-on-gradient {
-		color: #ffffff;
-		border: 1.5px solid rgba(255, 255, 255, 0.45);
-		background: rgba(255, 255, 255, 0.08);
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
+		color: var(--color-plate-ink);
+		border: 1.5px solid color-mix(in srgb, var(--color-plate-ink) 45%, transparent);
+		background: color-mix(in srgb, var(--color-plate-ink) 8%, transparent);
 		font-weight: 600;
-		transition: all var(--transition-fast);
+		transition:
+			background var(--transition-fast),
+			border-color var(--transition-fast),
+			transform var(--transition-fast);
 	}
 
 	.btn-outline-on-gradient:hover {
-		background: rgba(255, 255, 255, 0.18);
-		border-color: #ffffff;
+		background: color-mix(in srgb, var(--color-plate-ink) 16%, transparent);
+		border-color: var(--color-plate-ink);
 		transform: translateY(-1px);
 	}
 

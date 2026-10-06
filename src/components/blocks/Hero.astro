@@ -5,6 +5,7 @@ import { Icon } from "astro-iconset/components";
 import type { PageContentBlock } from "../../../emdash-env";
 import { optionalLink, isCurrentPath } from "../../lib/links";
 import { iconFor } from "../../lib/icons";
+import NewTab from "../NewTab.astro";
 
 type HeroBlock = Extract<PageContentBlock, { _type: "marketing_hero" }>;
 type Props = BlockComponentProps<HeroBlock>;
@@ -20,14 +21,48 @@ const revision = new Date().getFullYear();
 const figLabel = image?.alt ? image.alt : "Reference";
 
 /*
- * The hero is a sheet in the set, so its number matches the nav index:
- * pages in the primary menu are Sheet 01..NN; a page outside the menu
- * (the home cover) is the set's cover sheet.
+ * The hero is an issue in the series, so its number matches the nav
+ * index: pages in the primary menu are No. 01..NN; a page outside the
+ * menu (the home cover) is the series itself.
  */
 const menuResult = await getMenuWithCacheHint("primary");
 if (Astro.cache?.enabled) Astro.cache.set(menuResult.cacheHint);
 const menuIndex = (menuResult.data?.items ?? []).findIndex((item) => isCurrentPath(item.url, Astro.url));
-const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "0")}` : "Cover";
+const issueToken = menuIndex >= 0 ? `No. ${String(menuIndex + 1).padStart(2, "0")}` : `Vol. ${revision}`;
+
+/*
+ * Every issue carries the same architecture colophon figure, numbered to
+ * its issue, with the terminal card showing the command that issue is
+ * about. The home cover is Fig. 00 and keeps the deploy claim.
+ */
+const FIGURES = [
+	{ cmd: "emdash seed", out: "Seed applied" }, // 01 Tutorials
+	{ cmd: "astro dev --host", out: "Ready on :4321" }, // 02 Videos
+	{ cmd: "astro check", out: "0 errors" }, // 03 Themes
+	{ cmd: "emdash migrate --check", out: "Migrations current" }, // 04 Plugins
+	{ cmd: "wrangler deploy", out: "Deployed!" }, // 05 Services
+	{ cmd: "POST /submit", out: "303 · sent" }, // 06 Contact
+];
+const issueFig = menuIndex >= 0 ? (FIGURES[menuIndex] ?? FIGURES[0]) : { cmd: "wrangler deploy", out: "Deployed!" };
+const figNum = menuIndex >= 0 ? String(menuIndex + 1).padStart(2, "0") : "00";
+
+/*
+ * The covers put the pink marker on the headline's last phrase.
+ * Authors can pin it with *asterisks*; without a marker the text after
+ * the final comma is highlighted, or the last three words when the
+ * headline runs long.
+ */
+const headlineParts = (() => {
+	const h = headline ?? "";
+	const star = h.match(/^(.*?)\*([^*]+)\*(.*)$/s);
+	if (star) return { lead: star[1].trim(), mark: star[2].trim(), tail: star[3].trim() };
+	const i = h.lastIndexOf(",");
+	const tail = i > 0 ? h.slice(i + 1).trim() : "";
+	if (tail && tail.length <= 28) return { lead: h.slice(0, i + 1).trim(), mark: tail, tail: "" };
+	const words = h.split(/\s+/);
+	if (words.length >= 7) return { lead: words.slice(0, -3).join(" "), mark: words.slice(-3).join(" "), tail: "" };
+	return { lead: h, mark: "", tail: "" };
+})();
 ---
 
 <section
@@ -38,13 +73,17 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 	<div class="hero-glow-secondary" aria-hidden="true"></div>
 	<div class="hero">
 		<div class="hero-content">
-			<div class="hero-badge">
-				<span class="badge-dot" aria-hidden="true"></span>
-				<span class="badge-text">{eyebrow || "EmDash CMS Hub"}</span>
-				<span class="badge-divider" aria-hidden="true">/</span>
-				<span class="badge-meta">{sheetToken} · Rev {revision}</span>
-			</div>
-			<h1 class="hero-headline">{headline}</h1>
+			<p class="hero-eyebrow">
+				<span class="eyebrow-dot" aria-hidden="true"></span>
+				<span class="eyebrow-text">{eyebrow || "EmDash CMS Hub"}</span>
+				<span class="eyebrow-divider" aria-hidden="true">·</span>
+				<span class="eyebrow-meta">{issueToken}</span>
+			</p>
+			<h1 class="hero-headline">
+				{headlineParts.lead}
+				{headlineParts.mark && <> <span class="hl">{headlineParts.mark}</span></>}
+				{headlineParts.tail && <> {headlineParts.tail}</>}
+			</h1>
 			{subheadline && <p class="hero-subheadline">{subheadline}</p>}
 			{(primaryCta || secondaryCta) && (
 				<div class="hero-actions">
@@ -52,11 +91,13 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 						<a href={primaryCta.href} target={primaryCta.target} rel={primaryCta.rel} class="btn btn-primary btn-lg hero-cta-primary">
 							<span>{primaryCta.label}</span>
 							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" class="hero-cta-arrow"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+							{primaryCta.target === "_blank" && <NewTab />}
 						</a>
 					)}
 					{secondaryCta && (
 						<a href={secondaryCta.href} target={secondaryCta.target} rel={secondaryCta.rel} class="btn btn-secondary btn-lg">
 							{secondaryCta.label}
+							{secondaryCta.target === "_blank" && <NewTab />}
 						</a>
 					)}
 				</div>
@@ -94,7 +135,7 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 								<text class="label" style="--d: 1040ms" x="488" y="58" text-anchor="middle">ADMIN</text>
 							</g>
 						</svg>
-						<figcaption class="hero-fig">Fig. 00: how the pieces connect</figcaption>
+						<figcaption class="hero-fig">Fig. {figNum}: how the pieces connect</figcaption>
 					</figure>
 				)
 			}
@@ -106,18 +147,21 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 					<figcaption class="hero-fig">Fig. 01: {figLabel}</figcaption>
 				</figure>
 			) : !centered && (
-				<figure class="hero-panel" aria-label="How EmDash is wired">
+				<figure class="hero-panel" aria-label="How EmDash is wired, from a visitor's request down to a successful wrangler deploy">
+					<span class="hero-tape" aria-hidden="true"></span>
+					<div class="hero-stamp" aria-hidden="true">
+						<span>Edge</span>
+						<span>SSR</span>
+					</div>
 					<div class="panel-header">
 						<div class="panel-dots" aria-hidden="true">
 							<span class="p-dot p-red"></span>
 							<span class="p-dot p-yellow"></span>
 							<span class="p-dot p-green"></span>
 						</div>
+						<span class="panel-mark"><img src="/brand/emdash-dark-text.svg" alt="EmDash" class="panel-logo panel-logo--dark" width="40" height="10" /><img src="/brand/emdash-light-text.svg" alt="" aria-hidden="true" class="panel-logo panel-logo--light" width="40" height="10" /></span>
 						<span class="panel-title">emdash-architecture.svg</span>
-						<span class="panel-badge">
-							<span class="panel-badge-dot" aria-hidden="true"></span>
-							EDGE SSR
-						</span>
+						<span class="panel-spacer" aria-hidden="true"></span>
 					</div>
 					<div class="panel-svg-wrap">
 						<svg viewBox="0 0 560 340" fill="none" role="img">
@@ -147,7 +191,7 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 								<line class="ink stroke-draw" style="--d: 840ms" x1="426" y1="282" x2="444" y2="282" />
 								<path class="ink head" style="--d: 980ms" d="M438 277 L446 282 L438 287" />
 								<rect class="ink stroke-draw fill" style="--d: 860ms" x="448" y="40" width="100" height="40" rx="6" />
-								<circle class="status-indicator status-cyan" cx="534" cy="50" r="3" />
+								<circle class="status-indicator status-amber" cx="534" cy="50" r="3" />
 								<text class="label" style="--d: 1060ms" x="498" y="58" text-anchor="middle">D1</text>
 								<text class="sublabel" style="--d: 1100ms" x="498" y="72" text-anchor="middle">CONTENT</text>
 								<rect class="ink stroke-draw fill" style="--d: 900ms" x="448" y="152" width="100" height="40" rx="6" />
@@ -165,8 +209,15 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 						</svg>
 					</div>
 					<div class="panel-footer">
-						<span class="panel-caption">Fig. 00: CMS architecture</span>
+						<span class="panel-caption">Fig. {figNum}: CMS architecture</span>
 						<span class="panel-latency">Content served from the edge</span>
+					</div>
+					<div class="hero-terminal" aria-hidden="true">
+						<span class="term-line"><span class="term-prompt">$</span> {issueFig.cmd}</span>
+						<span class="term-ok">
+							<Icon name="ph:check-circle" aria-hidden="true" />
+							{issueFig.out}
+						</span>
 					</div>
 				</figure>
 			)
@@ -183,32 +234,32 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 
 	.hero-glow-primary {
 		position: absolute;
-		top: 8%;
-		right: 4%;
+		top: 4%;
+		right: 2%;
 		width: 560px;
 		height: 440px;
 		border-radius: 50%;
 		background: radial-gradient(
 			circle,
-			color-mix(in srgb, var(--color-brand) 22%, transparent) 0%,
-			color-mix(in srgb, var(--color-accent) 12%, transparent) 42%,
+			color-mix(in srgb, var(--color-accent) 20%, transparent) 0%,
+			color-mix(in srgb, var(--color-warm) 9%, transparent) 45%,
 			transparent 72%
 		);
-		filter: blur(64px);
+		filter: blur(72px);
 		pointer-events: none;
 		z-index: 0;
 	}
 
 	.hero-glow-secondary {
 		position: absolute;
-		top: 40%;
-		left: 5%;
+		top: 42%;
+		left: 4%;
 		width: 380px;
 		height: 300px;
 		border-radius: 50%;
 		background: radial-gradient(
 			circle,
-			color-mix(in srgb, var(--color-accent) 12%, transparent) 0%,
+			color-mix(in srgb, var(--color-warm) 11%, transparent) 0%,
 			transparent 65%
 		);
 		filter: blur(56px);
@@ -245,7 +296,7 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 	}
 
 	.hero-centered .hero-actions,
-	.hero-centered .hero-badge,
+	.hero-centered .hero-eyebrow,
 	.hero-centered .hero-specs {
 		justify-content: center;
 	}
@@ -259,62 +310,64 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		flex-direction: column;
 		align-items: flex-start;
 		gap: var(--spacing-lg);
-		max-width: 580px;
+		max-width: 640px;
 		/* Keep the heading and navigation actions visible immediately. */
 	}
 
-	/* Hero badge: modern developer pill */
-	.hero-badge {
+	/* Eyebrow: the covers' letterspaced series line. */
+	.hero-eyebrow {
 		display: inline-flex;
 		align-items: center;
-		gap: 8px;
-		padding: 4px 14px;
-		background: color-mix(in srgb, var(--color-brand) 8%, var(--color-surface));
-		border: 1px solid color-mix(in srgb, var(--color-brand) 28%, var(--color-border));
-		border-radius: var(--radius-full);
-		box-shadow: var(--shadow-sm), inset 0 1px 0 0 var(--color-highlight);
+		gap: 10px;
+		margin: 0;
 	}
 
-	.badge-dot {
-		width: 7px;
-		height: 7px;
+	.eyebrow-dot {
+		width: 8px;
+		height: 8px;
 		border-radius: 50%;
-		background: var(--color-brand);
-		box-shadow: 0 0 8px var(--color-brand);
+		background: var(--color-accent);
 	}
 
-	.badge-text {
+	.eyebrow-text {
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
 		font-weight: 600;
-		letter-spacing: 0.06em;
+		letter-spacing: 0.22em;
 		text-transform: uppercase;
-		color: var(--color-brand-strong);
+		color: var(--color-text);
 	}
 
-	.badge-divider {
+	.eyebrow-divider {
 		color: var(--color-muted);
-		opacity: 0.4;
-		font-size: var(--font-size-xs);
+		font-size: var(--font-size-sm);
 	}
 
-	.badge-meta {
+	/* Keep the run together so "VOL. 2026" never splits across lines. */
+	.eyebrow-meta {
+		white-space: nowrap;
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
 		font-weight: 500;
-		letter-spacing: 0.06em;
+		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: var(--color-muted);
 	}
 
 	.hero-headline {
 		font-family: var(--font-heading);
-		font-size: clamp(2.5rem, 5vw, 3.75rem);
+		font-size: clamp(1.9rem, 3.4vw, 2.75rem);
 		font-weight: var(--font-weight-display);
-		line-height: var(--leading-tight);
-		letter-spacing: -0.025em;
+		line-height: 1.1;
+		letter-spacing: var(--tracking-snug);
+		text-transform: uppercase;
 		color: var(--color-text);
 		text-wrap: balance;
+	}
+
+	.hero-headline .hl {
+		font-style: italic;
+		letter-spacing: 0;
 	}
 
 	.hero-subheadline {
@@ -346,62 +399,162 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		transform: translateX(4px);
 	}
 
-	/* Architecture highlights strip */
+	/* Specs: the covers' outline chips. */
 	.hero-specs {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: var(--spacing-lg);
-		padding-top: var(--spacing-sm);
-		border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+		gap: 8px;
 	}
 
 	.spec-item {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
+		padding: 0.3rem 0.75rem;
 		font-family: var(--font-mono);
-		font-size: var(--font-size-xs);
-		font-weight: 500;
-		letter-spacing: 0.04em;
-		color: var(--color-muted);
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.07em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--color-text);
+		background: var(--color-surface);
+		border: 1px solid color-mix(in srgb, var(--color-text) 55%, var(--color-border));
+		border-radius: var(--radius-full);
+		box-shadow: var(--shadow-sm);
 	}
 
 	.spec-item svg {
-		color: var(--color-brand-strong);
-		opacity: 0.9;
+		color: var(--color-accent);
 	}
 
-	/* Reference plate: a real screenshot framed as a figure. */
+	/* Reference plate: a real screenshot framed as a paper figure. */
 	.hero-image {
 		position: relative;
 		margin: 0;
+		padding: var(--spacing-sm);
+		background: var(--color-surface);
+		border: var(--line-hair) solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-xl);
+		transform: rotate(1.2deg);
 		/* Visible on the first paint. */
 	}
 
 	.hero-image :global(.hero-image-media) {
 		width: 100%;
 		height: auto;
-		border-radius: var(--radius-lg);
+		border-radius: calc(var(--radius-lg) - 6px);
 		border: 1px solid var(--color-border);
-		box-shadow: var(--shadow-xl);
 	}
 
-	/* The schematic panel: elevated modern tech hub readout */
+	/* The schematic panel: a printed figure card on the desk, a touch
+	   crooked, taped down, stamped, with the deploy card on top. */
 	.hero-panel {
 		position: relative;
 		margin: 0;
 		padding: var(--spacing-lg);
-		border: 1px solid color-mix(in srgb, var(--color-brand) 32%, var(--color-border));
+		padding-bottom: calc(var(--spacing-lg) + 44px);
+		border: var(--line-hair) solid var(--color-border);
 		border-radius: var(--radius-lg);
-		background: color-mix(in srgb, var(--color-surface) 84%, transparent);
-		backdrop-filter: blur(16px);
-		-webkit-backdrop-filter: blur(16px);
-		box-shadow:
-			var(--shadow-xl),
-			0 0 32px -8px color-mix(in srgb, var(--color-brand) 20%, transparent),
-			inset 0 1px 0 0 var(--color-highlight);
+		background: var(--color-surface);
+		box-shadow: var(--shadow-xl);
+		transform: rotate(1.4deg);
 		/* Visible on the first paint. */
+	}
+
+	/* Washi tape holding the card down. */
+	.hero-tape {
+		position: absolute;
+		top: -13px;
+		left: 34px;
+		width: 92px;
+		height: 26px;
+		background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+		border-left: 1px dashed color-mix(in srgb, var(--color-accent) 60%, transparent);
+		border-right: 1px dashed color-mix(in srgb, var(--color-accent) 60%, transparent);
+		transform: rotate(-4deg);
+		border-radius: 2px;
+		pointer-events: none;
+		z-index: 2;
+	}
+
+	/* The postal stamp on the card's corner. */
+	.hero-stamp {
+		position: absolute;
+		top: -22px;
+		right: -14px;
+		width: 74px;
+		height: 74px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1px;
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		line-height: 1.25;
+		color: var(--color-accent-text);
+		background: var(--color-surface);
+		border: 2px solid var(--color-accent);
+		border-radius: 50%;
+		box-shadow: 0 0 0 3px var(--color-surface), 0 0 0 4px color-mix(in srgb, var(--color-accent) 55%, transparent), var(--shadow);
+		transform: rotate(12deg);
+		pointer-events: none;
+		z-index: 2;
+	}
+
+	/* The little deploy card overlapping the figure's foot. */
+	.hero-terminal {
+		position: absolute;
+		left: var(--spacing-lg);
+		right: var(--spacing-lg);
+		bottom: -26px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--spacing-md);
+		padding: 0.7rem 1rem;
+		background: var(--color-plate);
+		border: 1px solid var(--color-plate-border);
+		border-radius: var(--radius);
+		box-shadow: var(--shadow-lg);
+		transform: rotate(-1.8deg);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-plate-ink);
+		z-index: 2;
+	}
+
+	.term-line {
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.term-prompt {
+		color: var(--color-accent-soft);
+		font-weight: 700;
+	}
+
+	.term-ok {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		color: var(--color-plate-ok);
+		white-space: nowrap;
+	}
+
+	.term-ok :global(svg) {
+		font-size: 1rem;
 	}
 
 	/* Console / Window chrome for panel */
@@ -426,11 +579,13 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		border-radius: 50%;
 	}
 
-	.p-red { background: #f87171; }
-	.p-yellow { background: #fbbf24; }
-	.p-green { background: #4ade80; }
+	.p-red { background: var(--color-accent); }
+	.p-yellow { background: var(--color-warm); }
+	.p-green { background: var(--color-success); }
 
 	.panel-title {
+		flex: 1;
+		text-align: center;
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
 		font-weight: 500;
@@ -438,27 +593,46 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		color: var(--color-muted);
 	}
 
-	.panel-badge {
+	/* The product mark sits next to the dots like a window icon. */
+	.panel-mark {
 		display: inline-flex;
 		align-items: center;
-		gap: 5px;
-		padding: 2px 7px;
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-		font-weight: 600;
-		letter-spacing: 0.06em;
-		color: var(--color-success);
-		background: color-mix(in srgb, var(--color-success) 12%, transparent);
-		border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
-		border-radius: var(--radius-sm);
+		margin-left: 0.75rem;
 	}
 
-	.panel-badge-dot {
-		width: 5px;
-		height: 5px;
-		border-radius: 50%;
-		background: var(--color-success);
-		box-shadow: 0 0 6px var(--color-success);
+	.panel-logo {
+		display: block;
+		height: 1.15rem;
+		width: auto;
+	}
+
+	/* White wordmark on the dark-mode chrome bar; navy wordmark on cream. */
+	.panel-logo--light {
+		display: none;
+	}
+
+	:global(:root.dark) .panel-logo--dark,
+	:global(:root[data-mode="dark"]) .panel-logo--dark {
+		display: none;
+	}
+
+	:global(:root.dark) .panel-logo--light,
+	:global(:root[data-mode="dark"]) .panel-logo--light {
+		display: block;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global(:root:not(.light):not([data-mode="light"])) .panel-logo--dark {
+			display: none;
+		}
+		:global(:root:not(.light):not([data-mode="light"])) .panel-logo--light {
+			display: block;
+		}
+	}
+
+	/* Balances the dots + product mark so the title sits dead centre. */
+	.panel-spacer {
+		width: 8rem;
 	}
 
 	.panel-svg-wrap {
@@ -484,31 +658,7 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 
 	.panel-latency {
 		font-weight: 600;
-		color: var(--color-brand-strong);
-	}
-
-	/* Registration marks pin the panel to the sheet. */
-	.hero-panel::before,
-	.hero-panel::after {
-		content: "";
-		position: absolute;
-		width: 12px;
-		height: 12px;
-		pointer-events: none;
-	}
-
-	.hero-panel::before {
-		top: 6px;
-		left: 6px;
-		border-top: var(--line-ink) solid var(--color-brand-strong);
-		border-left: var(--line-ink) solid var(--color-brand-strong);
-	}
-
-	.hero-panel::after {
-		bottom: 6px;
-		right: 6px;
-		border-bottom: var(--line-ink) solid var(--color-brand-strong);
-		border-right: var(--line-ink) solid var(--color-brand-strong);
+		color: var(--color-accent-text);
 	}
 
 	/* Annotation captions under plates and schematics. */
@@ -526,6 +676,11 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		margin: var(--spacing-sm) 0 0;
 		width: 100%;
 		max-width: 480px;
+		padding: var(--spacing-sm) var(--spacing-md) 2px;
+		background: var(--color-surface);
+		border: var(--line-hair) solid var(--color-border);
+		border-radius: var(--radius);
+		box-shadow: var(--shadow-sm);
 	}
 
 	.hero-centered .hero-schematic {
@@ -596,17 +751,6 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		letter-spacing: 0.08em;
 	}
 
-	@keyframes hero-rise {
-		from {
-			opacity: 0;
-			transform: translateY(14px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
 	/* The linework draws itself in; the resting state is complete. */
 	@media (prefers-reduced-motion: no-preference) {
 		.hero-cover .hero-schematic .stroke-draw,
@@ -636,8 +780,8 @@ const sheetToken = menuIndex >= 0 ? `Sheet ${String(menuIndex + 1).padStart(2, "
 		fill: var(--color-success);
 	}
 
-	.status-cyan {
-		fill: var(--color-accent);
+	.status-amber {
+		fill: var(--color-warm);
 	}
 
 	@media (prefers-reduced-motion: no-preference) {

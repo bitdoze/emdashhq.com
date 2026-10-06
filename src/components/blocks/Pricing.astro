@@ -23,7 +23,7 @@ const plans = rawPlans.map((plan) => ({
 
 <section class="pricing section" id={anchor_id || undefined}>
 	<div class="container">
-		<SectionHeader headline={headline} meta="Rate card" />
+		<SectionHeader headline={headline} meta="Pricing" />
 		<div class="pricing-grid">
 			{plans.map((plan) => (
 				<div class:list={["pricing-card", { "pricing-highlighted": plan.highlighted }]}>
@@ -77,75 +77,66 @@ const plans = rawPlans.map((plan) => ({
 		background: var(--color-surface);
 		border: var(--line-hair) solid var(--color-border);
 		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-sm);
 		display: flex;
 		flex-direction: column;
 		gap: var(--spacing-lg);
 		transition:
 			border-color var(--transition-base),
-			background var(--transition-base);
+			transform var(--transition-base),
+			box-shadow var(--transition-base);
 	}
 
 	.pricing-card:hover {
-		border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-border));
-		background: color-mix(in srgb, var(--color-brand) 3%, var(--color-surface));
+		border-color: color-mix(in srgb, var(--color-brand) 45%, var(--color-border));
+		transform: translateY(-3px);
+		box-shadow: var(--shadow-lg);
 	}
 
-	/* The highlighted plan takes the blueprint ground, like the approval block. */
+	/* The highlighted plan is the ink plate, like the spotlight and CTA. */
 	.pricing-highlighted,
 	.pricing-highlighted:hover {
-		color: #cdddf5;
-		background:
-			linear-gradient(rgba(219, 231, 251, 0.035) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(219, 231, 251, 0.035) 1px, transparent 1px),
-			light-dark(#0d2340, #081a33);
-		background-size: 28px 28px, 28px 28px, auto;
-		border: var(--line-ink) solid var(--color-brand-strong);
+		color: var(--color-plate-muted);
+		background: var(--color-plate);
+		border: var(--line-ink) solid var(--color-plate-border);
+		box-shadow: var(--shadow-xl);
 	}
 
 	.pricing-highlighted .pricing-name,
 	.pricing-highlighted .pricing-amount {
-		color: #fff;
+		color: var(--color-plate-ink);
 	}
 
 	.pricing-highlighted .pricing-description,
 	.pricing-highlighted .pricing-period {
-		color: rgb(219 231 251 / 0.82);
+		color: var(--color-plate-muted);
 	}
 
 	.pricing-highlighted .pricing-plan-header {
-		border-bottom-color: rgb(219 231 251 / 0.22);
+		border-bottom-color: color-mix(in srgb, var(--color-plate-ink) 22%, transparent);
 	}
 
 	.pricing-highlighted .check-icon {
 		color: var(--color-accent-soft);
 	}
 
-	/* Bracket tag pinned to the card's top rule, like the badges elsewhere. */
+	/* The pick of the issue gets the accent pill. */
 	.pricing-badge {
 		position: absolute;
 		top: 0;
 		left: var(--spacing-xl);
-		transform: translateY(-50%);
-		padding: 1px var(--spacing-sm);
+		transform: translateY(-50%) rotate(-2deg);
+		padding: 3px 14px;
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
-		font-weight: 500;
-		letter-spacing: 0.06em;
+		font-weight: 700;
+		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		color: #0d2340;
-		background: #cdddf5;
-		border-radius: var(--radius-sm);
+		color: var(--color-on-control);
+		background: var(--color-accent-text);
+		border-radius: var(--radius-full);
+		box-shadow: var(--shadow-sm);
 		white-space: nowrap;
-	}
-
-	.pricing-badge::before {
-		content: "[";
-		opacity: 0.45;
-	}
-
-	.pricing-badge::after {
-		content: "]";
-		opacity: 0.45;
 	}
 
 	.pricing-plan-header {
@@ -210,16 +201,16 @@ const plans = rawPlans.map((plan) => ({
 		width: 100%;
 	}
 
-	/* The highlighted plan is already dark ink, so its stamp inverts to paper. */
+	/* The highlighted plan is the ink plate, so its stamp inverts to paper. */
 	.pricing-highlighted .pricing-cta {
-		color: #0d2340;
-		background: #fff;
-		border-color: #fff;
+		color: var(--color-plate);
+		background: var(--color-plate-ink);
+		border-color: var(--color-plate-ink);
 	}
 
 	.pricing-highlighted .pricing-cta:hover {
-		background: #dbe7fb;
-		border-color: #dbe7fb;
+		background: var(--color-plate-ink-bright);
+		border-color: var(--color-plate-ink-bright);
 	}
 
 	@media (max-width: 900px) {

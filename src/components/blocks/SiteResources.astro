@@ -5,6 +5,7 @@ import type { PageContentBlock } from "../../../emdash-env";
 import { labelize } from "../../lib/format";
 import { linkAttrs } from "../../lib/links";
 import FilterBar from "./FilterBar.astro";
+import NewTab from "../NewTab.astro";
 import SectionHeader from "./SectionHeader.astro";
 import SectionLink from "./SectionLink.astro";
 
@@ -24,7 +25,7 @@ const priceOptions = [...new Set(resources.map((entry) => entry.data.price_type)
 
 <section class="section" id={anchor_id || undefined}>
 	<div class="container" data-filter-root>
-		<SectionHeader headline={headline} subheadline={subheadline} meta="Parts list" />
+		<SectionHeader headline={headline} subheadline={subheadline} meta="Catalog" />
 		{show_filters && <FilterBar options={priceOptions} label="Filter by price" />}
 
 		{
@@ -53,10 +54,12 @@ const priceOptions = [...new Set(resources.map((entry) => entry.data.price_type)
 									<div class="resource-actions">
 										<a href={link.href} target={link.target} rel={link.rel} class="btn btn-primary">
 											{entry.data.cta_label || "View"}
+											{link.target === "_blank" && <NewTab />}
 										</a>
 										{demo && (
 											<a href={demo.href} target={demo.target} rel={demo.rel} class="btn btn-secondary">
 												Demo
+												{demo.target === "_blank" && <NewTab />}
 											</a>
 										)}
 									</div>
@@ -67,6 +70,14 @@ const priceOptions = [...new Set(resources.map((entry) => entry.data.price_type)
 				</div>
 			) : (
 				<p class="empty-note">Nothing listed here yet.</p>
+			)
+		}
+
+		{
+			/* A lone card or two in a three-column shelf reads as broken;
+			   say it's the whole shelf instead. */
+			resources.length > 0 && resources.length <= 2 && (
+				<p class="empty-note">That's the whole shelf for now. New themes and plugins land here as they ship.</p>
 			)
 		}
 

@@ -1,11 +1,12 @@
 /*
-  theme.css -- EmDash HQ "Drawing Set" theme.
+  theme.css -- EmDash HQ "Print Edition" theme.
 
-  The site is a set of engineering drawings for one working CMS. Light
-  mode is a blue-ink sheet on drafting paper; dark mode is a true
-  blueprint (Prussian ground, pale ink line-work). Depth comes from
-  line weight and rules, never blur, glow, or shadow. Blue stays the
-  brand family in both modes (user commitment).
+  The site is dressed like the Bitdoze tutorial covers: a magazine
+  cover for each page. Cream stock, deep-indigo display serif, a pink
+  highlighter swash on the words that matter, pill chips, and paper
+  cards that rest on the desk with real soft shadows. Dark mode is the
+  ink plate itself: the deep navy of the covers' logo tile, cream ink,
+  the same rose marker.
 
   Declarations here are unlayered, so they always beat the @layer base
   defaults in tokens.css. Colors use light-dark(): light value first,
@@ -23,53 +24,108 @@ html:not(.light):not(.dark) {
 /* Beat generic admin :root tokens without depending on stylesheet order. */
 html:root {
 	/* Paper and ink */
-	--color-bg: light-dark(#f6f8fb, #0a192f);
-	--color-text: light-dark(#0a1c38, #e2edfd);
-	--color-muted: light-dark(#475c7e, #8ea6cc);
-	--color-border: light-dark(#d3dfef, #1e3a66);
-	--color-surface: light-dark(#ffffff, #0f274a);
+	--color-bg: light-dark(#f3eddf, #16133a);
+	--color-text: light-dark(#242049, #f1edde);
+	--color-muted: light-dark(#5f5979, #aba5cb);
+	--color-border: light-dark(#ddd3bc, #3b3670);
+	--color-surface: light-dark(#fdfaf2, #221e52);
 
-	/* Ink (signal blue brand) */
-	--color-brand: light-dark(#1d4ed8, #60a5fa);
-	--color-brand-strong: light-dark(#1e40af, #93c5fd);
-	--color-brand-soft: light-dark(#3b82f6, #93c5fd);
-	--color-accent: light-dark(#0284c7, #22d3ee);
-	--color-accent-soft: light-dark(#38bdf8, #67e8f9);
-	--color-on-brand: #ffffff;
+	/* Indigo ink (brand) */
+	--color-brand: light-dark(#3b37a4, #a6a2ee);
+	--color-brand-strong: light-dark(#2b2880, #c9c5f8);
+	--color-brand-soft: light-dark(#5b56be, #8c87dc);
+	--color-accent: light-dark(#c05d72, #e79ca9);
+	--color-accent-soft: light-dark(#de97a5, #c1768a);
+	--color-on-brand: light-dark(#faf5e9, #262150);
 	--color-brand-ring: color-mix(in srgb, var(--color-brand) 16%, transparent);
-	--color-success: light-dark(#15803d, #4ade80);
-	--color-warning: light-dark(#b45309, #fbbf24);
+	--color-success: light-dark(#1e7a46, #6fcb8f);
+	--color-warning: light-dark(#b46a0e, #f0a24a);
+	--color-warning-text: light-dark(#9a5b06, #f0a24a);
+	--color-danger: light-dark(#be3b4e, #ef8ca0);
 
-	/* Solid ink. Filled controls keep white labels readable in both modes. */
-	--color-control: #1e40af;
-	--color-control-hover: #1d4ed8;
+	/* The marker swash and the warm amber stripe from the covers' logo. */
+	--color-highlight: light-dark(rgba(206, 106, 126, 0.5), rgba(214, 132, 152, 0.42));
+	--color-warm: light-dark(#e8831c, #f0a24a);
+	/* Rose that still reads as text on cream (#a53f55 = 5.85:1 on paper);
+	   accent stays for marks and washes where legibility isn't owed. */
+	--color-accent-text: light-dark(#a53f55, #e79ca9);
+	/* Status green bright enough for the always-dark plate. */
+	--color-plate-ok: #6fcb8f;
+	/* The paper hover step above plate-ink on the dark panels. */
+	--color-plate-ink-bright: #ffffff;
+
+	/* Filled stamp controls: indigo on paper; paper label on the plate. */
+	--color-control: light-dark(#2b2880, #f1edde);
+	--color-control-hover: light-dark(#3b37a4, #ffffff);
+	--color-on-control: light-dark(#faf5e9, #262150);
+
+	/* The one dark panel, like the covers' logo tile / terminal card. */
+	--color-plate: light-dark(#211c58, #14113c);
+	--color-plate-ink: #f1edde;
+	--color-plate-muted: #b6b0e2;
+	--color-plate-border: light-dark(#3a3583, #37316e);
+
+	/* Solid fields where components expect a gradient token. */
 	--gradient-brand: var(--color-control-hover);
 	--gradient-brand-strong: var(--color-control);
-	--gradient-brand-soft: color-mix(in srgb, var(--color-brand) 12%, var(--color-surface));
+	--gradient-brand-soft: color-mix(in srgb, var(--color-brand) 10%, var(--color-surface));
 	--gradient-headline: none;
 	--gradient-card: var(--color-surface);
-	--color-highlight: transparent;
+	--color-highlight-edge: color-mix(in srgb, #fff 55%, transparent);
 
-	/* One voice for headings and body (Archivo via --font-body).
-	   --font-mono comes from the font pipeline (IBM Plex Mono). */
-	--font-heading: var(--font-body);
+	/* Serif display (Playfair via --font-display), sans body, mono notes. */
+	--font-heading: var(--font-display);
 	--font-weight-heading: 700;
 	--font-weight-display: 800;
+	--tracking-tight: -0.015em;
+	--tracking-snug: -0.01em;
 
-	/* Line weights and refined geometry */
+	/* Rounded paper geometry */
 	--line-hair: 1px;
 	--line-ink: 1.5px;
-	--radius-sm: 2px;
-	--radius: 2px;
-	--radius-lg: 4px;
+	--radius-sm: 6px;
+	--radius: 10px;
+	--radius-lg: 16px;
 	--radius-full: 9999px;
 
-	/* Depth is supplied by rules and registration marks. */
-	--shadow-sm: none;
-	--shadow: none;
-	--shadow-lg: none;
-	--shadow-xl: none;
-	--shadow-glow: none;
+	/* Paper rests on the desk: warm, indigo-tinted soft shadows. */
+	--shadow-color: light-dark(38 32 88, 6 4 28);
+	--shadow-sm:
+		0 1px 2px rgb(var(--shadow-color) / 0.07),
+		0 2px 8px -2px rgb(var(--shadow-color) / 0.08);
+	--shadow:
+		0 2px 4px rgb(var(--shadow-color) / 0.06),
+		0 12px 28px -10px rgb(var(--shadow-color) / 0.18);
+	--shadow-lg:
+		0 3px 8px rgb(var(--shadow-color) / 0.07),
+		0 24px 48px -16px rgb(var(--shadow-color) / 0.26);
+	--shadow-xl:
+		0 6px 12px rgb(var(--shadow-color) / 0.08),
+		0 40px 80px -24px rgb(var(--shadow-color) / 0.34);
+}
+
+/* Paper fiber under everything; the flecks are ink in the light and
+   paper lint on the plate. */
+body {
+	background-color: var(--color-bg);
+	background-image:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.25 0 0 0 0.8 0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"),
+		radial-gradient(ellipse 90% 60% at 70% -10%, light-dark(rgba(232, 131, 28, 0.05), rgba(240, 162, 74, 0.04)), transparent 65%);
+	background-repeat: repeat, no-repeat;
+}
+
+html.dark body {
+	background-image:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.94 0 0 0 0 0.92 0 0 0 0 0.85 0 0 0 0.7 0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
+		radial-gradient(ellipse 90% 60% at 70% -10%, rgba(166, 162, 238, 0.05), transparent 65%);
+}
+
+@media (prefers-color-scheme: dark) {
+	html:not(.light):not(.dark) body {
+		background-image:
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.94 0 0 0 0 0.92 0 0 0 0 0.85 0 0 0 0.7 0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
+			radial-gradient(ellipse 90% 60% at 70% -10%, rgba(166, 162, 238, 0.05), transparent 65%);
+	}
 }
 
 /* Type rhythm */
@@ -85,18 +141,59 @@ li {
 }
 
 ::selection {
-	background: var(--color-brand-strong);
-	color: var(--color-on-brand);
+	background: var(--color-highlight);
+	color: var(--color-text);
 }
 
 :focus-visible {
-	outline: 2px dashed var(--color-brand-strong);
+	outline: 2px solid var(--color-brand-strong);
 	outline-offset: 3px;
 	border-radius: var(--radius-sm);
 }
 
+/* The indigo ring disappears on the ink plate (1.25:1); rose stays
+   readable on every always-dark surface. Facades on paper keep the
+   default ink ring — rose-on-cream would be invisible there. */
+.site-footer :focus-visible,
+.spotlight :focus-visible,
+.cta-gradient :focus-visible,
+.pricing-highlighted :focus-visible,
+.spotlight .video-facade:focus-visible {
+	outline-color: var(--color-accent-soft);
+}
+
+/* External destinations wear the ↗ marker. Stretched card links, video
+   facades and contact cards carry their own affordances; aria-labelled
+   icon links announce "new tab" to screen readers instead. */
+a[target="_blank"]:not(.card-link):not(.video-facade):not(.contact-card):not(.hero-cta-primary):not([aria-label])::after {
+	content: "↗";
+	display: inline-block;
+	margin-left: 0.35em;
+	font-size: 0.8em;
+}
+
+.empty-note a {
+	color: var(--color-brand-strong);
+	text-decoration: underline;
+	text-decoration-color: var(--color-accent);
+	text-decoration-thickness: 1.5px;
+	text-underline-offset: 3px;
+}
+
 [hidden] {
 	display: none !important;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
 }
 
 .section {
@@ -104,7 +201,8 @@ li {
 }
 
 /*
- * Section headers: technical title block with brand accent rule
+ * Section headers: the cover's masthead -- a short rose mark, a
+ * letterspaced eyebrow, then the serif headline.
  */
 .section-header {
 	margin: 0 0 var(--spacing-2xl);
@@ -117,11 +215,12 @@ li {
 .section-header::before {
 	content: "";
 	display: block;
-	width: 36px;
-	height: 3px;
-	background: var(--gradient-brand);
-	border-radius: var(--radius-full);
-	margin-bottom: var(--spacing-sm);
+	width: 42px;
+	height: 5px;
+	background: var(--color-accent);
+	border-radius: 40% 60% 55% 45% / 60% 45% 55% 40%;
+	transform: rotate(-1.5deg);
+	margin-bottom: var(--spacing-md);
 }
 
 .section-meta {
@@ -131,85 +230,75 @@ li {
 	font-family: var(--font-mono);
 	font-size: var(--font-size-xs);
 	font-weight: 600;
-	letter-spacing: 0.08em;
+	letter-spacing: 0.18em;
 	text-transform: uppercase;
 	color: var(--color-brand-strong);
-	margin-bottom: var(--spacing-xs);
-}
-
-.section-meta::before {
-	content: "//";
-	opacity: 0.45;
-	margin-right: 2px;
+	margin-bottom: var(--spacing-sm);
 }
 
 .section-headline {
 	font-family: var(--font-heading);
 	font-weight: var(--font-weight-display);
-	font-size: clamp(2rem, 3.5vw, 2.5rem);
-	letter-spacing: -0.02em;
+	font-size: clamp(2rem, 3.5vw, 2.6rem);
+	letter-spacing: var(--tracking-snug);
 	line-height: var(--leading-tight);
 	color: var(--color-text);
 	text-wrap: balance;
 }
 
 .section-subheadline {
-	margin-top: var(--spacing-sm);
+	margin-top: var(--spacing-md);
 	max-width: 62ch;
 	font-size: var(--font-size-lg);
 	line-height: var(--leading-normal);
 	color: var(--color-muted);
 }
 
-/* Cards: ruled panels with registration marks on hover */
+/*
+ * Marker swash: the pink highlighter from the covers. Wrap any phrase
+ * in .hl and the marker slides behind it, a touch crooked.
+ */
+.hl {
+	position: relative;
+	display: inline-block;
+	padding: 0 0.14em;
+	white-space: nowrap;
+}
+
+.hl::before {
+	content: "";
+	position: absolute;
+	inset: 0.04em -0.12em 0.02em;
+	background: var(--color-highlight);
+	border-radius: 52% 8% 46% 10% / 22% 60% 24% 64%;
+	transform: rotate(-1.4deg);
+	z-index: -1;
+}
+
+/* A pinned long phrase is allowed to fold on narrow covers. */
+@media (max-width: 480px) {
+	.hl {
+		white-space: normal;
+	}
+}
+
+/* Paper cards */
 .hub-card {
 	position: relative;
-	background: var(--gradient-card);
+	background: var(--color-surface);
 	border: var(--line-hair) solid var(--color-border);
 	border-radius: var(--radius-lg);
-	box-shadow: none;
+	box-shadow: var(--shadow-sm);
 	transition:
 		border-color var(--transition-base),
-		background var(--transition-base),
 		transform var(--transition-base),
 		box-shadow var(--transition-base);
 }
 
 .hub-card:hover {
-	transform: none;
-	border-color: color-mix(in srgb, var(--color-brand) 65%, var(--color-border));
-	box-shadow: none;
-}
-
-/* Registration marks appear at the sheet corners on hover */
-.hub-card::before,
-.hub-card::after {
-	content: "";
-	position: absolute;
-	width: 10px;
-	height: 10px;
-	opacity: 0;
-	transition: opacity var(--transition-base);
-	pointer-events: none;
-}
-
-.hub-card::before {
-	top: 6px;
-	left: 6px;
-	border-top: var(--line-ink) solid var(--color-brand-strong);
-	border-left: var(--line-ink) solid var(--color-brand-strong);
-}
-
-.hub-card::after {
-	bottom: 6px;
-	right: 6px;
-	border-bottom: var(--line-ink) solid var(--color-brand-strong);
-	border-right: var(--line-ink) solid var(--color-brand-strong);
-}
-
-.hub-card:hover::before,
-.hub-card:hover::after {
-	opacity: 0.8;
+	transform: translateY(-3px);
+	border-color: color-mix(in srgb, var(--color-brand) 45%, var(--color-border));
+	box-shadow: var(--shadow-lg);
 }
 
 /* Stretches a card title link over the whole card. */
@@ -247,7 +336,7 @@ li {
 	}
 }
 
-/* Badges: punchy, high-contrast, modern technical indicator tags */
+/* Badges: the covers' pill chips */
 .badges {
 	display: flex;
 	flex-wrap: wrap;
@@ -258,57 +347,37 @@ li {
 .badge {
 	display: inline-flex;
 	align-items: center;
-	padding: 2px 8px;
+	padding: 3px 12px;
 	font-family: var(--font-mono);
 	font-size: var(--font-size-xs);
 	font-weight: 600;
-	letter-spacing: 0.05em;
+	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: var(--color-brand-strong);
-	background: color-mix(in srgb, var(--color-brand) 10%, transparent);
+	background: color-mix(in srgb, var(--color-brand) 8%, transparent);
 	border: 1px solid color-mix(in srgb, var(--color-brand) 30%, transparent);
-	border-radius: var(--radius-sm);
-	box-shadow: none;
-}
-
-.badge::before {
-	content: "";
-	display: inline-block;
-	width: 5px;
-	height: 5px;
-	border-radius: 50%;
-	background: currentColor;
-	margin-right: 6px;
-	opacity: 0.85;
+	border-radius: var(--radius-full);
 }
 
 .badge-muted {
 	color: var(--color-muted);
-	background: color-mix(in srgb, var(--color-muted) 10%, transparent);
+	background: color-mix(in srgb, var(--color-muted) 8%, transparent);
 	border-color: color-mix(in srgb, var(--color-muted) 28%, transparent);
 }
 
 .badge-free {
 	color: var(--color-success);
 	background: color-mix(in srgb, var(--color-success) 12%, transparent);
-	border-color: color-mix(in srgb, var(--color-success) 35%, transparent);
-}
-
-.badge-free::before {
-	box-shadow: none;
+	border-color: color-mix(in srgb, var(--color-success) 38%, transparent);
 }
 
 .badge-paid {
-	color: var(--color-warning);
+	color: var(--color-warning-text);
 	background: color-mix(in srgb, var(--color-warning) 12%, transparent);
-	border-color: color-mix(in srgb, var(--color-warning) 35%, transparent);
+	border-color: color-mix(in srgb, var(--color-warning) 38%, transparent);
 }
 
-.badge-paid::before {
-	box-shadow: none;
-}
-
-/* Tactile, elevated buttons */
+/* Stamp buttons: the covers' solid indigo "Send" */
 .btn {
 	display: inline-flex;
 	align-items: center;
@@ -318,7 +387,7 @@ li {
 	font-family: var(--font-mono);
 	font-size: var(--font-size-xs);
 	font-weight: 600;
-	letter-spacing: 0.06em;
+	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	line-height: 1.2;
 	border-radius: var(--radius);
@@ -333,37 +402,36 @@ li {
 }
 
 .btn:active {
-	transform: none;
+	transform: translateY(1px);
 }
 
 .btn-primary {
-	color: var(--color-on-brand);
-	background: var(--gradient-brand-strong);
-	border: 1.5px solid transparent;
-	box-shadow: none;
+	color: var(--color-on-control);
+	background: var(--color-control);
+	border: 1.5px solid var(--color-control);
+	box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover {
-	background: var(--gradient-brand);
-	box-shadow: none;
-	transform: none;
+	background: var(--color-control-hover);
+	border-color: var(--color-control-hover);
+	box-shadow: var(--shadow);
+	transform: translateY(-1px);
 }
 
 .btn-secondary {
 	color: var(--color-brand-strong);
-	background: color-mix(in srgb, var(--color-surface) 80%, transparent);
-	backdrop-filter: blur(8px);
-	-webkit-backdrop-filter: blur(8px);
-	border: 1.5px solid color-mix(in srgb, var(--color-brand-strong) 35%, var(--color-border));
-	box-shadow: none;
+	background: var(--color-surface);
+	border: 1.5px solid color-mix(in srgb, var(--color-brand-strong) 40%, var(--color-border));
+	box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover {
 	border-color: var(--color-brand-strong);
-	background: color-mix(in srgb, var(--color-brand) 8%, var(--color-surface));
+	background: color-mix(in srgb, var(--color-brand) 7%, var(--color-surface));
 	color: var(--color-brand-strong);
-	box-shadow: none;
-	transform: none;
+	box-shadow: var(--shadow);
+	transform: translateY(-1px);
 }
 
 .btn-lg {
@@ -371,18 +439,18 @@ li {
 	font-size: var(--font-size-sm);
 }
 
-/* Filter chips */
+/* Filter chips: same pill the covers use for WORKERS / D1 / R2 */
 .filter-chip {
 	padding: 0.375rem 0.875rem;
 	font-family: var(--font-mono);
 	font-size: var(--font-size-xs);
 	font-weight: 600;
-	letter-spacing: 0.05em;
+	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: var(--color-muted);
-	background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+	background: var(--color-surface);
 	border: 1px solid var(--color-border);
-	border-radius: var(--radius-sm);
+	border-radius: var(--radius-full);
 	cursor: pointer;
 	transition:
 		color var(--transition-fast),
@@ -395,33 +463,37 @@ li {
 .filter-chip:hover {
 	color: var(--color-text);
 	border-color: var(--color-brand);
-	background: color-mix(in srgb, var(--color-brand) 8%, var(--color-surface));
-	transform: none;
+	transform: translateY(-1px);
+	box-shadow: var(--shadow-sm);
 }
 
 .filter-chip[aria-pressed="true"] {
-	color: var(--color-on-brand);
-	background: var(--gradient-brand-strong);
-	border-color: transparent;
-	box-shadow: none;
+	color: var(--color-on-control);
+	background: var(--color-control);
+	border-color: var(--color-control);
 }
 
-/* Modern header and footer chrome */
+/* Header and footer chrome */
 .site-header {
-	backdrop-filter: blur(16px);
-	-webkit-backdrop-filter: blur(16px);
-	border-bottom: 1px solid color-mix(in srgb, var(--color-brand-strong) 25%, var(--color-border));
+	background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
+	border-bottom: var(--line-hair) solid var(--color-border);
 	box-shadow: none;
 }
 
 .site-footer {
-	border-top: 3px solid var(--color-brand-strong);
+	border-top: 3px solid var(--color-accent);
 	box-shadow: none;
 }
 
-/* Refined icon tiles */
+/* Flat icon tiles, like the covers' colored squares */
 .icon-tile {
-	box-shadow: none;
+	background: var(--color-control);
+	border: none;
+	border-radius: 12px;
+	color: var(--color-on-control);
+	box-shadow: var(--shadow-sm);
 }
 
 .section-link {
@@ -429,10 +501,15 @@ li {
 }
 
 .empty-note {
-	padding: var(--spacing-lg) 0;
+	padding: var(--spacing-lg) 0 var(--spacing-sm);
 	color: var(--color-muted);
 	font-family: var(--font-mono);
 	font-size: var(--font-size-sm);
+}
+
+/* A "that's all" note right before a section link belongs to it. */
+.empty-note + .section-link {
+	margin-top: var(--spacing-md);
 }
 
 @media (max-width: 768px) {
@@ -444,89 +521,39 @@ li {
 /* Mirrors the light values above for browsers without light-dark(). */
 @supports not (color: light-dark(#000, #fff)) {
 	html:root {
-		--color-bg: #f6f8fb;
-		--color-text: #0a1c38;
-		--color-muted: #4b5f7f;
-		--color-border: #c9d6ea;
-		--color-surface: #ffffff;
-		--color-brand: #1d4ed8;
-		--color-brand-strong: #1e40af;
-		--color-brand-soft: #3b82f6;
-		--color-accent: #0284c7;
-		--color-accent-soft: #38bdf8;
-		--color-success: #15803d;
-		--color-warning: #b45309;
+		--color-bg: #f3eddf;
+		--color-text: #242049;
+		--color-muted: #5f5979;
+		--color-border: #ddd3bc;
+		--color-surface: #fdfaf2;
+		--color-brand: #3b37a4;
+		--color-brand-strong: #2b2880;
+		--color-brand-soft: #5b56be;
+		--color-accent: #c05d72;
+		--color-accent-soft: #de97a5;
+		--color-on-brand: #faf5e9;
+		--color-success: #1e7a46;
+		--color-warning: #b46a0e;
+		--color-warning-text: #9a5b06;
+		--color-danger: #be3b4e;
+		--color-highlight: rgba(206, 106, 126, 0.5);
+		--color-warm: #e8831c;
+		--color-accent-text: #a53f55;
+		--color-control: #2b2880;
+		--color-control-hover: #3b37a4;
+		--color-on-control: #faf5e9;
+		--color-plate: #211c58;
+		--color-plate-border: #3a3583;
+		--shadow-color: 38 32 88;
 	}
 }
 
-/* Component styles are layered below these shared theme rules. */
-.btn.btn-primary,
-.skip-link {
-	background: var(--color-control) !important;
-	border-color: var(--color-control) !important;
-}
-.btn.btn-primary:hover {
-	background: var(--color-control-hover) !important;
-	border-color: var(--color-control-hover) !important;
-}
-.video-play { background: var(--color-control) !important; }
-.video-facade:hover .video-play,
-.video-facade:focus-visible .video-play { background: var(--color-control-hover) !important; }
-.hub-card,
-.tutorial-row,
-.hero-badge,
-.hero-panel,
-.hero-image,
-.badge-dot,
-.panel-led,
-.site-header,
-.site-footer,
-.icon-tile {
-	box-shadow: none !important;
-}
-.hub-card:hover,
-.tutorial-row:hover,
-.btn:hover,
-.btn:active,
-.filter-chip:hover {
-	transform: none !important;
-	box-shadow: none !important;
-}
-.filter-chip[aria-pressed="true"] {
-	background: var(--color-control) !important;
-	border-color: var(--color-control) !important;
-	color: var(--color-on-brand) !important;
-}
-.hero-glow-primary,
-.hero-glow-secondary {
-	display: none !important;
-}
-.hero-panel {
-	background: var(--color-surface) !important;
-	backdrop-filter: none !important;
-	-webkit-backdrop-filter: none !important;
-}
-.site-header,
-.btn-secondary {
-	backdrop-filter: none !important;
-	-webkit-backdrop-filter: none !important;
-}
-.site-header { background: var(--color-bg) !important; }
-.spotlight,
-.cta-gradient {
-	background: #0f274a !important;
-	box-shadow: none !important;
-}
-.cta-banner,
-.btn-on-gradient {
-	box-shadow: none !important;
-}
-.btn-on-gradient,
-.btn-on-gradient:hover {
-	color: #1e40af !important;
-}
 /* Navigation remains available unless its toggle was successfully attached. */
 @media (max-width: 900px) {
-	.site-header:not(.nav-enhanced) .nav-panel { display: flex !important; }
-	.site-header:not(.nav-enhanced) .nav-toggle { display: none !important; }
+	.site-header:not(.nav-enhanced) .nav-panel {
+		display: flex !important;
+	}
+	.site-header:not(.nav-enhanced) .nav-toggle {
+		display: none !important;
+	}
 }

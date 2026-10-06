@@ -1,8 +1,10 @@
 /*
  * Site stats counters, refreshed at most once a day and read from the
  * `site_stats` table. Sources: the npm downloads API for installs, the
- * official plugin registry for the plugin count, and a manually-kept
- * sites figure. Each row also carries `prev_value`/`prev_at` — a weekly
+ * official plugin registry for the plugin count, and BuiltWith Trends
+ * for live sites — best-effort, since BuiltWith bot-checks most
+ * requests and the row keeps its manual figure until a fetch lands.
+ * Each row also carries `prev_value`/`prev_at` — a weekly
  * baseline — so the strip can show how much a number grew in a week.
  * The worker's scheduled handler refreshes proactively; page reads
  * refresh lazily when stale so dev works without cron.
@@ -22,6 +24,7 @@ const TTL_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * TTL_MS;
 const NPM_DOWNLOADS_URL = "https://api.npmjs.org/downloads/point/last-month/emdash";
 const PLUGIN_REGISTRY_URL = "https://plugins.emdashcms.com/";
+const BUILTWITH_URL = "https://trends.builtwith.com/cms/EmDash-CMS";
 
 const DEFAULT_STATS: Array<Omit<SiteStat, "updatedAt" | "weekDelta">> = [
 	{ key: "npm_downloads", label: "npm installs · last 30 days", value: 0, suffix: "", source: "api" },
@@ -94,6 +97,27 @@ async function fetchNpmDownloads(): Promise<number | null> {
 	return typeof body.downloads === "number" && body.downloads > 0 ? body.downloads : null;
 }
 
+/*
+ * BuiltWith sits behind an interactive bot check, so this usually comes
+ * back null — the manual "1+" seed stays until a fetch gets through or
+ * the number is updated by hand.
+ */
+async function countBuiltWithSites(): Promise<number | null> {
+	const res = await fetch(BUILTWITH_URL, {
+		headers: {
+			Accept: "text/html",
+			"User-Agent":
+				"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+		},
+	});
+	if (!res.ok) return null;
+	const html = await res.text();
+	const match = html.match(/([\d,]+)\s+(?:live\s+|active\s+)?websites/i);
+	if (!match) return null;
+	const n = Number.parseInt(match[1].replace(/,/g, ""), 10);
+	return n > 0 ? n : null;
+}
+
 export async function refreshSiteStats(db: D1Like): Promise<void> {
 	await ensureTable(db);
 	/*
@@ -141,6 +165,13 @@ export async function refreshSiteStats(db: D1Like): Promise<void> {
 		if (plugins !== null) writes.push(set("plugins", plugins));
 	} catch {
 		// Same — registry unreachable this run.
+	}
+
+	try {
+		const sites = await countBuiltWithSites();
+		if (sites !== null) writes.push(set("sites", sites));
+	} catch {
+		// Bot check or outage — the manual figure stands.
 	}
 
 	if (writes.length) await db.batch(writes);

@@ -3,10 +3,11 @@ import { env } from "cloudflare:workers";
 import { getSiteStats } from "../../lib/site-stats";
 import NewTab from "../NewTab.astro";
 
-/* Where each counter points — both sources are external. */
+/* Where each counter points — all sources are external. */
 const STAT_LINKS: Record<string, string> = {
 	npm_downloads: "https://www.npmjs.com/package/emdash",
 	plugins: "https://plugins.emdashcms.com/",
+	sites: "https://trends.builtwith.com/cms/EmDash-CMS",
 };
 
 const db = (env as Env).DB;
@@ -66,7 +67,7 @@ const visible = stats.filter((s) => s.value > 0);
 				</dl>
 				<p class="stats-note">
 					Installs are npmjs.org downloads for the last 30 days; plugins counts the official
-					registry. Refreshed once a day.
+					registry; sites tracks BuiltWith Trends. Refreshed once a day.
 				</p>
 			</div>
 		</section>

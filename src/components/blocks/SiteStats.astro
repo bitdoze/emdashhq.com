@@ -3,11 +3,10 @@ import { env } from "cloudflare:workers";
 import { getSiteStats } from "../../lib/site-stats";
 import NewTab from "../NewTab.astro";
 
-/* Where each counter points — npm registry externally, catalogs on-site. */
+/* Where each counter points — both sources are external. */
 const STAT_LINKS: Record<string, string> = {
 	npm_downloads: "https://www.npmjs.com/package/emdash",
-	plugins: "/plugins/",
-	themes: "/themes/",
+	plugins: "https://plugins.emdashcms.com/",
 };
 
 const db = (env as Env).DB;
@@ -55,12 +54,19 @@ const visible = stats.filter((s) => s.value > 0);
 									{s.suffix}
 									{external && <span class="stat-ext" aria-hidden="true"> ↗</span>}
 								</dd>
+								{s.weekDelta !== null && (
+									<dd class={`stat-delta${s.weekDelta < 0 ? " stat-delta-down" : ""}`}>
+										{s.weekDelta > 0 ? "+" : ""}
+										{s.weekDelta.toLocaleString("en-US")} this week
+									</dd>
+								)}
 							</div>
 						);
 					})}
 				</dl>
 				<p class="stats-note">
-					Installs are npmjs.org downloads for the last 30 days. Counts refresh once a day.
+					Installs are npmjs.org downloads for the last 30 days; plugins counts the official
+					registry. Refreshed once a day.
 				</p>
 			</div>
 		</section>
@@ -142,6 +148,18 @@ const visible = stats.filter((s) => s.value > 0);
 		text-transform: uppercase;
 		color: var(--color-accent-text);
 		margin: 0;
+	}
+
+	.stat-delta {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		letter-spacing: 0.05em;
+		color: var(--color-success);
+		margin: var(--spacing-xs) 0 0;
+	}
+
+	.stat-delta-down {
+		color: var(--color-muted);
 	}
 
 	.stats-note {

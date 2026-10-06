@@ -29,7 +29,7 @@ const BUILTWITH_URL = "https://trends.builtwith.com/cms/EmDash-CMS";
 const DEFAULT_STATS: Array<Omit<SiteStat, "updatedAt" | "weekDelta">> = [
 	{ key: "npm_downloads", label: "npm installs · last 30 days", value: 0, suffix: "", source: "api" },
 	{ key: "plugins", label: "plugins in the registry", value: 0, suffix: "", source: "api" },
-	{ key: "sites", label: "sites on EmDash", value: 1, suffix: "+", source: "manual" },
+	{ key: "sites", label: "sites on EmDash", value: 566, suffix: "+", source: "manual" },
 ];
 
 const KNOWN_KEYS = DEFAULT_STATS.map((s) => s.key);

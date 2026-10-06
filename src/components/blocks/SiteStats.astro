@@ -171,12 +171,36 @@ const visible = stats.filter((s) => s.value > 0);
 	}
 
 	@media (max-width: 700px) {
+		/* Ledger rows: label left, figure right, delta beneath the figure. */
 		.stats-row {
-			grid-template-columns: 1fr 1fr;
+			grid-template-columns: 1fr;
 		}
-		.stat-cell:nth-child(odd) {
+		.stat-cell {
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: baseline;
+			justify-content: space-between;
+			column-gap: var(--spacing-md);
+			padding: var(--spacing-md) 0;
+			margin-right: 0;
+		}
+		.stat-cell + .stat-cell {
 			border-left: 0;
+			border-top: 1px solid var(--color-border);
 			padding-left: 0;
+		}
+		.stat-value {
+			font-size: 1.9rem;
+			text-align: right;
+		}
+		.stat-label {
+			flex: 1;
+			min-width: 55%;
+		}
+		.stat-delta {
+			flex-basis: 100%;
+			margin-top: 0;
+			text-align: right;
 		}
 	}
 </style>

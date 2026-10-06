@@ -1,6 +1,14 @@
 ---
 import { env } from "cloudflare:workers";
 import { getSiteStats } from "../../lib/site-stats";
+import NewTab from "../NewTab.astro";
+
+/* Where each counter points — npm registry externally, catalogs on-site. */
+const STAT_LINKS: Record<string, string> = {
+	npm_downloads: "https://www.npmjs.com/package/emdash",
+	plugins: "/plugins/",
+	themes: "/themes/",
+};
 
 const db = (env as Env).DB;
 const cfContext = (Astro.locals as { cfContext?: { waitUntil(p: Promise<unknown>): void } }).cfContext;
@@ -26,15 +34,30 @@ const visible = stats.filter((s) => s.value > 0);
 					</p>
 				</header>
 				<dl class="stats-row">
-					{visible.map((s) => (
-						<div class="stat-cell">
-							<dt class="stat-label">{s.label}</dt>
-							<dd class="stat-value">
-								{s.value.toLocaleString("en-US")}
-								{s.suffix}
-							</dd>
-						</div>
-					))}
+					{visible.map((s) => {
+						const url = STAT_LINKS[s.key];
+						const external = url ? /^https?:/i.test(url) : false;
+						return (
+							<div class="stat-cell">
+								<dt class="stat-label">{s.label}</dt>
+								<dd class="stat-value">
+									{url ? (
+										<a
+											class="stat-link"
+											href={url}
+											{...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+											aria-label={`${s.value.toLocaleString("en-US")}${s.suffix} ${s.label}`}
+										>
+											{external && <NewTab />}
+										</a>
+									) : null}
+									{s.value.toLocaleString("en-US")}
+									{s.suffix}
+									{external && <span class="stat-ext" aria-hidden="true"> ↗</span>}
+								</dd>
+							</div>
+						);
+					})}
 				</dl>
 				<p class="stats-note">
 					Installs are npmjs.org downloads for the last 30 days. Counts refresh once a day.
@@ -63,11 +86,36 @@ const visible = stats.filter((s) => s.value > 0);
 	}
 
 	.stat-cell {
+		position: relative;
 		display: flex;
 		flex-direction: column-reverse;
 		gap: var(--spacing-xs);
 		padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg) 0;
 		margin-right: var(--spacing-lg);
+	}
+
+	/* Stretched overlay so the whole cell is the link. */
+	.stat-link::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+	}
+
+	.stat-link:focus-visible::after {
+		outline: 2px solid var(--color-brand);
+		outline-offset: 4px;
+	}
+
+	.stat-ext {
+		font-family: var(--font-mono);
+		font-size: 0.55em;
+		color: var(--color-accent-text);
+		vertical-align: super;
+		letter-spacing: 0;
+	}
+
+	.stat-cell:hover .stat-value {
+		color: var(--color-brand-strong);
 	}
 
 	.stat-cell + .stat-cell {

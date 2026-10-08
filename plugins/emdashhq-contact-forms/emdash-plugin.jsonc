@@ -11,8 +11,8 @@
 	"description": "Contact form builder: embed forms on pages, store every submission, send email through the site's provider.",
 	"keywords": ["forms", "contact", "email", "submissions"],
 
-	"capabilities": ["email:send"],
-	"allowedHosts": [],
+	"capabilities": ["email:send", "network:request"],
+	"allowedHosts": ["challenges.cloudflare.com"],
 	"storage": {
 		"forms": {
 			"indexes": ["slug", "enabled", "createdAt"],
@@ -58,6 +58,16 @@
 				"default": 20,
 				"min": 1,
 				"max": 1000
+			},
+			"turnstileSiteKey": {
+				"type": "string",
+				"label": "Turnstile site key",
+				"description": "Cloudflare Turnstile site key. When both Turnstile keys are set, every form renders a Turnstile widget and submissions are verified server-side against siteverify."
+			},
+			"turnstileSecretKey": {
+				"type": "secret",
+				"label": "Turnstile secret key",
+				"description": "Cloudflare Turnstile secret key, stored encrypted. Set both keys to enable; clear them to disable."
 			},
 			"retentionDays": {
 				"type": "number",

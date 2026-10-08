@@ -9,6 +9,10 @@
  * posts straight to the plugin's public submit route, which answers with a
  * same-origin 303 redirect carrying cf/cf_status query params.
  *
+ * When Turnstile keys are configured in the plugin settings the public form
+ * definition carries `turnstileSiteKey` and this component renders the
+ * Cloudflare Turnstile widget and its api.js loader.
+ *
  * Styling is intentionally plain: it reads common CSS custom properties when
  * they exist and falls back to system defaults, so it slots into any theme.
  * Restyle the .cf-* classes to match your design system.
@@ -39,6 +43,7 @@ interface PublicForm {
 	submitLabel?: string;
 	successMessage?: string;
 	fields: PublicFormField[];
+	turnstileSiteKey?: string;
 }
 
 const { value } = Astro.props;
@@ -104,6 +109,11 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 					{status === "rate_limited" && (
 						<p class="cf-note cf-err" role="alert">
 							Too many attempts. Please wait a while and try again.
+						</p>
+					)}
+					{status === "challenge" && (
+						<p class="cf-note cf-err" role="alert">
+							The spam check failed — please try again.
 						</p>
 					)}
 					{status === "error" && (
@@ -178,10 +188,22 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 						})}
 					</div>
 
+					{form.turnstileSiteKey && (
+						<div class="cf-turnstile" data-sitekey={form.turnstileSiteKey}></div>
+					)}
+
 					<button type="submit" class="cf-submit">
 						{form.submitLabel || "Send"}
 					</button>
 				</form>
+				{form.turnstileSiteKey && (
+					<script
+						is:inline
+						src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+						async
+						defer
+					></script>
+				)}
 			</>
 		) : (
 			<p class="cf-note cf-closed">This form is not available right now.</p>
@@ -299,6 +321,10 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 	.cf-closed {
 		max-width: 36rem;
 		color: var(--color-muted, #666);
+	}
+
+	.cf-turnstile {
+		margin-bottom: var(--spacing-lg, 1rem);
 	}
 
 	.cf-hp {

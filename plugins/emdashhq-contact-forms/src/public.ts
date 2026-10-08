@@ -60,7 +60,12 @@ export async function handleFormRoute(
 	if (!slug) return { form: null };
 	const found = await findFormBySlug(ctx, slug);
 	if (!found || !found.data.enabled) return { form: null };
-	return { form: publicForm(found.data) };
+	const form = publicForm(found.data);
+	const settings = await readSettings(ctx);
+	if (settings.turnstileSiteKey && settings.turnstileSecretKey) {
+		form.turnstileSiteKey = settings.turnstileSiteKey;
+	}
+	return { form };
 }
 
 function formValues(input: PluginFormData): Record<string, string> {
@@ -212,6 +217,51 @@ export async function sendSubmissionEmail(
 	}
 }
 
+const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+/**
+ * Verify a Turnstile token against Cloudflare siteverify. A completed check
+ * decides (false rejects); an unreachable verifier or missing http access
+ * accepts, so a Turnstile outage never takes the form down.
+ */
+async function verifyTurnstile(
+	ctx: PluginContext,
+	secret: string,
+	token: string,
+	ip: string | null,
+): Promise<boolean> {
+	if (!ctx.http) {
+		ctx.log.warn("Turnstile is configured but the plugin has no HTTP access; accepting submission");
+		return true;
+	}
+	try {
+		const res = await ctx.http.fetch(TURNSTILE_VERIFY_URL, {
+			method: "POST",
+			headers: { "content-type": "application/x-www-form-urlencoded" },
+			body: new URLSearchParams({
+				secret,
+				response: token,
+				...(ip ? { remoteip: ip } : {}),
+			}).toString(),
+		});
+		if (!res.ok) {
+			ctx.log.warn(`Turnstile siteverify answered HTTP ${res.status}; accepting submission`);
+			return true;
+		}
+		const result = (await res.json()) as { success?: boolean; "error-codes"?: string[] };
+		if (result.success !== true) {
+			ctx.log.info("Turnstile verification rejected a submission", { codes: result["error-codes"] });
+			return false;
+		}
+		return true;
+	} catch (error) {
+		ctx.log.warn(
+			`Turnstile siteverify failed: ${error instanceof Error ? error.message : String(error)}; accepting submission`,
+		);
+		return true;
+	}
+}
+
 export async function handleSubmitRoute(
 	routeCtx: SandboxedRouteContext,
 	ctx: PluginContext,
@@ -243,6 +293,18 @@ export async function handleSubmitRoute(
 	if (postedAt > 0 && Date.now() - postedAt < MIN_FILL_MS) {
 		debug("submitted too fast", { slug, ip: meta.ip });
 		return redirect303(routeCtx, "sent", slug);
+	}
+
+	// Turnstile: when both keys are configured the widget's token must verify.
+	if (settings.turnstileSiteKey && settings.turnstileSecretKey) {
+		const token = (values["cf-turnstile-response"] ?? "").trim();
+		const passed = token
+			? await verifyTurnstile(ctx, settings.turnstileSecretKey, token, meta.ip)
+			: false;
+		if (!passed) {
+			debug("turnstile verification failed", { slug, ip: meta.ip });
+			return redirect303(routeCtx, "challenge", slug);
+		}
 	}
 
 	// Rate limit: bounded count of recent submissions from this IP.

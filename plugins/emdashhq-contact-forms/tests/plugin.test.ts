@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { createPluginTestHost, type PluginTestHost } from "@emdash-cms/plugin-test";
+import {
+	createPluginRuntimeTestHost,
+	createPluginTestHost,
+	type PluginRuntimeTestHost,
+	type PluginTestHost,
+} from "@emdash-cms/plugin-test";
 
 const FORM = {
 	slug: "contact",
@@ -26,10 +31,13 @@ const REQUEST = {
 };
 
 let host: PluginTestHost | undefined;
+let runtimeHost: PluginRuntimeTestHost | undefined;
 
 afterEach(async () => {
 	await host?.dispose();
 	host = undefined;
+	await runtimeHost?.dispose();
+	runtimeHost = undefined;
 });
 
 async function seedForm(): Promise<PluginTestHost> {
@@ -133,6 +141,98 @@ describe("submit route", () => {
 		};
 		expect(res.status).toBe(303);
 		expect(await host.storage("submissions").list()).toHaveLength(0);
+	});
+});
+
+describe("turnstile", () => {
+	const SITEVERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+	function validEntries(token?: string) {
+		const entries = [
+			{ kind: "text", name: "cf_slug", value: "contact" },
+			{ kind: "text", name: "name", value: "Ada" },
+			{ kind: "text", name: "email", value: "ada@example.com" },
+			{ kind: "text", name: "message", value: "Hello there" },
+			{ kind: "text", name: "cf_ts", value: String(Date.now() - 10_000) },
+		];
+		if (token) entries.push({ kind: "text", name: "cf-turnstile-response", value: token });
+		return entries;
+	}
+
+	async function seedRuntimeForm(withKeys = true): Promise<PluginRuntimeTestHost> {
+		const h = await createPluginRuntimeTestHost();
+		await h.actions.plugin.activate();
+		await h.fixtures.plugin.storage("forms", "form_1", FORM);
+		if (withKeys) {
+			await h.fixtures.plugin.setting("turnstileSiteKey", "1x_sitekey");
+			await h.fixtures.plugin.setting("turnstileSecretKey", "1x_secret");
+		}
+		return h;
+	}
+
+	function locationOf(res: unknown): string {
+		const { headers } = res as { headers: [string, string][] };
+		return new Map(headers).get("location") ?? "";
+	}
+
+	it("exposes the site key on the form route only when configured", async () => {
+		runtimeHost = await seedRuntimeForm(true);
+		const withKeys = (await runtimeHost.transport.invokeRoute("form", { slug: "contact" })) as {
+			form: { turnstileSiteKey?: string };
+		};
+		expect(withKeys.form.turnstileSiteKey).toBe("1x_sitekey");
+
+		await runtimeHost.dispose();
+		runtimeHost = await seedRuntimeForm(false);
+		const withoutKeys = (await runtimeHost.transport.invokeRoute("form", { slug: "contact" })) as {
+			form: { turnstileSiteKey?: string };
+		};
+		expect(withoutKeys.form.turnstileSiteKey).toBeUndefined();
+	});
+
+	it("rejects submissions without a token and never calls siteverify", async () => {
+		runtimeHost = await seedRuntimeForm();
+		const res = await runtimeHost.transport.invokeRoute("submit", { entries: validEntries() }, REQUEST);
+		expect(locationOf(res)).toContain("cf_status=challenge");
+		expect(await runtimeHost.inspect.storage.list("submissions")).toHaveLength(0);
+		expect(runtimeHost.http.requests()).toHaveLength(0);
+	});
+
+	it("rejects submissions when siteverify answers success: false", async () => {
+		runtimeHost = await seedRuntimeForm();
+		await runtimeHost.http.respond(
+			SITEVERIFY,
+			new Response(JSON.stringify({ success: false, "error-codes": ["invalid-input-response"] }), {
+				headers: { "content-type": "application/json" },
+			}),
+		);
+		const res = await runtimeHost.transport.invokeRoute(
+			"submit",
+			{ entries: validEntries("bad-token") },
+			REQUEST,
+		);
+		expect(locationOf(res)).toContain("cf_status=challenge");
+		expect(await runtimeHost.inspect.storage.list("submissions")).toHaveLength(0);
+		const requests = runtimeHost.http.requests();
+		expect(requests).toHaveLength(1);
+		expect(requests[0].url).toBe(SITEVERIFY);
+	});
+
+	it("accepts and stores submissions when siteverify answers success: true", async () => {
+		runtimeHost = await seedRuntimeForm();
+		await runtimeHost.http.respond(
+			SITEVERIFY,
+			new Response(JSON.stringify({ success: true }), {
+				headers: { "content-type": "application/json" },
+			}),
+		);
+		const res = await runtimeHost.transport.invokeRoute(
+			"submit",
+			{ entries: validEntries("good-token") },
+			REQUEST,
+		);
+		expect(locationOf(res)).toContain("cf_status=saved");
+		expect(await runtimeHost.inspect.storage.list("submissions")).toHaveLength(1);
 	});
 });
 

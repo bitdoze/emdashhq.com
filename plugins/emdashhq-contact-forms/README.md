@@ -18,8 +18,9 @@ is already configured — Cloudflare Email Sending or any SMTP provider via
   confirmation, manual resend) with status, duration and the provider's error
   message.
 - **Dashboard widget** — unread count, active forms, recent submissions.
-- **Anti-spam** — hidden honeypot, minimum-fill-time trap, and a per-IP hourly
-  rate limit (configurable in plugin settings).
+- **Anti-spam** — hidden honeypot, minimum-fill-time trap, a per-IP hourly
+  rate limit, and optional Cloudflare Turnstile verification (keys in plugin
+  settings).
 - **Retention** — optional automatic pruning of old submissions and log
   entries via a scheduled cron task.
 
@@ -80,7 +81,9 @@ emdash({
 ```
 
 Activate it in the admin under **Plugins** (the plugin declares the
-`email:send` capability, which EmDash shows you at install).
+`email:send` and `network:request` capabilities, which EmDash shows you at
+install). `network:request` is restricted to `challenges.cloudflare.com` via
+`allowedHosts` and is only used for Turnstile verification.
 
 ## Wire the page block
 
@@ -128,6 +131,33 @@ Subject templates support `{form}`, `{site}` and any submitted
 `{field_key}` placeholder. Replies to notification email go to the visitor's
 first `email` field via `replyTo`.
 
+## Anti-spam and Turnstile
+
+Every form carries three passive defenses out of the box: a hidden honeypot
+field, a minimum-fill-time trap (both pretend success so bots learn nothing),
+and a per-IP hourly submission limit (`rateLimitPerHour` setting).
+
+When passive traps are not enough, enable **Cloudflare Turnstile**:
+
+1. In the Cloudflare dashboard open **Turnstile → Add widget**, add your
+   site's hostname, and pick a widget mode (Managed works for most sites).
+2. Copy the **site key** and **secret key** into **Plugins → Contact forms →
+   Settings**.
+3. Every form now renders a Turnstile widget and the submit route verifies
+   the token against Cloudflare `siteverify` before storing anything. Missing
+   or rejected tokens redirect with `cf_status=challenge`; nothing is stored
+   or emailed.
+
+Both keys must be set — with either one empty the widget and the check stay
+off. If the siteverify endpoint is unreachable the submission is accepted and
+a warning is logged, so a Cloudflare outage never takes your form down. The
+secret key is stored with the encrypted plugin-settings envelope.
+
+Upgrading from 1.0.x: the manifest now declares `network:request` with
+`allowedHosts: ["challenges.cloudflare.com"]`. EmDash asks you to approve the
+new capability on update; until it is approved the plugin keeps working but
+Turnstile verification is skipped (a warning is logged if keys are set).
+
 ## Routes
 
 | Route | Access | Purpose |
@@ -138,7 +168,8 @@ first `email` field via `replyTo`.
 | `POST /_emdash/api/plugins/emdashhq-contact-forms/admin` | admin | Block Kit interactions for the admin pages and widget. |
 
 `cf_status` values: `sent` (emailed), `saved` (stored, no email), `invalid`
-(`cf_fields` lists the bad field keys), `rate_limited`, `error`.
+(`cf_fields` lists the bad field keys), `rate_limited`, `challenge` (Turnstile
+verification missing or rejected), `error`.
 
 ## Storage
 

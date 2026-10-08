@@ -86,6 +86,8 @@ export interface PublicForm {
 	submitLabel?: string;
 	successMessage?: string;
 	fields: FormFieldDef[];
+	/** Present when Turnstile is fully configured; renderers show the widget. */
+	turnstileSiteKey?: string;
 }
 
 export interface PluginSettings {
@@ -93,6 +95,8 @@ export interface PluginSettings {
 	defaultSubject: string;
 	notifyName: string;
 	rateLimitPerHour: number;
+	turnstileSiteKey: string;
+	turnstileSecretKey: string;
 	retentionDays: number;
 	extraDebug: boolean;
 }
@@ -102,6 +106,8 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	defaultSubject: "New {form} submission",
 	notifyName: "",
 	rateLimitPerHour: 20,
+	turnstileSiteKey: "",
+	turnstileSecretKey: "",
 	retentionDays: 0,
 	extraDebug: false,
 };
@@ -147,6 +153,10 @@ export async function readSettings(ctx: PluginContext): Promise<PluginSettings> 
 			typeof raw.get("rateLimitPerHour") === "number" && raw.get("rateLimitPerHour") !== null
 				? Math.max(1, Math.min(1000, raw.get("rateLimitPerHour") as number))
 				: DEFAULT_SETTINGS.rateLimitPerHour,
+		turnstileSiteKey:
+			typeof raw.get("turnstileSiteKey") === "string" ? (raw.get("turnstileSiteKey") as string).trim() : "",
+		turnstileSecretKey:
+			typeof raw.get("turnstileSecretKey") === "string" ? (raw.get("turnstileSecretKey") as string).trim() : "",
 		retentionDays:
 			typeof raw.get("retentionDays") === "number" && raw.get("retentionDays") !== null
 				? Math.max(0, Math.min(3650, raw.get("retentionDays") as number))

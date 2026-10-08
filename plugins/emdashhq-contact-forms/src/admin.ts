@@ -823,7 +823,7 @@ function viewHelp(): BlockResponse {
 			step("4", "Activate an email provider in Settings > Email and send a test email. Without one, submissions are stored but not emailed."),
 			blocks.section("Anti-spam"),
 			blocks.context(
-				"Every rendered form carries a hidden honeypot field and a timestamp trap; both pretend success to bots. A per-IP hourly limit (Settings) caps floods.",
+				"Every rendered form carries a hidden honeypot field and a timestamp trap; both pretend success to bots. A per-IP hourly limit (Settings) caps floods. For a hard check, set Turnstile keys in Settings — every form then renders a Cloudflare Turnstile widget and submissions are verified against siteverify.",
 			),
 			blocks.actions([elements.link("Back to forms", { kind: "plugin-page", path: "/forms" })]),
 		],

@@ -2269,16 +2269,6 @@
 					"type": "custom",
 					"label": "Plugins",
 					"url": "/plugins/"
-				},
-				{
-					"type": "custom",
-					"label": "Services",
-					"url": "/services/"
-				},
-				{
-					"type": "custom",
-					"label": "Contact",
-					"url": "/contact/"
 				}
 			]
 		},

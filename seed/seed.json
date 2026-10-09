@@ -2420,6 +2420,17 @@
 							"section_cta_url": "/videos/"
 						},
 						{
+							"_type": "site_posts",
+							"_version": 1,
+							"_key": "home-posts",
+							"anchor_id": "latest-articles",
+							"headline": "Latest from the blog",
+							"subheadline": "New tutorials, plugin releases and notes from the workshop.",
+							"limit": 3,
+							"section_cta_label": "All articles",
+							"section_cta_url": "/blog/"
+						},
+						{
 							"_type": "site_resources",
 							"_version": 1,
 							"_key": "home-resources",
@@ -2767,6 +2778,12 @@
 					"title": "EmDash CMS Review: 6 Months In, After the 1.0 Release",
 					"summary": "An honest review after six months and the 1.0 release: what changed, Cloudflare vs self-hosted VPS deploy, ops footguns, and who it is really for.",
 					"url": "https://www.bitdoze.com/emdash-cms-review/",
+					"image": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M45XTQN5HRFBFSFWM7EZC87P.01M45XTRDN6XKRY96Q9EJ05PZR.webp",
+							"alt": "EmDash CMS cover: a navy dashboard mockup beside a serif headline"
+						}
+					},
 					"topic": "review",
 					"featured": false
 				}
@@ -2779,6 +2796,12 @@
 					"title": "EmDash CMS Tutorial: Build Your First Site Step by Step",
 					"summary": "Install, scaffold, and set up your first site with the admin panel, passkeys, and your first getEmDashCollection query.",
 					"url": "https://www.bitdoze.com/emdash-cms-tutorial/",
+					"image": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M45XTQN5HRFBFSFWM7EZC87P.01M45XTRDN6XKRY96Q9EJ05PZR.webp",
+							"alt": "EmDash CMS cover: a navy dashboard mockup beside a serif headline"
+						}
+					},
 					"topic": "getting-started",
 					"level": "beginner",
 					"featured": true

@@ -1,6 +1,7 @@
 ---
 import { getHubEntries } from "../../lib/hub-content";
 import { Icon } from "astro-iconset/components";
+import { Image } from "emdash/ui";
 import type { BlockComponentProps } from "emdash/ui";
 import type { PageContentBlock } from "../../../emdash-env";
 import { hostOf, labelize } from "../../lib/format";
@@ -31,18 +32,27 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 
 		{
 			tutorials.length > 0 ? (
-				<ol class="tutorial-index">
+				<div class="card-grid tutorial-grid">
 					{tutorials.map((entry, i) => {
 						const link = linkAttrs(entry.data.url);
+						const host = hostOf(entry.data.url) || "the site";
 						return (
-							<li class="tutorial-row" data-filter-item data-filter-value={entry.data.topic}>
-								<span class="row-no" aria-hidden="true">
-									{String(i + 1).padStart(2, "0")}
-								</span>
-								<div class="row-body">
+							<article class="hub-card tutorial-card" data-filter-item data-filter-value={entry.data.topic}>
+								<div class="tutorial-media">
+									{entry.data.image ? (
+										<Image image={entry.data.image} class="tutorial-shot" alt="" />
+									) : (
+										<div class="tutorial-plate" aria-hidden="true">
+											<span class="plate-no">{String(i + 1).padStart(2, "0")}</span>
+											<span class="plate-tag">{labelize(entry.data.topic || "Guide")}</span>
+										</div>
+									)}
+								</div>
+								<div class="tutorial-body">
 									<div class="badges">
 										{entry.data.topic && <span class="badge">{labelize(entry.data.topic)}</span>}
 										{entry.data.level && <span class="badge badge-muted">{labelize(entry.data.level)}</span>}
+										{entry.data.featured && <span class="badge badge-featured">Featured</span>}
 									</div>
 									<h3 class="tutorial-title">
 										<a href={link.href} target={link.target} rel={link.rel} class="card-link">
@@ -51,15 +61,15 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 										</a>
 									</h3>
 									{entry.data.summary && <p class="tutorial-summary">{entry.data.summary}</p>}
+									<span class="tutorial-source">
+										Read on {host}
+										<Icon name="ph:arrow-right" aria-hidden="true" />
+									</span>
 								</div>
-								<span class="row-source">
-									Read on {hostOf(entry.data.url) || "the site"}
-									<Icon name="ph:arrow-right" aria-hidden="true" />
-								</span>
-							</li>
+							</article>
 						);
 					})}
-				</ol>
+				</div>
 			) : (
 				<p class="empty-note">No tutorials published yet.</p>
 			)
@@ -71,62 +81,78 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 
 <style>
 	/*
-	 * The contents page: numbered rows like a magazine table of contents.
+	 * The guides shelf: cover-card grid. Tutorials with no image get an
+	 * editorial index plate (big numeral + topic) instead of a blank top.
 	 */
-	.tutorial-index {
-		list-style: none;
+	.tutorial-card {
 		display: flex;
 		flex-direction: column;
-		gap: var(--spacing-md);
+		overflow: hidden;
 	}
 
-	/* Positioned so the stretched .card-link overlay stays inside its row. */
-	.tutorial-row {
+	.tutorial-media {
 		position: relative;
-		display: grid;
-		grid-template-columns: auto 1fr auto;
-		gap: var(--spacing-lg);
-		align-items: center;
+		overflow: hidden;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.tutorial-card :global(.tutorial-shot) {
+		display: block;
+		width: 100%;
+		aspect-ratio: 16 / 10;
+		object-fit: cover;
+		transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+	}
+
+	.tutorial-card:hover :global(.tutorial-shot) {
+		transform: scale(1.04);
+	}
+
+	.tutorial-plate {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		gap: var(--spacing-md);
+		aspect-ratio: 16 / 10;
 		padding: var(--spacing-lg);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-		box-shadow: var(--shadow-sm);
-		transition:
-			border-color var(--transition-base),
-			transform var(--transition-base),
-			box-shadow var(--transition-base);
+		background:
+			linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 55%),
+			color-mix(in srgb, var(--color-brand) 5%, var(--color-surface));
+		transition: background var(--transition-base);
 	}
 
-	.tutorial-row:hover {
-		transform: translateY(-2px);
-		border-color: color-mix(in srgb, var(--color-brand) 45%, var(--color-border));
-		box-shadow: var(--shadow-lg);
+	.tutorial-card:hover .tutorial-plate {
+		background:
+			linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 55%),
+			color-mix(in srgb, var(--color-brand) 7%, var(--color-surface));
 	}
 
-	.row-no {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 34px;
-		height: 34px;
+	.plate-no {
 		font-family: var(--font-heading);
-		font-size: var(--font-size-sm);
+		font-size: var(--font-size-5xl);
 		font-weight: 800;
 		font-style: italic;
+		line-height: 0.9;
 		color: var(--color-accent-text);
-		background: color-mix(in srgb, var(--color-accent) 10%, transparent);
-		border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
-		border-radius: 50%;
 		font-variant-numeric: tabular-nums;
-		flex-shrink: 0;
 	}
 
-	.row-body {
+	.plate-tag {
+		align-self: flex-start;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--color-muted);
+	}
+
+	.tutorial-body {
 		display: flex;
+		flex: 1;
 		flex-direction: column;
 		gap: var(--spacing-sm);
-		min-width: 0;
+		padding: var(--spacing-xl);
 	}
 
 	.tutorial-title {
@@ -148,62 +174,43 @@ const topics = [...new Set(tutorials.map((entry) => entry.data.topic).filter(Boo
 	}
 
 	.tutorial-summary {
+		flex: 1;
 		font-size: var(--font-size-sm);
 		color: var(--color-muted);
-		max-width: 68ch;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 
-	.row-source {
+	.tutorial-source {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
-		white-space: nowrap;
+		align-self: flex-start;
+		margin-top: var(--spacing-sm);
+		padding-top: var(--spacing-md);
+		width: 100%;
+		border-top: 1px solid var(--color-border);
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
 		font-weight: 600;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
 		color: var(--color-brand-strong);
-		padding: 6px 14px;
-		background: color-mix(in srgb, var(--color-brand) 6%, transparent);
-		border: 1px solid color-mix(in srgb, var(--color-brand) 22%, transparent);
-		border-radius: var(--radius-full);
-		transition:
-			background var(--transition-fast),
-			color var(--transition-fast),
-			border-color var(--transition-fast);
+		transition: color var(--transition-fast);
 	}
 
-	.row-source :global(svg) {
+	.tutorial-source :global(svg) {
+		margin-left: auto;
 		transition: transform var(--transition-base);
 	}
 
-	.tutorial-row:hover .row-source {
-		background: var(--color-brand-strong);
-		color: var(--color-on-brand);
-		border-color: var(--color-brand-strong);
+	.tutorial-card:hover .tutorial-source {
+		color: var(--color-accent-text);
 	}
 
-	.tutorial-row:hover .row-source :global(svg) {
-		transform: translateX(3px);
-	}
-
-	@media (max-width: 700px) {
-		.tutorial-row {
-			grid-template-columns: auto 1fr;
-			align-items: start;
-		}
-
-		.row-source {
-			display: none;
-		}
-
-		/* With the host pill hidden, the title carries the affordance. */
-		.tutorial-title a {
-			text-decoration: underline;
-			text-decoration-color: var(--color-accent);
-			text-decoration-thickness: 1.5px;
-			text-underline-offset: 4px;
-		}
+	.tutorial-card:hover .tutorial-source :global(svg) {
+		transform: translate(2px, -2px);
 	}
 </style>

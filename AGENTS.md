@@ -85,7 +85,7 @@ Twelve page block types, mapped to `src/components/blocks/*.astro` in `src/compo
 | `site_services` | Cards from `services`, sorted by `sort_order`. |
 | `site_cta` | Banner with one or two buttons, `gradient` or `plain`. |
 | `site_contact` | Contact method cards (email, YouTube, GitHub) in the shared `.card-grid` with `.hub-card`. |
-| `site_posts` | Rows of published `posts` (newest first), shown on `/blog/`. |
+| `site_posts` | Published `posts` (newest first) as a lead card plus cover-card grid, on `/blog/` and the home page. |
 
 The 19 `widget_*` block types (prose, notice, accordion, tabs, checklist, steps, button, youtube, embed, image, code, product, cards, quote, facts, toc, series, latest_posts, divider) come from the Widgets plugin below.
 

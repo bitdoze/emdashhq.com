@@ -365,6 +365,12 @@ a[target="_blank"]:not(.card-link):not(.video-facade):not(.contact-card):not(.he
 	border-color: color-mix(in srgb, var(--color-muted) 28%, transparent);
 }
 
+.badge-featured {
+	color: var(--color-accent-text);
+	background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+	border-color: color-mix(in srgb, var(--color-accent) 38%, transparent);
+}
+
 .badge-free {
 	color: var(--color-success);
 	background: color-mix(in srgb, var(--color-success) 12%, transparent);

@@ -15,6 +15,7 @@ const { value } = Astro.props;
 const { anchor_id, headline, subheadline } = value;
 
 const posts = await getHubEntries(Astro, "posts", value);
+const [lead, ...rest] = posts;
 ---
 
 <section class="section" id={anchor_id || undefined}>
@@ -22,36 +23,70 @@ const posts = await getHubEntries(Astro, "posts", value);
 		<SectionHeader headline={headline} subheadline={subheadline} meta="Blog" />
 
 		{
-			posts.length > 0 ? (
-				<ol class="post-index">
-					{posts.map((post) => (
-						<li class="post-row">
-							{post.data.cover?.id && (
-								<Image image={post.data.cover} class="post-cover" alt={post.data.cover.alt || ""} />
-							)}
-							<div class="post-body">
-								<div class="badges">
-									{post.data.featured && <span class="badge">Featured</span>}
-									{post.data.publishedAt && (
-										<time class="badge badge-muted" datetime={post.data.publishedAt.toISOString()}>
-											{formatDate(post.data.publishedAt)}
-										</time>
-									)}
-								</div>
-								<h3 class="post-title">
-									<a href={`/blog/${post.id}/`} class="card-link">
-										{post.data.title}
-									</a>
-								</h3>
-								{post.data.excerpt && <p class="post-excerpt">{post.data.excerpt}</p>}
+			lead ? (
+				<div class="post-shelf">
+					<article class="hub-card post-card post-card--lead">
+						{lead.data.cover?.id && (
+							<div class="lead-media">
+								<Image image={lead.data.cover} class="post-shot" alt={lead.data.cover.alt || ""} />
 							</div>
-							<span class="row-source">
-								Read
+						)}
+						<div class="post-body">
+							<div class="badges">
+								{lead.data.featured && <span class="badge badge-featured">Featured</span>}
+								{lead.data.publishedAt && (
+									<time class="badge badge-muted" datetime={lead.data.publishedAt.toISOString()}>
+										{formatDate(lead.data.publishedAt)}
+									</time>
+								)}
+							</div>
+							<h3 class="post-title post-title--lead">
+								<a href={`/blog/${lead.id}/`} class="card-link">
+									{lead.data.title}
+								</a>
+							</h3>
+							{lead.data.excerpt && <p class="post-excerpt post-excerpt--lead">{lead.data.excerpt}</p>}
+							<span class="post-read">
+								Read the article
 								<Icon name="ph:arrow-right" aria-hidden="true" />
 							</span>
-						</li>
-					))}
-				</ol>
+						</div>
+					</article>
+
+					{rest.length > 0 && (
+						<div class="card-grid post-grid">
+							{rest.map((post) => (
+								<article class="hub-card post-card">
+									{post.data.cover?.id && (
+										<div class="post-media">
+											<Image image={post.data.cover} class="post-shot" alt={post.data.cover.alt || ""} />
+										</div>
+									)}
+									<div class="post-body">
+										<div class="badges">
+											{post.data.featured && <span class="badge badge-featured">Featured</span>}
+											{post.data.publishedAt && (
+												<time class="badge badge-muted" datetime={post.data.publishedAt.toISOString()}>
+													{formatDate(post.data.publishedAt)}
+												</time>
+											)}
+										</div>
+										<h3 class="post-title">
+											<a href={`/blog/${post.id}/`} class="card-link">
+												{post.data.title}
+											</a>
+										</h3>
+										{post.data.excerpt && <p class="post-excerpt">{post.data.excerpt}</p>}
+										<span class="post-read">
+											Read
+											<Icon name="ph:arrow-right" aria-hidden="true" />
+										</span>
+									</div>
+								</article>
+							))}
+						</div>
+					)}
+				</div>
 			) : (
 				<p class="empty-note">No posts published yet.</p>
 			)
@@ -62,88 +97,149 @@ const posts = await getHubEntries(Astro, "posts", value);
 </section>
 
 <style>
-	.post-index {
-		list-style: none;
+	/*
+	 * The dispatches shelf: newest post runs as a full-width lead card
+	 * (cover left, story right), the rest as cover cards beneath.
+	 */
+	.post-shelf {
 		display: flex;
 		flex-direction: column;
-		gap: var(--spacing-md);
-	}
-
-	/* Positioned so the stretched .card-link overlay stays inside its row. */
-	.post-row {
-		position: relative;
-		display: grid;
-		grid-template-columns: auto 1fr auto;
 		gap: var(--spacing-lg);
-		align-items: center;
-		padding: var(--spacing-lg);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-		box-shadow: var(--shadow-sm);
-		transition:
-			border-color var(--transition-base),
-			transform var(--transition-base),
-			box-shadow var(--transition-base);
 	}
 
-	.post-row:hover {
-		transform: translateY(-2px);
-		border-color: color-mix(in srgb, var(--color-brand) 45%, var(--color-border));
-		box-shadow: var(--shadow-lg);
+	.post-card {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
 	}
 
-	.post-cover {
-		width: 88px;
-		height: 66px;
+	.post-card--lead {
+		flex-direction: row;
+		align-items: stretch;
+	}
+
+	.lead-media {
+		position: relative;
+		flex: 0 0 42%;
+		overflow: hidden;
+		border-right: 1px solid var(--color-border);
+	}
+
+	.lead-media :global(.post-shot) {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
 		object-fit: cover;
-		border-radius: var(--radius-sm);
-		border: 1px solid var(--color-border);
+		transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+	}
+
+	.post-card--lead .post-body {
+		flex: 1;
+		justify-content: center;
+		padding: var(--spacing-2xl) var(--spacing-xl);
+	}
+
+	.post-media {
+		position: relative;
+		overflow: hidden;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.post-media :global(.post-shot) {
+		display: block;
+		width: 100%;
+		aspect-ratio: 16 / 10;
+		object-fit: cover;
+		transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+	}
+
+	.post-card:hover :global(.post-shot) {
+		transform: scale(1.04);
 	}
 
 	.post-body {
 		display: flex;
+		flex: 1;
 		flex-direction: column;
-		gap: var(--spacing-xs);
+		gap: var(--spacing-sm);
+		padding: var(--spacing-xl);
 	}
 
 	.post-title {
 		font-family: var(--font-heading);
-		font-size: var(--font-size-lg);
+		font-size: var(--font-size-xl);
 		line-height: 1.3;
 		text-wrap: pretty;
+	}
+
+	.post-title--lead {
+		font-size: var(--font-size-2xl);
 	}
 
 	.post-excerpt {
 		font-size: var(--font-size-sm);
 		color: var(--color-muted);
 		display: -webkit-box;
-		-webkit-line-clamp: 2;
+		-webkit-line-clamp: 3;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
 
-	.row-source {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--spacing-xs);
-		font-family: var(--font-mono);
-		font-size: var(--font-size-xs);
-		color: var(--color-muted);
-		white-space: nowrap;
+	.post-excerpt--lead {
+		-webkit-line-clamp: 4;
+		font-size: var(--font-size-base);
 	}
 
-	@media (max-width: 640px) {
-		.post-row {
-			grid-template-columns: 1fr;
+	.post-read {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		width: 100%;
+		margin-top: var(--spacing-sm);
+		padding-top: var(--spacing-md);
+		border-top: 1px solid var(--color-border);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-brand-strong);
+		transition: color var(--transition-fast);
+	}
+
+	.post-read :global(svg) {
+		margin-left: auto;
+		transition: transform var(--transition-base);
+	}
+
+	.post-card:hover .post-read {
+		color: var(--color-accent-text);
+	}
+
+	.post-card:hover .post-read :global(svg) {
+		transform: translateX(3px);
+	}
+
+	@media (max-width: 700px) {
+		.post-card--lead {
+			flex-direction: column;
 		}
-		.post-cover {
-			width: 100%;
+
+		.lead-media {
+			flex: none;
+			border-right: 0;
+			border-bottom: 1px solid var(--color-border);
+		}
+
+		.lead-media :global(.post-shot) {
+			position: static;
 			height: auto;
-			aspect-ratio: 16 / 9;
+			aspect-ratio: 16 / 10;
 		}
-		.row-source {
-			display: none;
+
+		.post-card--lead .post-body {
+			padding: var(--spacing-xl);
 		}
 	}
 </style>

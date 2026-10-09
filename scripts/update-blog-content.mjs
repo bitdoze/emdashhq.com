@@ -79,8 +79,10 @@ async function uploadMedia(path, filename, alt) {
 }
 
 // ---------------------------------------------------------------- content ---
+// Fresh key prefix per rewrite so regenerated bodies never collide with stored
+// blocks (the API rejects a _key whose _type changed between revisions).
 let keyN = 0;
-const key = () => `u${String(keyN++).padStart(4, "0")}`;
+const key = () => `w${String(keyN++).padStart(4, "0")}`;
 const span = (text, marks = []) => ({ _type: "span", _key: key(), text, marks });
 const ptBlock = (children, style = "normal", markDefs = []) => ({
 	_type: "block",
@@ -199,17 +201,29 @@ const POSTS = {
 		},
 		body: [
 			prose(
-				p("The contact form here started collecting junk submissions. The built-in filters (honeypot field, minimum fill time, a per-IP hourly limit) stopped some of it, but enough got through to make the inbox annoying."),
-				p("So the Contact Forms plugin got Cloudflare Turnstile. It runs a quiet browser check, hands the form a token, and the worker verifies that token before anything is stored or emailed. Most visitors never see a puzzle. Managed mode only escalates the suspicious ones."),
+				p("The contact form here started collecting junk submissions. The built-in filters (a honeypot field, a minimum fill time, a per-IP hourly limit) stopped some of it, but enough got through to make the inbox annoying."),
+				p("So the Contact Forms plugin got Cloudflare Turnstile. It runs a quiet browser check, hands the form a token, and the worker verifies that token before anything is stored or emailed. Most visitors never see a puzzle; the Managed mode here only escalates the submissions Cloudflare already suspects."),
 			),
 			fig("turnstile-flow", "The submit pipeline: the honeypot, fill-time check and hourly limit run first, Turnstile verifies the token at the door, and only then does anything reach the inbox."),
 			h2("What you need"),
 			checklist(null, [
 				"A Cloudflare account (the free plan covers Turnstile)",
 				"Contact Forms plugin 1.1.0 or newer",
-				"Two keys: the site key and the secret key",
+				"Two keys from the dashboard: the site key and the secret key",
 				"About fifteen minutes",
 			]),
+			h2("How a submission is judged"),
+			prose(
+				p("Every POST to the submit route passes five gates, in this order. Knowing the order explains most confusing behavior later:"),
+			),
+			steps("Five gates", [
+				["Honeypot", "An invisible field that humans never fill. Bots that fill it get a fake success page and nothing is stored. They cannot tell they lost."],
+				["Minimum fill time", "A submit faster than 1.5 seconds is a bot. Same trick: it gets a fake success, so scrapers never learn which gate caught them."],
+				["Turnstile verify", "The widget's token goes to Cloudflare siteverify together with the visitor IP. A failed check returns cf_status=challenge."],
+				["Rate limit", "A per-IP hourly cap, 20 submissions by default. Tripping it returns cf_status=rate_limited."],
+				["Field validation", "Required fields, types and lengths are checked against the form definition. Only then is the row stored and the email sent."],
+			]),
+			notice("info", "It fails open on purpose", "If Cloudflare siteverify is unreachable or the plugin has no HTTP access, the submission is accepted rather than rejected. A Turnstile outage never takes the form down; the tradeoff is that a broken verifier quietly disables the spam check, so a sudden spam spike usually means the keys stopped working."),
 			h2("Set it up"),
 			steps("Five steps", [
 				["Create a Turnstile site", "In the Cloudflare dashboard, open Turnstile and choose Add site. Enter your real hostname and keep the Managed widget mode. Cloudflare shows the site key and secret key once; copy both."],
@@ -227,8 +241,25 @@ const POSTS = {
   -F "slug=contact" -F "name=Bot" -F "email=bot@example.com" -F "message=hi"`,
 			),
 			prose(p("You want a 303 redirect to ?cf_status=challenge. The submission is not stored and no email goes out. A real browser submit carries the cf-turnstile-response token and lands in the inbox instead.")),
+			h2("What the status codes mean"),
+			facts(null, [
+				["sent", "Stored and emailed (or a fake success fed to the honeypot and time traps)"],
+				["saved", "Stored, but the notification email failed; check the email log"],
+				["challenge", "Turnstile token missing or rejected; nothing was stored"],
+				["rate_limited", "The hourly per-IP cap tripped"],
+				["invalid", "Fields failed validation; the bad fields echo back in cf_fields"],
+				["error", "Form slug not found or the form is disabled"],
+			]),
 			fig("cf-subs", "Submissions that pass land in the inbox with an email status for each one. Blocked posts never get a row."),
 			notice("warning", "The cache trap we actually hit", "Keys were saved, but the page showed no widget. The deploy had warmed a widget-less copy of the contact page into the Workers cache and kept serving it. A redeploy fixed it. If the widget does not appear after saving, suspect the cache before the keys."),
+			h2("Tuning it afterwards"),
+			checklist("Worth adjusting", [
+				"Rate limit per IP per hour: 20 by default, accepts 1 to 1000",
+				"Keep submissions for (days): 0 keeps everything forever",
+				"Confirmation email: each form can auto-reply to the visitor's email field",
+				"Extra debug: plugin settings has a switch that turns on verbose submit logs",
+				"Submissions export to CSV from the admin inbox when you need them out",
+			]),
 			h2("Worth knowing"),
 			facts(null, [
 				["Price", "Free with any Cloudflare account"],
@@ -239,6 +270,7 @@ const POSTS = {
 			accordion("Common questions", [
 				["Does it stop all spam?", "It stops automated posts and most scripted junk. A determined human can still pass a challenge. If flagged submissions keep slipping through, the plugin can quarantine them: stored as spam, never emailed."],
 				["Does it work without JavaScript?", "No. The widget needs JavaScript in the browser. That is the point: bots posting the raw endpoint get challenged regardless."],
+				["What if Cloudflare is down?", "Verification fails open: submissions are accepted so the form never goes offline with them. Watch for a spam spike as the telltale."],
 				["Where do real submissions go?", "Same places as before: the admin inbox under Plugins → Contact forms, and an email through the site's configured provider."],
 			]),
 			fig("cf-form", "The live form on this site: in managed mode the widget renders nothing until Cloudflare decides a visitor needs a challenge."),
@@ -264,14 +296,14 @@ const POSTS = {
 		},
 		body: [
 			prose(
-				p("Articles on this site needed more than paragraphs. Callouts for warnings, numbered steps for walkthroughs, code blocks for commands. The Content Widgets plugin adds nineteen block types to the EmDash editor, and they work in post bodies and on regular pages."),
-				p("Everything renders on the server. There is no client-side bundle to load, and every widget picks up the site's own type scale and colors through CSS variables, so it looks like part of the theme rather than a bolt-on."),
+				p("Articles on this site needed more than paragraphs. Callouts for warnings, numbered steps for walkthroughs, code blocks for commands. The stock block editor ships a lean set on purpose, so I built the Content Widgets plugin: nineteen block types for the EmDash editor, usable in post bodies and on regular pages."),
+				p("Everything renders on the server. There is no client-side bundle to load, and every widget picks up the site's type scale and colors through CSS variables, so the blocks look like part of the theme rather than a bolt-on."),
 			),
 			fig("widgets-catalog", "The catalog page the plugin adds under Plugins → Content Widgets: every block with a preview, a one-line description and its type name."),
 			h2("Install it"),
 			tabs([
-				["From the registry", "Admin → Plugins → Browse → find Content Widgets → Install. The package is @bitdoze.com/emdashhq-widgets on plugins.emdashcms.com."],
-				["From source", "Clone the plugin into your site's plugins/ directory, register it under sandboxed: in astro.config.mjs, and add it to package.json as a file: dependency. The repo has the full layout."],
+				["From the registry", "Admin → Plugins → Browse → find Content Widgets → Install. The package is @bitdoze.com/emdashhq-widgets on plugins.emdashcms.com. This is the path for most sites: the registry handles versions and updates."],
+				["From source", "Clone the plugin into your site's plugins/ directory, register it under sandboxed: in astro.config.mjs, and add it to package.json as a file: dependency. Take this path when you want to edit the widgets themselves."],
 			]),
 			h2("Allow the block types"),
 			prose(p("New block types do not appear in the editor until a blocks field allows them. Open the collection, edit the blocks field, and tick the widget types under allowed types. In a seed file it looks like this:")),
@@ -285,28 +317,52 @@ const POSTS = {
   }
 }`,
 			),
-			notice("info", "About the site/ folder", "Sandboxed plugins cannot register Astro components into a site's render pipeline, so the package ships its renderers in site/. Copy site/components into your project and map them in your blocks component; the README walks through it in four steps."),
+			notice("info", "About the site/ folder", "Sandboxed plugins cannot register Astro components into a site's render pipeline, so the package ships its renderers in site/. Copy site/components into your project and map them with defineBlockComponents(); the README walks through it in four steps."),
+			prose(
+				p("Two ways to render them. Spread the shipped component map into your existing block renderer, or drop the standalone WidgetBlocks component on a widget-only field like a post body:"),
+			),
+			code(
+				"typescript",
+				`import { widgetComponents } from "./widgets/widget-components";
+import WidgetBlocks from "./widgets/WidgetBlocks.astro";
+
+// path 1: merge into the page's block map
+const blockComponents = defineBlockComponents({
+  ...widgetComponents,
+});
+
+// path 2: a widget-only field, like a post body
+<WidgetBlocks value={post.data.body} />`,
+				"any Astro page",
+			),
 			fig("widgets-editor", "Once the types are allowed, they show up in the block picker alongside the regular blocks."),
-			h2("What is inside"),
-			checklist("Nineteen blocks", [
-				"Prose: Portable Text between the widgets",
-				"Notice: info, success, warning and danger callouts",
-				"Accordion and tabs: collapsed and tabbed sections",
+			h2("What each group is for"),
+			prose(p("Nineteen blocks is a lot of names. Grouped by job:")),
+			checklist("Writing and structure", [
+				"Prose: Portable Text paragraphs between the widgets",
+				"Notice: info, success, warning and danger callouts for gotchas",
 				"Checklist and steps: task lists and numbered walkthroughs",
+				"Accordion and tabs: collapsed sections and side-by-side variants",
+				"Divider: a styled rule between sections",
+			]),
+			checklist("Media and embeds", [
+				"Image: figure with caption, served through the media pipeline",
+				"Code: syntax highlighting with filename and language label",
+				"YouTube: a click-to-load facade, privacy-enhanced host",
+				"Embed: a sandboxed iframe for anything else",
+			]),
+			checklist("Reference and calls to action", [
 				"Button: links with twelve built-in icons",
-				"YouTube: click-to-load facade, privacy-enhanced host",
-				"Embed: iframe sandbox for anything else",
-				"Image: figure with caption through the media pipeline",
-				"Code: syntax-highlighted with filename and language",
-				"Product: review box with rating, pros and cons",
-				"Cards: small link grids with icons",
+				"Cards: small link grids for related reading",
 				"Quote: pull quotes with attribution",
-				"Facts: a label/value fact sheet",
-				"Table of contents: built from the post's headings",
+				"Facts: a label/value fact sheet for specs and pricing",
+				"Product: a review box with rating and pros/cons",
+				"Table of contents: built from the post's own headings",
 				"Series: previous/next navigation for multi-part posts",
 				"Latest posts: a recent-articles list that skips the current post",
-				"Divider: a horizontal rule, styled",
 			]),
+			h2("Pages get them too"),
+			prose(p("Nothing here is post-specific. The contact page's form block and this site's marketing pages use the same mechanism: any blocks field on any collection can allow the widget types, and the same WidgetBlocks component renders them. Write the field once, use the widgets everywhere.")),
 			h2("See it working"),
 			prose(p("Every block on the list is rendering in the demo post linked below, the same one you can open in this site's editor to inspect how it was put together.")),
 			cards(null, [
@@ -337,12 +393,14 @@ const POSTS = {
 		body: [
 			prose(
 				p("This site has a blog now. Not a separate app: a posts collection, one Astro route, and a block that lists articles on the /blog page. Here is the anatomy of it, so you can build the same thing, or take it apart to see how EmDash pieces fit together."),
+				p("It took an afternoon. Most of that went into deciding what a post is; the code is the easy part once the schema is honest."),
 			),
 			facts(null, [
 				["Collection", "posts: title, excerpt, cover, body blocks"],
 				["Route", "src/pages/blog/[slug].astro"],
+				["Hub page", "/blog, a page with a site_posts block"],
 				["Rendering", "Server-rendered on every request"],
-				["Extras", "Drafts, revisions, per-post SEO, sitemap"],
+				["Extras", "Drafts, revisions, per-post SEO, sitemap, RSS"],
 			]),
 			fig("blog-pipeline", "The whole blog in three pieces: the posts collection holds the data, one route renders every slug, and the body blocks become the article."),
 			h2("The collection"),
@@ -363,6 +421,9 @@ const POSTS = {
 }`,
 				"seed.json",
 			),
+			prose(
+				p("Two fields carry the listing pages: excerpt is the card text and meta description fallback, cover is the card image and og:image. Skip them and every surface downstream looks unfinished."),
+			),
 			h2("The route"),
 			prose(p("One file renders every post. It looks the entry up by slug, rewrites to /404 when it is missing, and hands the body blocks to the widget renderer:")),
 			code(
@@ -370,6 +431,7 @@ const POSTS = {
 				`const { entry: post, error, cacheHint } =
   await getEmDashEntry("posts", Astro.params.slug);
 if (!post) return Astro.rewrite("/404");
+if (Astro.cache.enabled) Astro.cache.set(cacheHint);
 
 const seo = getSeoMeta(post, {
   siteUrl: Astro.url.origin,
@@ -379,8 +441,14 @@ const seo = getSeoMeta(post, {
 				"src/pages/blog/[slug].astro",
 			),
 			prose(p("getSeoMeta resolves the SEO tab on each post (meta title, description, og image) and falls back to the title and excerpt when the fields are empty. Canonical and robots come along for free.")),
+			prose(p("The cacheHint line matters more than it looks. Passing it to Astro.cache tags the response, so publishing a post invalidates exactly the cached pages that show it: the article itself, /blog, and the homepage section. Skip it and edits take a cache lifetime to appear.")),
 			h2("The hub page"),
-			prose(p("/blog itself is an ordinary page with a site_posts block on it. The block queries the posts collection, orders by published date, and renders the card list. The page is content, not code: editors can move it, rename it and add blocks around it without touching the repo.")),
+			prose(p("/blog itself is an ordinary page with a site_posts block on it. The block queries the posts collection, orders by published date, and renders the newest article as a lead card with the rest in a grid. The page is content, not code: editors can move it, rename it and add blocks around it without touching the repo.")),
+			prose(p("The same block with a limit of three is the \"Latest from the blog\" section on the homepage. One component, two placements, no duplicated markup.")),
+			h2("The feed"),
+			prose(p("rss.xml.ts joins the posts collection with tutorials, videos and resources into one feed, newest first. Posts link to their /blog/ URLs; the hub collections link out to their real destinations (bitdoze.com, YouTube, npm). One line of plumbing: each collection passes a linkField, and posts get the special case of an internal path.")),
+			h2("Drafts and publishing"),
+			prose(p("Saving a post writes a draft revision; the live page only changes when you hit publish. That is why a saved-but-unpublished edit can look lost on the site while being perfectly visible in the admin. The SEO tab sits on the same editor screen, so meta title and description are part of the publish checklist rather than an afterthought.")),
 			divider("line"),
 			h2("One trap worth knowing"),
 			notice("warning", "Leave trailingSlash alone", "Setting Astro's trailingSlash to \"always\" 404s every /_emdash/api/ route without a trailing slash; it briefly broke the contact form on this site. The sitemap emits slashless post URLs that 301 to the canonical form. That redirect is expected and harmless: do not try to fix it with trailingSlash."),
@@ -391,6 +459,7 @@ const seo = getSeoMeta(post, {
 				"A route that renders entry body blocks",
 				"A hub page with a site_posts block",
 				"A Blog link in the primary menu",
+				"Posts folded into your RSS source list",
 				"One real published post, the rest follows",
 				"Excerpt, cover and SEO fields filled per post",
 			]),

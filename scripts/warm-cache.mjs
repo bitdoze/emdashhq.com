@@ -61,7 +61,9 @@ async function sitemapPaths(origin) {
 async function warm(url) {
 	const started = performance.now();
 	try {
-		const response = await fetch(url, { headers: { Accept: "text/html" }, redirect: "manual" });
+		// Follow redirects so canonical targets (e.g. trailing-slash blog URLs
+		// the sitemap emits slashless) get warmed too.
+		const response = await fetch(url, { headers: { Accept: "text/html" }, redirect: "follow" });
 		await response.arrayBuffer();
 		return {
 			status: response.status,

@@ -190,6 +190,7 @@ export interface PageContentWidgetButtonV1Block {
   _key: string;
   "label": string;
   "url": string;
+  "icon"?: "arrow-right" | "arrow-up-right" | "download" | "play" | "check" | "star" | "info" | "rocket" | "book" | "github" | "mail" | "terminal" | null;
   "variant"?: "solid" | "outline" | null;
   "align"?: "left" | "center" | "right" | null;
   "new_tab"?: boolean | null;
@@ -342,7 +343,58 @@ export interface PageContentSitePostsV1Block {
 
 export type PageContentSitePostsBlock = PageContentSitePostsV1Block;
 
-export type PageContentBlock = PageContentMarketingHeroBlock | PageContentMarketingFeaturesBlock | PageContentMarketingTestimonialsBlock | PageContentMarketingPricingBlock | PageContentMarketingFaqBlock | PageContentSiteTutorialsBlock | PageContentSiteVideosBlock | PageContentSiteResourcesBlock | PageContentSiteServicesBlock | PageContentSiteCtaBlock | PageContentSiteContactBlock | PageContentContactFormBlock | PageContentWidgetAccordionBlock | PageContentWidgetButtonBlock | PageContentWidgetChecklistBlock | PageContentWidgetEmbedBlock | PageContentWidgetFactsBlock | PageContentWidgetLatestPostsBlock | PageContentWidgetNoticeBlock | PageContentWidgetProductBlock | PageContentWidgetProseBlock | PageContentWidgetQuoteBlock | PageContentWidgetSeriesBlock | PageContentWidgetTabsBlock | PageContentWidgetTocBlock | PageContentWidgetYoutubeBlock | PageContentSitePostsBlock;
+export interface PageContentWidgetStepsV1Block {
+  _type: "widget_steps";
+  _version: 1;
+  _key: string;
+  "title"?: string | null;
+  "items"?: { "title": string; "body"?: string | null }[] | null;
+}
+
+export type PageContentWidgetStepsBlock = PageContentWidgetStepsV1Block;
+
+export interface PageContentWidgetImageV1Block {
+  _type: "widget_image";
+  _version: 1;
+  _key: string;
+  "image": { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } };
+  "caption"?: string | null;
+  "wide"?: boolean | null;
+}
+
+export type PageContentWidgetImageBlock = PageContentWidgetImageV1Block;
+
+export interface PageContentWidgetCodeV1Block {
+  _type: "widget_code";
+  _version: 1;
+  _key: string;
+  "language"?: "plaintext" | "bash" | "typescript" | "javascript" | "json" | "html" | "css" | "yaml" | "sql" | "python" | null;
+  "filename"?: string | null;
+  "code": string;
+}
+
+export type PageContentWidgetCodeBlock = PageContentWidgetCodeV1Block;
+
+export interface PageContentWidgetCardsV1Block {
+  _type: "widget_cards";
+  _version: 1;
+  _key: string;
+  "title"?: string | null;
+  "items"?: { "icon"?: "arrow-right" | "arrow-up-right" | "download" | "play" | "check" | "star" | "info" | "rocket" | "book" | "github" | "mail" | "terminal" | null; "title": string; "url": string; "description"?: string | null }[] | null;
+}
+
+export type PageContentWidgetCardsBlock = PageContentWidgetCardsV1Block;
+
+export interface PageContentWidgetDividerV1Block {
+  _type: "widget_divider";
+  _version: 1;
+  _key: string;
+  "style"?: "line" | "dots" | "space" | null;
+}
+
+export type PageContentWidgetDividerBlock = PageContentWidgetDividerV1Block;
+
+export type PageContentBlock = PageContentMarketingHeroBlock | PageContentMarketingFeaturesBlock | PageContentMarketingTestimonialsBlock | PageContentMarketingPricingBlock | PageContentMarketingFaqBlock | PageContentSiteTutorialsBlock | PageContentSiteVideosBlock | PageContentSiteResourcesBlock | PageContentSiteServicesBlock | PageContentSiteCtaBlock | PageContentSiteContactBlock | PageContentContactFormBlock | PageContentWidgetAccordionBlock | PageContentWidgetButtonBlock | PageContentWidgetChecklistBlock | PageContentWidgetEmbedBlock | PageContentWidgetFactsBlock | PageContentWidgetLatestPostsBlock | PageContentWidgetNoticeBlock | PageContentWidgetProductBlock | PageContentWidgetProseBlock | PageContentWidgetQuoteBlock | PageContentWidgetSeriesBlock | PageContentWidgetTabsBlock | PageContentWidgetTocBlock | PageContentWidgetYoutubeBlock | PageContentSitePostsBlock | PageContentWidgetStepsBlock | PageContentWidgetImageBlock | PageContentWidgetCodeBlock | PageContentWidgetCardsBlock | PageContentWidgetDividerBlock;
 
 export interface Page {
   id: string;
@@ -374,6 +426,7 @@ export interface PostBodyWidgetButtonV1Block {
   _key: string;
   "label": string;
   "url": string;
+  "icon"?: "arrow-right" | "arrow-up-right" | "download" | "play" | "check" | "star" | "info" | "rocket" | "book" | "github" | "mail" | "terminal" | null;
   "variant"?: "solid" | "outline" | null;
   "align"?: "left" | "center" | "right" | null;
   "new_tab"?: boolean | null;
@@ -523,7 +576,58 @@ export interface PostBodyContactFormV1Block {
 
 export type PostBodyContactFormBlock = PostBodyContactFormV1Block;
 
-export type PostBodyBlock = PostBodyWidgetAccordionBlock | PostBodyWidgetButtonBlock | PostBodyWidgetChecklistBlock | PostBodyWidgetEmbedBlock | PostBodyWidgetFactsBlock | PostBodyWidgetLatestPostsBlock | PostBodyWidgetNoticeBlock | PostBodyWidgetProductBlock | PostBodyWidgetProseBlock | PostBodyWidgetQuoteBlock | PostBodyWidgetSeriesBlock | PostBodyWidgetTabsBlock | PostBodyWidgetTocBlock | PostBodyWidgetYoutubeBlock | PostBodyContactFormBlock;
+export interface PostBodyWidgetStepsV1Block {
+  _type: "widget_steps";
+  _version: 1;
+  _key: string;
+  "title"?: string | null;
+  "items"?: { "title": string; "body"?: string | null }[] | null;
+}
+
+export type PostBodyWidgetStepsBlock = PostBodyWidgetStepsV1Block;
+
+export interface PostBodyWidgetImageV1Block {
+  _type: "widget_image";
+  _version: 1;
+  _key: string;
+  "image": { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } };
+  "caption"?: string | null;
+  "wide"?: boolean | null;
+}
+
+export type PostBodyWidgetImageBlock = PostBodyWidgetImageV1Block;
+
+export interface PostBodyWidgetCodeV1Block {
+  _type: "widget_code";
+  _version: 1;
+  _key: string;
+  "language"?: "plaintext" | "bash" | "typescript" | "javascript" | "json" | "html" | "css" | "yaml" | "sql" | "python" | null;
+  "filename"?: string | null;
+  "code": string;
+}
+
+export type PostBodyWidgetCodeBlock = PostBodyWidgetCodeV1Block;
+
+export interface PostBodyWidgetCardsV1Block {
+  _type: "widget_cards";
+  _version: 1;
+  _key: string;
+  "title"?: string | null;
+  "items"?: { "icon"?: "arrow-right" | "arrow-up-right" | "download" | "play" | "check" | "star" | "info" | "rocket" | "book" | "github" | "mail" | "terminal" | null; "title": string; "url": string; "description"?: string | null }[] | null;
+}
+
+export type PostBodyWidgetCardsBlock = PostBodyWidgetCardsV1Block;
+
+export interface PostBodyWidgetDividerV1Block {
+  _type: "widget_divider";
+  _version: 1;
+  _key: string;
+  "style"?: "line" | "dots" | "space" | null;
+}
+
+export type PostBodyWidgetDividerBlock = PostBodyWidgetDividerV1Block;
+
+export type PostBodyBlock = PostBodyWidgetAccordionBlock | PostBodyWidgetButtonBlock | PostBodyWidgetChecklistBlock | PostBodyWidgetEmbedBlock | PostBodyWidgetFactsBlock | PostBodyWidgetLatestPostsBlock | PostBodyWidgetNoticeBlock | PostBodyWidgetProductBlock | PostBodyWidgetProseBlock | PostBodyWidgetQuoteBlock | PostBodyWidgetSeriesBlock | PostBodyWidgetTabsBlock | PostBodyWidgetTocBlock | PostBodyWidgetYoutubeBlock | PostBodyContactFormBlock | PostBodyWidgetStepsBlock | PostBodyWidgetImageBlock | PostBodyWidgetCodeBlock | PostBodyWidgetCardsBlock | PostBodyWidgetDividerBlock;
 
 export interface Post {
   id: string;

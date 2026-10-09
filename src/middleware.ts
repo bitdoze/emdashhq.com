@@ -7,10 +7,11 @@ const SETTINGS_PATH = "/_emdash/api/admin/plugins/site-scripts/settings";
 export const onRequest = defineMiddleware(async (context, next) => {
 	const publicPage = !context.url.pathname.startsWith("/_emdash/");
 	if (publicPage && context.cache.enabled) context.cache.set({ tags: [SCRIPTS_TAG] });
-	if (publicPage && context.locals.emdash) {
+	if (publicPage && typeof context.locals.emdash?.collectPageFragments === "function") {
 		// Head and body components create equivalent SEO contexts with distinct
 		// identities. Share their fragment read within this request, including null
 		// contributions, without caching plugin settings across requests.
+		// locals.emdash is a minimal { storage } facade on /_image requests.
 		const runtime = context.locals.emdash;
 		const collect = runtime.collectPageFragments.bind(runtime);
 		const fragments = new Map<string, Promise<PageFragmentContribution[]>>();

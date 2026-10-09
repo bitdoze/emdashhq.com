@@ -48,6 +48,18 @@
 	},
 
 	"release": {
-		"requires": { "env:emdash": ">=1.0.0" }
+		"requires": { "env:emdash": ">=1.0.0" },
+		"artifacts": {
+			"icon": { "file": "./images/icon.png" },
+			"banner": { "file": "./images/banner.png" },
+			"screenshots": [
+				{ "file": "./images/screenshot-gallery.jpg", "lang": "en" },
+				{ "file": "./images/screenshot-widgets.jpg", "lang": "en" },
+				{ "file": "./images/screenshot-blog.jpg", "lang": "en" },
+				{ "file": "./images/screenshot-catalog.png", "lang": "en" },
+				{ "file": "./images/screenshot-editor.png", "lang": "en" },
+				{ "file": "./images/screenshot-settings.png", "lang": "en" }
+			]
+		}
 	}
 }

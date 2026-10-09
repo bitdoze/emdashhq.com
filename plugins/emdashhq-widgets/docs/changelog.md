@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+- Docs: description links to the live widget-gallery demo post
+
 ## 1.0.1
 
 - Registry listing assets: plugin icon, banner and screenshots

@@ -1,5 +1,7 @@
 # Content Widgets
 
+**Live demo:** [emdashhq.com/blog/widget-gallery](https://emdashhq.com/blog/widget-gallery/) — all nineteen widgets rendering in one article.
+
 A set of article widgets for EmDash sites: callouts, accordions, tabs, checklists, buttons, YouTube and iframe embeds, product/review boxes, pull quotes, facts tables, an automatic table of contents, series navigation and a live "latest posts" list.
 
 Each widget is a `blocks`-field block type, so editors can drop them into any blocks-based field — page content, blog post bodies, landing pages — wherever your schema allows them.

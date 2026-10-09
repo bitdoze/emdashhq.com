@@ -1,6 +1,6 @@
 {
 	"name": "emdashhq-widgets",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Article widgets for EmDash CMS: notices, accordions, tabs, checklists, product boxes, embeds, quotes and more as reusable content blocks.",
 	"type": "module",
 	"main": "dist/index.mjs",

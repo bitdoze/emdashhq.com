@@ -2864,6 +2864,32 @@
 					"updated": "2026-10-06T22:11:33Z",
 					"featured": false
 				}
+			},
+			{
+				"id": "resource-content-widgets",
+				"slug": "emdash-content-widgets",
+				"status": "published",
+				"data": {
+					"title": "Content Widgets",
+					"kind": "plugin",
+					"price_type": "free",
+					"summary": "Nineteen server-rendered block types for posts and pages: callouts, steps, tabs, code, video, cards and more. Built for the block editor.",
+					"url": "https://plugins.emdashcms.com/plugins/@bitdoze.com/emdashhq-widgets",
+					"demo_url": "https://emdashhq.com/blog/widget-gallery/",
+					"image": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GPSYFVR4H41K722389R8D1.jpg",
+							"alt": "The Content Widgets block picker in the EmDash editor"
+						}
+					},
+					"cta_label": "Install",
+					"featured": 1,
+					"latest_version": "1.0.2",
+					"license": "MIT",
+					"package": "@bitdoze.com/emdashhq-widgets",
+					"publisher": "@bitdoze.com",
+					"changelog": "1.0.2: docs link the live demo. 1.0.1: listing assets. 1.0.0: first release."
+				}
 			}
 		],
 		"services": [
@@ -2938,38 +2964,38 @@
 				"slug": "contact-form-spam-turnstile",
 				"status": "published",
 				"data": {
-					"title": "Stopping contact form spam with Cloudflare Turnstile",
-					"excerpt": "The contact form plugin gained an invisible Turnstile challenge: how it works, what changed in 1.1.0, and the cache gotcha to avoid.",
+					"title": "Stop contact form spam with Cloudflare Turnstile",
+					"excerpt": "The contact form on this site was feeding the inbox junk. Turnstile took it to zero: here is the fifteen-minute setup, the page-cache trap we hit, and how to test it.",
 					"body": [
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "atu8ikh2",
+							"_key": "u0004",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "f328tptb",
+									"_key": "u0001",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "fu7fz6tl",
-											"text": "The contact form on this site started attracting spam within days of going live — SEO pitches, link drops, the usual. The form plugin already had a honeypot, a minimum-fill-time check and an hourly IP limit. Bots that post directly to the endpoint skipped all three.",
+											"_key": "u0000",
+											"text": "The contact form here started collecting junk submissions. The built-in filters (honeypot field, minimum fill time, a per-IP hourly limit) stopped some of it, but enough got through to make the inbox annoying.",
 											"marks": []
 										}
 									]
 								},
 								{
 									"_type": "block",
-									"_key": "3kfl5l1n",
+									"_key": "u0003",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "cjizciw7",
-											"text": "We added Cloudflare Turnstile: a checkbox-free challenge that browsers solve in the background and the server verifies before anything is stored or emailed.",
+											"_key": "u0002",
+											"text": "So the Contact Forms plugin got Cloudflare Turnstile. It runs a quiet browser check, hands the form a token, and the worker verifies that token before anything is stored or emailed. Most visitors never see a puzzle. Managed mode only escalates the suspicious ones.",
 											"marks": []
 										}
 									]
@@ -2977,39 +3003,20 @@
 							]
 						},
 						{
-							"_type": "widget_toc",
-							"_version": 1,
-							"_key": "7kwb2i0g"
-						},
-						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "m1fmwuy1",
+							"_key": "u0005",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "e0o9f7sa",
+									"_key": "u0007",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "7215rmh0",
-											"text": "What was already there",
-											"marks": []
-										}
-									]
-								},
-								{
-									"_type": "block",
-									"_key": "q5xgu5yx",
-									"style": "normal",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "5hp2ysni",
-											"text": "Three passive defenses came with the plugin:",
+											"_key": "u0006",
+											"text": "What you need",
 											"marks": []
 										}
 									]
@@ -3019,62 +3026,180 @@
 						{
 							"_type": "widget_checklist",
 							"_version": 1,
-							"_key": "a2w6v4ud",
+							"_key": "u0008",
+							"title": null,
 							"items": [
 								{
-									"text": "Honeypot field — hidden from humans, filled by bots"
+									"text": "A Cloudflare account (the free plan covers Turnstile)"
 								},
 								{
-									"text": "Minimum fill time — instant posts get silently accepted but dropped"
+									"text": "Contact Forms plugin 1.1.0 or newer"
 								},
 								{
-									"text": "Per-IP hourly limit — 20 submissions per address per hour"
+									"text": "Two keys: the site key and the secret key"
+								},
+								{
+									"text": "About fifteen minutes"
 								}
 							]
 						},
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "vvop2b1f",
+							"_key": "u0009",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "rwhbl8z0",
-									"style": "normal",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "o3xm2h2a",
-											"text": "They catch the lazy bots. They miss the ones that render the page, take their time, or rotate through a botnet of addresses.",
-											"marks": []
-										}
-									]
-								},
-								{
-									"_type": "block",
-									"_key": "pd64jojk",
+									"_key": "u0011",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "k1xu640b",
-											"text": "Adding Turnstile",
+											"_key": "u0010",
+											"text": "Set it up",
 											"marks": []
 										}
 									]
+								}
+							]
+						},
+						{
+							"_type": "widget_steps",
+							"_version": 1,
+							"_key": "u0012",
+							"title": "Five steps",
+							"items": [
+								{
+									"title": "Create a Turnstile site",
+									"body": "In the Cloudflare dashboard, open Turnstile and choose Add site. Enter your real hostname and keep the Managed widget mode. Cloudflare shows the site key and secret key once; copy both."
 								},
 								{
+									"title": "Open the plugin settings",
+									"body": "Admin → Plugins → Contact forms → Settings. The two Turnstile fields only exist on 1.1.0 and newer."
+								},
+								{
+									"title": "Paste both keys and save",
+									"body": "The site key renders the widget; the secret key verifies tokens. Set only one and the plugin stays off; a half-configured pair is treated as unconfigured."
+								},
+								{
+									"title": "Redeploy the site",
+									"body": "If your pages are cached, the cached HTML has no widget on it. Redeploy or purge the cache, otherwise visitors submit with no token and get bounced."
+								},
+								{
+									"title": "Test it",
+									"body": "Load the form page and look for the widget, then submit once yourself to confirm the happy path still works."
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0013",
+							"body": [
+								{
 									"_type": "block",
-									"_key": "kup95f05",
+									"_key": "u0015",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0014",
+											"text": "Verify it from the outside",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0018",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0017",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "e10cxsux",
-											"text": "Two settings on the plugin — a site key and an encrypted secret — switch the whole thing on. The form route exposes the site key, the component renders the widget, and the submit route verifies the token against Cloudflare's siteverify endpoint before storing anything.",
+											"_key": "u0016",
+											"text": "A POST with no token should never reach the inbox. From a terminal:",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_code",
+							"_version": 1,
+							"_key": "u0019",
+							"language": "bash",
+							"code": "curl -i -X POST https://your-site.com/_emdash/api/plugins/emdashhq-contact-forms/submit \\\n  -F \"slug=contact\" -F \"name=Bot\" -F \"email=bot@example.com\" -F \"message=hi\""
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0022",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0021",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0020",
+											"text": "You want a 303 redirect to ?cf_status=challenge. The submission is not stored and no email goes out. A real browser submit carries the cf-turnstile-response token and lands in the inbox instead.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_notice",
+							"_version": 1,
+							"_key": "u0023",
+							"kind": "warning",
+							"title": "The cache trap we actually hit",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0025",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0024",
+											"text": "Keys were saved, but the page showed no widget. The deploy had warmed a widget-less copy of the contact page into the Workers cache and kept serving it. A redeploy fixed it. If the widget does not appear after saving, suspect the cache before the keys.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0026",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0028",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0027",
+											"text": "Worth knowing",
 											"marks": []
 										}
 									]
@@ -3084,107 +3209,86 @@
 						{
 							"_type": "widget_facts",
 							"_version": 1,
-							"_key": "tei4yttf",
-							"title": "What changed in 1.1.0",
+							"_key": "u0029",
+							"title": null,
 							"items": [
 								{
-									"label": "New settings",
-									"value": "turnstileSiteKey, turnstileSecretKey (encrypted)"
+									"label": "Price",
+									"value": "Free with any Cloudflare account"
 								},
 								{
-									"label": "New capability",
-									"value": "network:request for challenges.cloudflare.com"
+									"label": "User friction",
+									"value": "Usually invisible; Managed mode only challenges suspects"
 								},
 								{
-									"label": "Rejected posts",
-									"value": "cf_status=challenge, nothing stored"
+									"label": "Privacy",
+									"value": "No tracking cookies, no puzzle farm"
 								},
 								{
-									"label": "If Cloudflare is down",
-									"value": "submission accepted + warning logged"
+									"label": "Mode used here",
+									"value": "Managed"
 								}
 							]
 						},
 						{
-							"_type": "widget_notice",
+							"_type": "widget_accordion",
 							"_version": 1,
-							"_key": "wm02y3er",
-							"kind": "warning",
-							"title": "Cache gotcha",
-							"body": [
+							"_key": "u0030",
+							"heading": "Common questions",
+							"items": [
 								{
-									"_type": "block",
-									"_key": "aurpsbnz",
-									"style": "normal",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "hb5p0chy",
-											"text": "Pages are edge-cached. If you enable Turnstile on a cached page that was rendered without the widget, visitors post without a token and get challenged. Redeploy to clear the cache after saving the keys.",
-											"marks": []
-										}
-									]
-								}
-							]
-						},
-						{
-							"_type": "widget_quote",
-							"_version": 1,
-							"_key": "es8zdnh3",
-							"quote": "The best challenge is the one a real visitor never has to see."
-						},
-						{
-							"_type": "widget_prose",
-							"_version": 1,
-							"_key": "xqsl9jpu",
-							"body": [
+									"title": "Does it stop all spam?",
+									"body": "It stops automated posts and most scripted junk. A determined human can still pass a challenge. If flagged submissions keep slipping through, the plugin can quarantine them: stored as spam, never emailed."
+								},
 								{
-									"_type": "block",
-									"_key": "29myklsh",
-									"style": "h2",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "qhfhv7xt",
-											"text": "Get the keys",
-											"marks": []
-										}
-									]
+									"title": "Does it work without JavaScript?",
+									"body": "No. The widget needs JavaScript in the browser. That is the point: bots posting the raw endpoint get challenged regardless."
+								},
+								{
+									"title": "Where do real submissions go?",
+									"body": "Same places as before: the admin inbox under Plugins → Contact forms, and an email through the site's configured provider."
 								}
 							]
 						},
 						{
 							"_type": "widget_button",
 							"_version": 1,
-							"_key": "l95w23cx",
-							"label": "Cloudflare Turnstile docs",
+							"_key": "u0031",
+							"label": "Turnstile documentation",
 							"url": "https://developers.cloudflare.com/turnstile/",
-							"variant": "outline"
+							"icon": "arrow-up-right",
+							"variant": "outline",
+							"new_tab": true,
+							"align": "left"
 						},
 						{
-							"_type": "widget_series",
+							"_type": "widget_checklist",
 							"_version": 1,
-							"_key": "htl5a3oh",
-							"title": "EmDash HQ build notes",
+							"_key": "u0032",
+							"title": "Done means",
 							"items": [
 								{
-									"label": "Stopping contact form spam with Cloudflare Turnstile",
-									"url": "/blog/contact-form-spam-turnstile/"
+									"text": "The widget renders on the form page"
 								},
 								{
-									"label": "A widgets plugin for EmDash articles",
-									"url": "/blog/emdash-widgets-plugin/"
+									"text": "A tokenless POST gets cf_status=challenge"
 								},
 								{
-									"label": "How the blog section works on this site",
-									"url": "/blog/emdash-blog-section/"
+									"text": "A real submit is stored and emailed"
+								},
+								{
+									"text": "A quiet inbox for a week"
 								}
 							]
 						}
 					],
-					"featured": true
+					"featured": 1,
+					"cover": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GPSS9MGYDMN1572WR97XHY.jpg",
+							"alt": "A paper mailbox behind a small turnstile gate, letters held at the checkpoint"
+						}
+					}
 				}
 			},
 			{
@@ -3192,149 +3296,59 @@
 				"slug": "emdash-widgets-plugin",
 				"status": "published",
 				"data": {
-					"title": "A widgets plugin for EmDash articles",
-					"excerpt": "Nineteen new block types — notices, tabs, product boxes, a table of contents and a live latest-posts list — usable on posts and pages.",
+					"title": "Nineteen content widgets for EmDash posts and pages",
+					"excerpt": "Callouts, numbered steps, tabs, code blocks, video facades and more for the block editor. What ships in the plugin, how to install it, and where to see it working.",
 					"body": [
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "ozso30kw",
+							"_key": "u0037",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "uumd311x",
+									"_key": "u0034",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "sowb79f2",
-											"text": "Most of what this site publishes is a list of links — tutorials that live on bitdoze.com, videos that live on YouTube. The blog is different: full articles that live here, built from the same block editor the pages use.",
+											"_key": "u0033",
+											"text": "Articles on this site needed more than paragraphs. Callouts for warnings, numbered steps for walkthroughs, code blocks for commands. The Content Widgets plugin adds nineteen block types to the EmDash editor, and they work in post bodies and on regular pages.",
 											"marks": []
 										}
 									]
 								},
 								{
 									"_type": "block",
-									"_key": "876iiihu",
+									"_key": "u0036",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "37xe4u7w",
-											"text": "To make that work we built a small plugin, Content Widgets, that adds nineteen widget_* block types. Editors drop them into any blocks field — this post's body is made of them.",
+											"_key": "u0035",
+											"text": "Everything renders on the server. There is no client-side bundle to load, and every widget picks up the site's own type scale and colors through CSS variables, so it looks like part of the theme rather than a bolt-on.",
 											"marks": []
 										}
 									]
-								}
-							]
-						},
-						{
-							"_type": "widget_notice",
-							"_version": 1,
-							"_key": "w3fpodlb",
-							"kind": "info",
-							"title": "Try it yourself",
-							"body": [
-								{
-									"_type": "block",
-									"_key": "osct6fzr",
-									"style": "normal",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "pxg8c92y",
-											"text": "Every widget below is a block in this post's body field. Open it in the admin to see the editing experience.",
-											"marks": []
-										}
-									]
-								}
-							]
-						},
-						{
-							"_type": "widget_toc",
-							"_version": 1,
-							"_key": "bg1qewg7",
-							"title": "In this post"
-						},
-						{
-							"_type": "widget_prose",
-							"_version": 1,
-							"_key": "5k2mdi8n",
-							"body": [
-								{
-									"_type": "block",
-									"_key": "d2mcxjiq",
-									"style": "h2",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "p67qg55w",
-											"text": "What's in the box",
-											"marks": []
-										}
-									]
-								}
-							]
-						},
-						{
-							"_type": "widget_checklist",
-							"_version": 1,
-							"_key": "rmqhm20h",
-							"title": "Nineteen widget block types",
-							"items": [
-								{
-									"text": "Prose — rich text between widgets"
-								},
-								{
-									"text": "Notice — info, success, warning and danger callouts"
-								},
-								{
-									"text": "Accordion and Tabs — collapsible and tabbed sections"
-								},
-								{
-									"text": "Checklist, Button and Pull quote"
-								},
-								{
-									"text": "YouTube, Embed, Product box and Facts table"
-								},
-								{
-									"text": "Table of contents, Series nav and Latest posts"
 								}
 							]
 						},
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "i2jne4u8",
+							"_key": "u0038",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "435zp3zt",
+									"_key": "u0040",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "u9uf9med",
+											"_key": "u0039",
 											"text": "Install it",
-											"marks": []
-										}
-									]
-								},
-								{
-									"_type": "block",
-									"_key": "haxyur1n",
-									"style": "normal",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "d3zbyxid",
-											"text": "The plugin is on the EmDash registry. After install, copy the block types into your schema and the components into your site — the setup guide page in the admin walks through it.",
 											"marks": []
 										}
 									]
@@ -3344,57 +3358,33 @@
 						{
 							"_type": "widget_tabs",
 							"_version": 1,
-							"_key": "erev1kcl",
+							"_key": "u0041",
 							"items": [
 								{
-									"label": "npm",
-									"body": "npm install emdashhq-widgets\n\nThen register it under sandboxed: in astro.config.mjs and copy the site/ files as described in the setup guide."
+									"label": "From the registry",
+									"body": "Admin → Plugins → Browse → find Content Widgets → Install. The package is @bitdoze.com/emdashhq-widgets on plugins.emdashcms.com."
 								},
 								{
-									"label": "bun",
-									"body": "bun add emdashhq-widgets\n\nThen register it under sandboxed: in astro.config.mjs and copy the site/ files as described in the setup guide."
-								}
-							]
-						},
-						{
-							"_type": "widget_facts",
-							"_version": 1,
-							"_key": "f8yofyt8",
-							"title": "Content Widgets at a glance",
-							"items": [
-								{
-									"label": "Package",
-									"value": "@bitdoze.com/emdashhq-widgets"
-								},
-								{
-									"label": "License",
-									"value": "MIT"
-								},
-								{
-									"label": "Capabilities",
-									"value": "content:read, schema:read"
-								},
-								{
-									"label": "Block types",
-									"value": "14"
+									"label": "From source",
+									"body": "Clone the plugin into your site's plugins/ directory, register it under sandboxed: in astro.config.mjs, and add it to package.json as a file: dependency. The repo has the full layout."
 								}
 							]
 						},
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "j4i0zsz2",
+							"_key": "u0042",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "rbkwz12n",
+									"_key": "u0044",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "75zc55kj",
-											"text": "Keep reading",
+											"_key": "u0043",
+											"text": "Allow the block types",
 											"marks": []
 										}
 									]
@@ -3402,14 +3392,247 @@
 							]
 						},
 						{
-							"_type": "widget_latest_posts",
+							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "241q24gu",
-							"heading": "More posts",
-							"limit": 5
+							"_key": "u0047",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0046",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0045",
+											"text": "New block types do not appear in the editor until a blocks field allows them. Open the collection, edit the blocks field, and tick the widget types under allowed types. In a seed file it looks like this:",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_code",
+							"_version": 1,
+							"_key": "u0048",
+							"language": "json",
+							"code": "{\n  \"slug\": \"body\",\n  \"type\": \"blocks\",\n  \"validation\": {\n    \"allowedTypes\": [\"widget_prose\", \"widget_notice\", \"widget_steps\", \"widget_code\"]\n  }\n}"
+						},
+						{
+							"_type": "widget_notice",
+							"_version": 1,
+							"_key": "u0049",
+							"kind": "info",
+							"title": "About the site/ folder",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0051",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0050",
+											"text": "Sandboxed plugins cannot register Astro components into a site's render pipeline, so the package ships its renderers in site/. Copy site/components into your project and map them in your blocks component; the README walks through it in four steps.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0052",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0054",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0053",
+											"text": "What is inside",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_checklist",
+							"_version": 1,
+							"_key": "u0055",
+							"title": "Nineteen blocks",
+							"items": [
+								{
+									"text": "Prose: Portable Text between the widgets"
+								},
+								{
+									"text": "Notice: info, success, warning and danger callouts"
+								},
+								{
+									"text": "Accordion and tabs: collapsed and tabbed sections"
+								},
+								{
+									"text": "Checklist and steps: task lists and numbered walkthroughs"
+								},
+								{
+									"text": "Button: links with twelve built-in icons"
+								},
+								{
+									"text": "YouTube: click-to-load facade, privacy-enhanced host"
+								},
+								{
+									"text": "Embed: iframe sandbox for anything else"
+								},
+								{
+									"text": "Image: figure with caption through the media pipeline"
+								},
+								{
+									"text": "Code: syntax-highlighted with filename and language"
+								},
+								{
+									"text": "Product: review box with rating, pros and cons"
+								},
+								{
+									"text": "Cards: small link grids with icons"
+								},
+								{
+									"text": "Quote: pull quotes with attribution"
+								},
+								{
+									"text": "Facts: a label/value fact sheet"
+								},
+								{
+									"text": "Table of contents: built from the post's headings"
+								},
+								{
+									"text": "Series: previous/next navigation for multi-part posts"
+								},
+								{
+									"text": "Latest posts: a recent-articles list that skips the current post"
+								},
+								{
+									"text": "Divider: a horizontal rule, styled"
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0056",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0058",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0057",
+											"text": "See it working",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0061",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0060",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0059",
+											"text": "Every block on the list is rendering in the demo post linked below, the same one you can open in this site's editor to inspect how it was put together.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_cards",
+							"_version": 1,
+							"_key": "u0062",
+							"title": null,
+							"items": [
+								{
+									"icon": "rocket",
+									"title": "Live demo post",
+									"url": "/blog/widget-gallery/",
+									"description": "All nineteen blocks in one article."
+								},
+								{
+									"icon": "download",
+									"title": "Registry listing",
+									"url": "https://plugins.emdashcms.com/plugins/@bitdoze.com/emdashhq-widgets",
+									"description": "Install button, changelog and screenshots."
+								},
+								{
+									"icon": "github",
+									"title": "Source",
+									"url": "https://github.com/bitdoze/emdashhq.com",
+									"description": "The plugin lives in this site's repo."
+								}
+							]
+						},
+						{
+							"_type": "widget_button",
+							"_version": 1,
+							"_key": "u0063",
+							"label": "Open the widget gallery",
+							"url": "/blog/widget-gallery/",
+							"icon": "book",
+							"variant": "solid",
+							"align": "left",
+							"new_tab": false
+						},
+						{
+							"_type": "widget_facts",
+							"_version": 1,
+							"_key": "u0064",
+							"title": null,
+							"items": [
+								{
+									"label": "Version",
+									"value": "1.0.2"
+								},
+								{
+									"label": "License",
+									"value": "MIT"
+								},
+								{
+									"label": "Blocks",
+									"value": "19"
+								},
+								{
+									"label": "Price",
+									"value": "Free"
+								}
+							]
 						}
 					],
-					"featured": false
+					"featured": 0,
+					"cover": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GPST8S6F78JFJM2EBZ7AQ2.jpg",
+							"alt": "A grid of small paper widget cards, accordion folds, checklists, buttons, laid out like letterpress blocks"
+						}
+					}
 				}
 			},
 			{
@@ -3417,24 +3640,24 @@
 				"slug": "emdash-blog-section",
 				"status": "published",
 				"data": {
-					"title": "How the blog section works on this site",
-					"excerpt": "A posts collection, one route, and the widget blocks doing double duty — the anatomy of this site's new blog.",
+					"title": "How the blog on this site works",
+					"excerpt": "A posts collection, one Astro route and a hub block. The whole thing took an afternoon, including one redirect bug worth a warning.",
 					"body": [
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "6hbxo6zs",
+							"_key": "u0067",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "z4f4djm6",
+									"_key": "u0066",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "2z6wml5n",
-											"text": "This site gained a blog this week. Not a separate system — a posts collection, one route, and the widget blocks from the new Content Widgets plugin. Here's how it fits together.",
+											"_key": "u0065",
+											"text": "This site has a blog now. Not a separate app: a posts collection, one Astro route, and a block that lists articles on the /blog page. Here is the anatomy of it, so you can build the same thing, or take it apart to see how EmDash pieces fit together.",
 											"marks": []
 										}
 									]
@@ -3442,108 +3665,44 @@
 							]
 						},
 						{
-							"_type": "widget_toc",
+							"_type": "widget_facts",
 							"_version": 1,
-							"_key": "84yzp7ir"
-						},
-						{
-							"_type": "widget_prose",
-							"_version": 1,
-							"_key": "vuiyzpgj",
-							"body": [
-								{
-									"_type": "block",
-									"_key": "za1x4wj0",
-									"style": "h2",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "4y4kl9lz",
-											"text": "A posts collection, not pages",
-											"marks": []
-										}
-									]
-								},
-								{
-									"_type": "block",
-									"_key": "amy840wi",
-									"style": "normal",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "5ndijw4d",
-											"text": "Posts live in their own collection with title, excerpt, cover, featured and a blocks body. The collection's urlPattern (/blog/{slug}) is what the Latest posts widget uses to resolve links — the route that renders them is src/pages/blog/[slug].astro.",
-											"marks": []
-										}
-									]
-								},
-								{
-									"_type": "block",
-									"_key": "6pjptfxx",
-									"style": "h2",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "ja7l959n",
-											"text": "Blocks instead of one long body",
-											"marks": []
-										}
-									]
-								},
-								{
-									"_type": "block",
-									"_key": "m36v9stc",
-									"style": "normal",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "leuoh3qs",
-											"text": "A post body is a list of blocks. Prose blocks carry the rich text; widgets slot between them. It's the same editor the marketing pages use, so nothing new to learn.",
-											"marks": []
-										}
-									]
-								}
-							]
-						},
-						{
-							"_type": "widget_accordion",
-							"_version": 1,
-							"_key": "ka4d77f9",
-							"heading": "Implementation notes",
+							"_key": "u0068",
+							"title": null,
 							"items": [
 								{
-									"title": "Why blocks instead of Portable Text?",
-									"body": "Sandboxed plugins can't register custom Portable Text block types — that's a trusted-plugin feature. A blocks field gets the same result with a schema the site controls, and the widgets also work on regular pages."
+									"label": "Collection",
+									"value": "posts: title, excerpt, cover, body blocks"
 								},
 								{
-									"title": "How does the posts list stay fresh?",
-									"body": "widget_latest_posts calls the plugin's public posts route in-process at render time — no HTTP fetch, no build step. The route reads published entries ordered by publish date."
+									"label": "Route",
+									"value": "src/pages/blog/[slug].astro"
 								},
 								{
-									"title": "Do widgets work on pages too?",
-									"body": "Yes. Every widget_* type is allowed on the pages content field as well as the posts body, so a landing page can use a notice or a product box."
+									"label": "Rendering",
+									"value": "Server-rendered on every request"
+								},
+								{
+									"label": "Extras",
+									"value": "Drafts, revisions, per-post SEO, sitemap"
 								}
 							]
 						},
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "9e7yg8rl",
+							"_key": "u0069",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "wwifq4ft",
+									"_key": "u0071",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "likihfur",
-											"text": "The video intro",
+											"_key": "u0070",
+											"text": "The collection",
 											"marks": []
 										}
 									]
@@ -3551,42 +3710,20 @@
 							]
 						},
 						{
-							"_type": "widget_youtube",
-							"_version": 1,
-							"_key": "kvnci39j",
-							"url": "https://www.youtube.com/watch?v=1X6KwMjbv-Y",
-							"title": "I Replaced WordPress with emdash",
-							"caption": "The video walkthrough this site was built around — EmDash on Cloudflare Workers."
-						},
-						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "cp7zcn63",
+							"_key": "u0074",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "ilh0k834",
-									"style": "h2",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "uowqkd2i",
-											"text": "The tool underneath",
-											"marks": []
-										}
-									]
-								},
-								{
-									"_type": "block",
-									"_key": "gzm92xcb",
+									"_key": "u0073",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "0wg61pbm",
-											"text": "Everything here — pages, posts, plugins, settings — is EmDash. Since we're reviewing it ourselves:",
+											"_key": "u0072",
+											"text": "The posts collection is regular EmDash schema. The interesting bits are the urlPattern, which makes entries routable and lands them in the sitemap, and the body field, a blocks field where all the widgets live.",
 											"marks": []
 										}
 									]
@@ -3594,50 +3731,28 @@
 							]
 						},
 						{
-							"_type": "widget_product",
+							"_type": "widget_code",
 							"_version": 1,
-							"_key": "zromrxjh",
-							"name": "EmDash CMS",
-							"rating": 5,
-							"description": "Astro-native CMS with a real admin panel: content types, blocks, media, plugins and API tokens, deployable to Cloudflare Workers or a Node server.",
-							"pros": [
-								{
-									"text": "Block editor that real editors can use"
-								},
-								{
-									"text": "Registry plugins run sandboxed"
-								},
-								{
-									"text": "Self-hosted — your data in your D1 or Postgres"
-								}
-							],
-							"cons": [
-								{
-									"text": "Young ecosystem — few themes so far"
-								},
-								{
-									"text": "Cloudflare Workers needs the paid plan for sandboxed plugins"
-								}
-							],
-							"price": "Open source",
-							"url": "https://emdashcms.com",
-							"cta_label": "Visit emdashcms.com"
+							"_key": "u0075",
+							"language": "json",
+							"filename": "seed.json",
+							"code": "{\n  \"slug\": \"posts\",\n  \"urlPattern\": \"/blog/{slug}\",\n  \"supports\": [\"drafts\", \"revisions\", \"seo\", \"search\"],\n  \"fields\": [\n    { \"slug\": \"title\", \"type\": \"string\", \"required\": true },\n    { \"slug\": \"excerpt\", \"type\": \"text\" },\n    { \"slug\": \"cover\", \"type\": \"image\" },\n    { \"slug\": \"body\", \"type\": \"blocks\" },\n    { \"slug\": \"featured\", \"type\": \"boolean\" }\n  ]\n}"
 						},
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "yuplahkf",
+							"_key": "u0076",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "rds0sdy9",
+									"_key": "u0078",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "8qpwoww4",
-											"text": "Keep reading",
+											"_key": "u0077",
+											"text": "The route",
 											"marks": []
 										}
 									]
@@ -3645,34 +3760,263 @@
 							]
 						},
 						{
-							"_type": "widget_latest_posts",
+							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "d8g1b4lk",
-							"heading": "More posts",
-							"limit": 5
-						},
-						{
-							"_type": "widget_series",
-							"_version": 1,
-							"_key": "oxfsrk8c",
-							"title": "EmDash HQ build notes",
-							"items": [
+							"_key": "u0081",
+							"body": [
 								{
-									"label": "Stopping contact form spam with Cloudflare Turnstile",
-									"url": "/blog/contact-form-spam-turnstile/"
-								},
-								{
-									"label": "A widgets plugin for EmDash articles",
-									"url": "/blog/emdash-widgets-plugin/"
-								},
-								{
-									"label": "How the blog section works on this site",
-									"url": "/blog/emdash-blog-section/"
+									"_type": "block",
+									"_key": "u0080",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0079",
+											"text": "One file renders every post. It looks the entry up by slug, rewrites to /404 when it is missing, and hands the body blocks to the widget renderer:",
+											"marks": []
+										}
+									]
 								}
 							]
+						},
+						{
+							"_type": "widget_code",
+							"_version": 1,
+							"_key": "u0082",
+							"language": "typescript",
+							"filename": "src/pages/blog/[slug].astro",
+							"code": "const { entry: post, error, cacheHint } =\n  await getEmDashEntry(\"posts\", Astro.params.slug);\nif (!post) return Astro.rewrite(\"/404\");\n\nconst seo = getSeoMeta(post, {\n  siteUrl: Astro.url.origin,\n  path: `/blog/${post.id}/`,\n});\n// <WidgetBlocks value={post.data.body} />"
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0085",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0084",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0083",
+											"text": "getSeoMeta resolves the SEO tab on each post (meta title, description, og image) and falls back to the title and excerpt when the fields are empty. Canonical and robots come along for free.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0086",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0088",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0087",
+											"text": "The hub page",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0091",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0090",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0089",
+											"text": "/blog itself is an ordinary page with a site_posts block on it. The block queries the posts collection, orders by published date, and renders the card list. The page is content, not code: editors can move it, rename it and add blocks around it without touching the repo.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_divider",
+							"_version": 1,
+							"_key": "u0092",
+							"style": "line"
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0093",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0095",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0094",
+											"text": "One trap worth knowing",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_notice",
+							"_version": 1,
+							"_key": "u0096",
+							"kind": "warning",
+							"title": "Leave trailingSlash alone",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0098",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0097",
+											"text": "Setting Astro's trailingSlash to \"always\" 404s every /_emdash/api/ route without a trailing slash; it briefly broke the contact form on this site. The sitemap emits slashless post URLs that 301 to the canonical form. That redirect is expected and harmless: do not try to fix it with trailingSlash.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0099",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0101",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0100",
+											"text": "Ship list",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_checklist",
+							"_version": 1,
+							"_key": "u0102",
+							"title": "If you are building your own",
+							"items": [
+								{
+									"text": "A posts collection with the fields above"
+								},
+								{
+									"text": "urlPattern set to /blog/{slug}"
+								},
+								{
+									"text": "A route that renders entry body blocks"
+								},
+								{
+									"text": "A hub page with a site_posts block"
+								},
+								{
+									"text": "A Blog link in the primary menu"
+								},
+								{
+									"text": "One real published post, the rest follows"
+								},
+								{
+									"text": "Excerpt, cover and SEO fields filled per post"
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "u0103",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "u0105",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "u0104",
+											"text": "Read next",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_cards",
+							"_version": 1,
+							"_key": "u0106",
+							"title": null,
+							"items": [
+								{
+									"icon": "book",
+									"title": "The widgets plugin",
+									"url": "/blog/emdash-widgets-plugin/",
+									"description": "Nineteen block types for post bodies."
+								},
+								{
+									"icon": "check",
+									"title": "Kill the form spam",
+									"url": "/blog/contact-form-spam-turnstile/",
+									"description": "Cloudflare Turnstile on contact forms."
+								},
+								{
+									"icon": "rocket",
+									"title": "The demo post",
+									"url": "/blog/widget-gallery/",
+									"description": "Every widget in one article."
+								}
+							]
+						},
+						{
+							"_type": "widget_button",
+							"_version": 1,
+							"_key": "u0107",
+							"label": "Browse the blog",
+							"url": "/blog/",
+							"icon": "arrow-right",
+							"variant": "solid",
+							"align": "left",
+							"new_tab": false
 						}
 					],
-					"featured": false
+					"featured": 0,
+					"cover": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GPSW8CBP62CBX0DXN212XD.jpg",
+							"alt": "A vintage printing press feeding out a magazine page, a stack of paper beside it"
+						}
+					}
 				}
 			},
 			{
@@ -3680,8 +4024,14 @@
 				"slug": "widget-gallery",
 				"status": "published",
 				"data": {
-					"title": "The widget gallery — every block in one post",
-					"excerpt": "A kitchen-sink tour of all nineteen Content Widgets blocks: callouts, tabs, steps, code, product boxes, cards, quotes and more.",
+					"title": "The widget gallery, every block in one post",
+					"excerpt": "All nineteen Content Widgets blocks in a single article, what each one looks like and when to reach for it.",
+					"cover": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GPSX5JRSAG3575WZ5DQ0H4.jpg",
+							"alt": "A printer's specimen sheet with a grid of type blocks, quote marks, stars and frames"
+						}
+					},
 					"body": [
 						{
 							"_type": "widget_prose",
@@ -4014,7 +4364,7 @@
 							"_key": "zrfdufhp",
 							"image": {
 								"$media": {
-									"url": "https://emdashhq.com/og-default.png",
+									"url": "https://emdashhq.com/_emdash/api/media/file/01M488WSNT8JB7CAFXN0DR1A01.png",
 									"alt": "The EmDash cover card"
 								}
 							},
@@ -4168,13 +4518,11 @@
 									"_type": "block",
 									"_key": "bq2xoxiy",
 									"style": "h2",
-									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
 											"_key": "cdngg0yt",
-											"text": "And the page around it",
-											"marks": []
+											"text": "And the page around it"
 										}
 									]
 								}
@@ -4219,7 +4567,8 @@
 							"url": "/blog/",
 							"icon": "arrow-right",
 							"variant": "outline",
-							"align": "left"
+							"align": "left",
+							"new_tab": false
 						},
 						{
 							"_type": "widget_divider",
@@ -4257,13 +4606,7 @@
 							]
 						}
 					],
-					"featured": false,
-					"cover": {
-						"$media": {
-							"url": "https://emdashhq.com/og-default.png",
-							"alt": "The EmDash cover card"
-						}
-					}
+					"featured": 0
 				}
 			}
 		]

@@ -2883,7 +2883,7 @@
 						}
 					},
 					"cta_label": "Install",
-					"featured": 1,
+					"featured": true,
 					"latest_version": "1.0.2",
 					"license": "MIT",
 					"package": "@bitdoze.com/emdashhq-widgets",
@@ -2966,6 +2966,12 @@
 				"data": {
 					"title": "Stop contact form spam with Cloudflare Turnstile",
 					"excerpt": "The contact form on this site was feeding the inbox junk. Turnstile took it to zero: here is the fifteen-minute setup, the page-cache trap we hit, and how to test it.",
+					"cover": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GPSS9MGYDMN1572WR97XHY.jpg",
+							"alt": "A paper mailbox behind a small turnstile gate, letters held at the checkpoint"
+						}
+					},
 					"body": [
 						{
 							"_type": "widget_prose",
@@ -3001,6 +3007,19 @@
 									]
 								}
 							]
+						},
+						{
+							"_type": "widget_image",
+							"_version": 1,
+							"_key": "fig000",
+							"caption": "The submit pipeline: the honeypot, fill-time check and hourly limit run first, Turnstile verifies the token at the door, and only then does anything reach the inbox.",
+							"wide": true,
+							"image": {
+								"$media": {
+									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GSAX8W6GJCA771TK1V1MJY.jpg",
+									"alt": "The submission pipeline: envelope, honey pot, clock and turnstile gate guarding the inbox"
+								}
+							}
 						},
 						{
 							"_type": "widget_prose",
@@ -3258,8 +3277,7 @@
 							"url": "https://developers.cloudflare.com/turnstile/",
 							"icon": "arrow-up-right",
 							"variant": "outline",
-							"new_tab": true,
-							"align": "left"
+							"new_tab": true
 						},
 						{
 							"_type": "widget_checklist",
@@ -3282,13 +3300,7 @@
 							]
 						}
 					],
-					"featured": 1,
-					"cover": {
-						"$media": {
-							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GPSS9MGYDMN1572WR97XHY.jpg",
-							"alt": "A paper mailbox behind a small turnstile gate, letters held at the checkpoint"
-						}
-					}
+					"featured": 1
 				}
 			},
 			{
@@ -3298,6 +3310,12 @@
 				"data": {
 					"title": "Nineteen content widgets for EmDash posts and pages",
 					"excerpt": "Callouts, numbered steps, tabs, code blocks, video facades and more for the block editor. What ships in the plugin, how to install it, and where to see it working.",
+					"cover": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GPST8S6F78JFJM2EBZ7AQ2.jpg",
+							"alt": "A grid of small paper widget cards, accordion folds, checklists, buttons, laid out like letterpress blocks"
+						}
+					},
 					"body": [
 						{
 							"_type": "widget_prose",
@@ -3333,6 +3351,19 @@
 									]
 								}
 							]
+						},
+						{
+							"_type": "widget_image",
+							"_version": 1,
+							"_key": "fig001",
+							"caption": "The catalog page the plugin adds under Plugins → Content Widgets: every block with a preview, a one-line description and its type name.",
+							"wide": true,
+							"image": {
+								"$media": {
+									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GSAXZ2X658YF704ZDTFDXK.png",
+									"alt": "The Content Widgets catalog in the EmDash admin"
+								}
+							}
 						},
 						{
 							"_type": "widget_prose",
@@ -3441,6 +3472,19 @@
 									]
 								}
 							]
+						},
+						{
+							"_type": "widget_image",
+							"_version": 1,
+							"_key": "fig002",
+							"caption": "Once the types are allowed, they show up in the block picker alongside the regular blocks.",
+							"wide": true,
+							"image": {
+								"$media": {
+									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GSAYT24GVJJKM4P0A6HEMX.png",
+									"alt": "A widget block picked from the EmDash post editor"
+								}
+							}
 						},
 						{
 							"_type": "widget_prose",
@@ -3597,9 +3641,7 @@
 							"label": "Open the widget gallery",
 							"url": "/blog/widget-gallery/",
 							"icon": "book",
-							"variant": "solid",
-							"align": "left",
-							"new_tab": false
+							"variant": "solid"
 						},
 						{
 							"_type": "widget_facts",
@@ -3626,13 +3668,7 @@
 							]
 						}
 					],
-					"featured": 0,
-					"cover": {
-						"$media": {
-							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GPST8S6F78JFJM2EBZ7AQ2.jpg",
-							"alt": "A grid of small paper widget cards, accordion folds, checklists, buttons, laid out like letterpress blocks"
-						}
-					}
+					"featured": 0
 				}
 			},
 			{
@@ -3642,6 +3678,12 @@
 				"data": {
 					"title": "How the blog on this site works",
 					"excerpt": "A posts collection, one Astro route and a hub block. The whole thing took an afternoon, including one redirect bug worth a warning.",
+					"cover": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GPSW8CBP62CBX0DXN212XD.jpg",
+							"alt": "A vintage printing press feeding out a magazine page, a stack of paper beside it"
+						}
+					},
 					"body": [
 						{
 							"_type": "widget_prose",
@@ -3687,6 +3729,19 @@
 									"value": "Drafts, revisions, per-post SEO, sitemap"
 								}
 							]
+						},
+						{
+							"_type": "widget_image",
+							"_version": 1,
+							"_key": "fig003",
+							"caption": "The whole blog in three pieces: the posts collection holds the data, one route renders every slug, and the body blocks become the article.",
+							"wide": true,
+							"image": {
+								"$media": {
+									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GSAZKXDRT6XKR4VY8EQXSM.jpg",
+									"alt": "The blog pipeline: posts collection, one route, the rendered article"
+								}
+							}
 						},
 						{
 							"_type": "widget_prose",
@@ -4005,18 +4060,10 @@
 							"label": "Browse the blog",
 							"url": "/blog/",
 							"icon": "arrow-right",
-							"variant": "solid",
-							"align": "left",
-							"new_tab": false
+							"variant": "solid"
 						}
 					],
-					"featured": 0,
-					"cover": {
-						"$media": {
-							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GPSW8CBP62CBX0DXN212XD.jpg",
-							"alt": "A vintage printing press feeding out a magazine page, a stack of paper beside it"
-						}
-					}
+					"featured": 0
 				}
 			},
 			{

@@ -59,10 +59,13 @@ async function api(method, path, body) {
 const ok = (r) => r.status >= 200 && r.status < 300;
 const fail = (r) => JSON.stringify(r.json).slice(0, 300);
 
+const MIME = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" };
+
 async function uploadMedia(path, filename, alt) {
 	const buf = await readFile(new URL(`../${path}`, import.meta.url));
 	const form = new FormData();
-	form.set("file", new File([buf], filename, { type: "image/jpeg" }));
+	const type = MIME[filename.split(".").pop().toLowerCase()] ?? "application/octet-stream";
+	form.set("file", new File([buf], filename, { type }));
 	form.set("alt", alt);
 	form.set("deduplicate", "true");
 	const r = await api("POST", "/media", form);
@@ -89,6 +92,10 @@ const ptBlock = (children, style = "normal", markDefs = []) => ({
 const p = (text) => ptBlock([span(text)]);
 // Headings are Portable Text too — wrap them in a widget_prose so body only
 // ever contains widget_* blocks.
+// Inline figures carry a _img placeholder resolved to an uploaded media id in
+// the apply step, so bodies stay declarative across local/prod runs.
+let figN = 0;
+const fig = (name, caption, wide = true) => ({ _type: "widget_image", _version: 1, _key: `fig${String(figN++).padStart(3, "0")}`, _img: name, caption, wide });
 const h2 = (text) => ({ _type: "widget_prose", _version: 1, _key: key(), body: [ptBlock([span(text)], "h2")] });
 const h3 = (text) => ({ _type: "widget_prose", _version: 1, _key: key(), body: [ptBlock([span(text)], "h3")] });
 const pLink = (before, href, label, after) => {
@@ -195,6 +202,7 @@ const POSTS = {
 				p("The contact form here started collecting junk submissions. The built-in filters (honeypot field, minimum fill time, a per-IP hourly limit) stopped some of it, but enough got through to make the inbox annoying."),
 				p("So the Contact Forms plugin got Cloudflare Turnstile. It runs a quiet browser check, hands the form a token, and the worker verifies that token before anything is stored or emailed. Most visitors never see a puzzle. Managed mode only escalates the suspicious ones."),
 			),
+			fig("turnstile-flow", "The submit pipeline: the honeypot, fill-time check and hourly limit run first, Turnstile verifies the token at the door, and only then does anything reach the inbox."),
 			h2("What you need"),
 			checklist(null, [
 				"A Cloudflare account (the free plan covers Turnstile)",
@@ -256,6 +264,7 @@ const POSTS = {
 				p("Articles on this site needed more than paragraphs. Callouts for warnings, numbered steps for walkthroughs, code blocks for commands. The Content Widgets plugin adds nineteen block types to the EmDash editor, and they work in post bodies and on regular pages."),
 				p("Everything renders on the server. There is no client-side bundle to load, and every widget picks up the site's own type scale and colors through CSS variables, so it looks like part of the theme rather than a bolt-on."),
 			),
+			fig("widgets-catalog", "The catalog page the plugin adds under Plugins → Content Widgets: every block with a preview, a one-line description and its type name."),
 			h2("Install it"),
 			tabs([
 				["From the registry", "Admin → Plugins → Browse → find Content Widgets → Install. The package is @bitdoze.com/emdashhq-widgets on plugins.emdashcms.com."],
@@ -274,6 +283,7 @@ const POSTS = {
 }`,
 			),
 			notice("info", "About the site/ folder", "Sandboxed plugins cannot register Astro components into a site's render pipeline, so the package ships its renderers in site/. Copy site/components into your project and map them in your blocks component; the README walks through it in four steps."),
+			fig("widgets-editor", "Once the types are allowed, they show up in the block picker alongside the regular blocks."),
 			h2("What is inside"),
 			checklist("Nineteen blocks", [
 				"Prose: Portable Text between the widgets",
@@ -331,6 +341,7 @@ const POSTS = {
 				["Rendering", "Server-rendered on every request"],
 				["Extras", "Drafts, revisions, per-post SEO, sitemap"],
 			]),
+			fig("blog-pipeline", "The whole blog in three pieces: the posts collection holds the data, one route renders every slug, and the body blocks become the article."),
 			h2("The collection"),
 			prose(p("The posts collection is regular EmDash schema. The interesting bits are the urlPattern, which makes entries routable and lands them in the sitemap, and the body field, a blocks field where all the widgets live.")),
 			code(
@@ -427,6 +438,14 @@ const RESOURCE = {
 	imageFile: { file: "plugins/emdashhq-widgets/images/screenshot-widgets.jpg", alt: "The Content Widgets block picker in the EmDash editor" },
 };
 
+// ------------------------------------------------- inline article images ---
+const INLINE = {
+	"turnstile-flow": { file: "uploads/article-images/turnstile-flow.jpg", alt: "The submission pipeline: envelope, honey pot, clock and turnstile gate guarding the inbox" },
+	"widgets-catalog": { file: "plugins/emdashhq-widgets/images/screenshot-catalog.png", alt: "The Content Widgets catalog in the EmDash admin" },
+	"widgets-editor": { file: "plugins/emdashhq-widgets/images/screenshot-editor.png", alt: "A widget block picked from the EmDash post editor" },
+	"blog-pipeline": { file: "uploads/article-images/blog-pipeline.jpg", alt: "The blog pipeline: posts collection, one route, the rendered article" },
+};
+
 // ------------------------------------------------------------------ apply ---
 console.log(`Updating blog content on ${BASE}`);
 
@@ -438,6 +457,19 @@ for (const [slug, post] of Object.entries(POSTS)) {
 }
 covers[GALLERY.slug] = await uploadMedia(GALLERY.cover.file, `${GALLERY.slug}.jpg`, GALLERY.cover.alt);
 const resImage = await uploadMedia(RESOURCE.imageFile.file, "content-widgets-screenshot.jpg", RESOURCE.imageFile.alt);
+const inline = {};
+for (const [name, spec] of Object.entries(INLINE)) {
+	const ext = spec.file.split(".").pop();
+	inline[name] = await uploadMedia(spec.file, `inline-${name}.${ext}`, spec.alt);
+}
+const resolveBody = (body) =>
+	body?.flatMap((b) => {
+		if (!b._img) return [b];
+		const media = inline[b._img];
+		if (!media?.id) return [];
+		const { _img, ...rest } = b;
+		return [{ ...rest, image: { id: media.id, alt: INLINE[b._img].alt } }];
+	});
 
 // 2. posts
 console.log("2. posts");
@@ -453,7 +485,7 @@ async function applyPost(slug, post, includeBody) {
 		title: post.title,
 		excerpt: post.excerpt,
 		...(media ? { cover: { id: media.id, alt: post.cover.alt } } : {}),
-		...(includeBody ? { body: post.body } : {}),
+		...(includeBody ? { body: resolveBody(post.body) } : {}),
 	};
 	const seo = { ...post.seo, ...(media ? { image: media.storageKey } : {}) };
 	const r = await api("PUT", `/content/posts/${item.id}`, { data, seo });

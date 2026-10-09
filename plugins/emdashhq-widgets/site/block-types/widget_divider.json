@@ -1,0 +1,27 @@
+{
+	"slug": "widget_divider",
+	"label": "Divider",
+	"description": "A section break inside the article — a line, dots, or whitespace.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "style",
+					"label": "Style",
+					"type": "select",
+					"defaultValue": "line",
+					"validation": {
+						"options": [
+							"line",
+							"dots",
+							"space"
+						]
+					}
+				}
+			]
+		}
+	]
+}

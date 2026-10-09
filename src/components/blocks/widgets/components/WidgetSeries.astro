@@ -1,0 +1,80 @@
+---
+/**
+ * widget_series — ordered navigation for multi-part posts. The current part
+ * is highlighted by comparing item URLs to the request path. Copy into your
+ * site's components and register it for the `widget_series` block type
+ * (see README).
+ */
+import { sanitizeHref } from "emdash";
+
+type Props = {
+	value: {
+		title?: string | null;
+		items?: { label: string; url: string }[] | null;
+	};
+};
+
+const { value } = Astro.props;
+const items = (value.items ?? []).filter((item) => item?.label && item?.url);
+const currentPath = Astro.url.pathname.replace(/\/+$/, "") + "/";
+const currentIndex = items.findIndex((item) => {
+	const href = sanitizeHref(item.url);
+	return href === currentPath || href === Astro.url.pathname;
+});
+---
+
+{
+	items.length > 0 && (
+		<nav class="wgt-series" aria-label="Post series">
+			<p class="wgt-series-title">{value.title || "This post is part of a series"}</p>
+			<ol class="wgt-series-list">
+				{items.map((item, i) => (
+					<li class={i === currentIndex ? "wgt-series-current" : undefined}>
+						{i === currentIndex ? (
+							<span aria-current="page">{item.label}</span>
+						) : (
+							<a href={sanitizeHref(item.url)}>{item.label}</a>
+						)}
+					</li>
+				))}
+			</ol>
+		</nav>
+	)
+}
+
+<style>
+	.wgt-series {
+		margin-block: var(--spacing-xl, 2rem);
+		padding: var(--spacing-lg, 1.5rem);
+		border: 1px solid var(--color-border, #e2e0d8);
+		border-left-width: 3px;
+		border-left-color: var(--color-brand-strong, #3730a3);
+		border-radius: var(--radius, 10px);
+		background: color-mix(in srgb, var(--color-surface, #fff) 70%, transparent);
+	}
+
+	.wgt-series-title {
+		font-size: var(--font-size-xs, 0.75rem);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-muted, #666);
+		margin: 0 0 var(--spacing-sm, 0.75rem);
+	}
+
+	.wgt-series-list {
+		margin: 0;
+		padding-left: 1.5rem;
+		display: grid;
+		gap: var(--spacing-xs, 0.5rem);
+		font-size: var(--font-size-sm, 0.875rem);
+	}
+
+	.wgt-series-list a {
+		color: var(--color-brand, #4f46e5);
+	}
+
+	.wgt-series-current {
+		font-weight: 700;
+	}
+</style>

@@ -1,0 +1,68 @@
+---
+/**
+ * widget_embed — generic iframe embed (CodePen, maps, third-party players).
+ * Copy into your site's components and register it for the `widget_embed`
+ * block type (see README).
+ */
+import { sanitizeHref } from "emdash";
+
+type Props = {
+	value: {
+		url: string;
+		title: string;
+		aspect?: "16:9" | "4:3" | "1:1" | "9:16" | null;
+	};
+};
+
+const { value } = Astro.props;
+const src = sanitizeHref(value.url);
+const ratios: Record<string, string> = {
+	"16:9": "16 / 9",
+	"4:3": "4 / 3",
+	"1:1": "1 / 1",
+	"9:16": "9 / 16",
+};
+const aspect = ratios[value.aspect ?? "16:9"] ?? ratios["16:9"];
+const external = /^https?:\/\//i.test(src);
+---
+
+{
+	external ? (
+		<div class="wgt-embed" style={`--wgt-embed-aspect: ${aspect}`}>
+			<iframe
+				src={src}
+				title={value.title}
+				loading="lazy"
+				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+				allowfullscreen
+				referrerpolicy="strict-origin-when-cross-origin"
+			/>
+		</div>
+	) : (
+		<p class="wgt-embed-invalid">Embed URL must be an absolute https:// address: {value.url}</p>
+	)
+}
+
+<style>
+	.wgt-embed {
+		margin-block: var(--spacing-xl, 2rem);
+		border: 1px solid var(--color-border, #e2e0d8);
+		border-radius: var(--radius, 10px);
+		overflow: hidden;
+		background: var(--color-surface, #fff);
+	}
+
+	.wgt-embed iframe {
+		display: block;
+		width: 100%;
+		aspect-ratio: var(--wgt-embed-aspect, 16 / 9);
+		border: 0;
+	}
+
+	.wgt-embed-invalid {
+		padding: var(--spacing-md, 1rem);
+		border: 1px dashed var(--color-danger, #b91c1c);
+		border-radius: var(--radius, 10px);
+		font-size: var(--font-size-sm, 0.875rem);
+	}
+</style>

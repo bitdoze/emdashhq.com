@@ -1,0 +1,20 @@
+{
+	"slug": "widget_prose",
+	"label": "Prose",
+	"description": "Rich text section \u2014 paragraphs, headings, lists, images, code. Stack it between widgets to write an article.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "body",
+					"label": "Body",
+					"type": "portableText",
+					"required": true
+				}
+			]
+		}
+	]
+}

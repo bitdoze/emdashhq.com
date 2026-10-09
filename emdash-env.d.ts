@@ -3,7 +3,7 @@
 
 /// <reference types="emdash/locals" />
 
-import type { BylineSummary, ContentBylineCredit, TaxonomyTerm } from "emdash";
+import type { BylineSummary, ContentBylineCredit, TaxonomyTerm, PortableTextBlock } from "emdash";
 
 export interface PageContentMarketingHeroV1Block {
   _type: "marketing_hero";
@@ -174,7 +174,175 @@ export interface PageContentContactFormV1Block {
 
 export type PageContentContactFormBlock = PageContentContactFormV1Block;
 
-export type PageContentBlock = PageContentMarketingHeroBlock | PageContentMarketingFeaturesBlock | PageContentMarketingTestimonialsBlock | PageContentMarketingPricingBlock | PageContentMarketingFaqBlock | PageContentSiteTutorialsBlock | PageContentSiteVideosBlock | PageContentSiteResourcesBlock | PageContentSiteServicesBlock | PageContentSiteCtaBlock | PageContentSiteContactBlock | PageContentContactFormBlock;
+export interface PageContentWidgetAccordionV1Block {
+  _type: "widget_accordion";
+  _version: 1;
+  _key: string;
+  "heading"?: string | null;
+  "items"?: { "title": string; "body": string }[] | null;
+}
+
+export type PageContentWidgetAccordionBlock = PageContentWidgetAccordionV1Block;
+
+export interface PageContentWidgetButtonV1Block {
+  _type: "widget_button";
+  _version: 1;
+  _key: string;
+  "label": string;
+  "url": string;
+  "variant"?: "solid" | "outline" | null;
+  "align"?: "left" | "center" | "right" | null;
+  "new_tab"?: boolean | null;
+}
+
+export type PageContentWidgetButtonBlock = PageContentWidgetButtonV1Block;
+
+export interface PageContentWidgetChecklistV1Block {
+  _type: "widget_checklist";
+  _version: 1;
+  _key: string;
+  "title"?: string | null;
+  "items"?: { "text": string }[] | null;
+}
+
+export type PageContentWidgetChecklistBlock = PageContentWidgetChecklistV1Block;
+
+export interface PageContentWidgetEmbedV1Block {
+  _type: "widget_embed";
+  _version: 1;
+  _key: string;
+  "url": string;
+  "title": string;
+  "aspect"?: "16:9" | "4:3" | "1:1" | "9:16" | null;
+}
+
+export type PageContentWidgetEmbedBlock = PageContentWidgetEmbedV1Block;
+
+export interface PageContentWidgetFactsV1Block {
+  _type: "widget_facts";
+  _version: 1;
+  _key: string;
+  "title"?: string | null;
+  "items"?: { "label": string; "value": string }[] | null;
+}
+
+export type PageContentWidgetFactsBlock = PageContentWidgetFactsV1Block;
+
+export interface PageContentWidgetLatestPostsV1Block {
+  _type: "widget_latest_posts";
+  _version: 1;
+  _key: string;
+  "heading"?: string | null;
+  "collection"?: string | null;
+  "limit"?: number | null;
+  "exclude_current"?: boolean | null;
+}
+
+export type PageContentWidgetLatestPostsBlock = PageContentWidgetLatestPostsV1Block;
+
+export interface PageContentWidgetNoticeV1Block {
+  _type: "widget_notice";
+  _version: 1;
+  _key: string;
+  "kind": "info" | "success" | "warning" | "danger";
+  "title"?: string | null;
+  "body": PortableTextBlock[];
+}
+
+export type PageContentWidgetNoticeBlock = PageContentWidgetNoticeV1Block;
+
+export interface PageContentWidgetProductV1Block {
+  _type: "widget_product";
+  _version: 1;
+  _key: string;
+  "name": string;
+  "image"?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } } | null;
+  "rating"?: number | null;
+  "description"?: string | null;
+  "pros"?: { "text": string }[] | null;
+  "cons"?: { "text": string }[] | null;
+  "price"?: string | null;
+  "url"?: string | null;
+  "cta_label"?: string | null;
+}
+
+export type PageContentWidgetProductBlock = PageContentWidgetProductV1Block;
+
+export interface PageContentWidgetProseV1Block {
+  _type: "widget_prose";
+  _version: 1;
+  _key: string;
+  "body": PortableTextBlock[];
+}
+
+export type PageContentWidgetProseBlock = PageContentWidgetProseV1Block;
+
+export interface PageContentWidgetQuoteV1Block {
+  _type: "widget_quote";
+  _version: 1;
+  _key: string;
+  "quote": string;
+  "attribution"?: string | null;
+  "role"?: string | null;
+}
+
+export type PageContentWidgetQuoteBlock = PageContentWidgetQuoteV1Block;
+
+export interface PageContentWidgetSeriesV1Block {
+  _type: "widget_series";
+  _version: 1;
+  _key: string;
+  "title"?: string | null;
+  "items"?: { "label": string; "url": string }[] | null;
+}
+
+export type PageContentWidgetSeriesBlock = PageContentWidgetSeriesV1Block;
+
+export interface PageContentWidgetTabsV1Block {
+  _type: "widget_tabs";
+  _version: 1;
+  _key: string;
+  "items"?: { "label": string; "body": string }[] | null;
+}
+
+export type PageContentWidgetTabsBlock = PageContentWidgetTabsV1Block;
+
+export interface PageContentWidgetTocV1Block {
+  _type: "widget_toc";
+  _version: 1;
+  _key: string;
+  "title"?: string | null;
+}
+
+export type PageContentWidgetTocBlock = PageContentWidgetTocV1Block;
+
+export interface PageContentWidgetYoutubeV1Block {
+  _type: "widget_youtube";
+  _version: 1;
+  _key: string;
+  "url": string;
+  "title": string;
+  "caption"?: string | null;
+}
+
+export type PageContentWidgetYoutubeBlock = PageContentWidgetYoutubeV1Block;
+
+export interface PageContentSitePostsV1Block {
+  _type: "site_posts";
+  _version: 1;
+  _key: string;
+  "anchor_id"?: string | null;
+  "headline"?: string | null;
+  "subheadline"?: string | null;
+  "limit"?: number | null;
+  "featured_only"?: boolean | null;
+  "section_cta_label"?: string | null;
+  "section_cta_url"?: string | null;
+}
+
+export type PageContentSitePostsBlock = PageContentSitePostsV1Block;
+
+export type PageContentBlock = PageContentMarketingHeroBlock | PageContentMarketingFeaturesBlock | PageContentMarketingTestimonialsBlock | PageContentMarketingPricingBlock | PageContentMarketingFaqBlock | PageContentSiteTutorialsBlock | PageContentSiteVideosBlock | PageContentSiteResourcesBlock | PageContentSiteServicesBlock | PageContentSiteCtaBlock | PageContentSiteContactBlock | PageContentContactFormBlock | PageContentWidgetAccordionBlock | PageContentWidgetButtonBlock | PageContentWidgetChecklistBlock | PageContentWidgetEmbedBlock | PageContentWidgetFactsBlock | PageContentWidgetLatestPostsBlock | PageContentWidgetNoticeBlock | PageContentWidgetProductBlock | PageContentWidgetProseBlock | PageContentWidgetQuoteBlock | PageContentWidgetSeriesBlock | PageContentWidgetTabsBlock | PageContentWidgetTocBlock | PageContentWidgetYoutubeBlock | PageContentSitePostsBlock;
 
 export interface Page {
   id: string;
@@ -182,6 +350,190 @@ export interface Page {
   status: string;
   title: string;
   content?: PageContentBlock[];
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  byline?: BylineSummary | null;
+  bylines?: ContentBylineCredit[];
+  terms?: Record<string, TaxonomyTerm[]>;
+}
+
+export interface PostBodyWidgetAccordionV1Block {
+  _type: "widget_accordion";
+  _version: 1;
+  _key: string;
+  "heading"?: string | null;
+  "items"?: { "title": string; "body": string }[] | null;
+}
+
+export type PostBodyWidgetAccordionBlock = PostBodyWidgetAccordionV1Block;
+
+export interface PostBodyWidgetButtonV1Block {
+  _type: "widget_button";
+  _version: 1;
+  _key: string;
+  "label": string;
+  "url": string;
+  "variant"?: "solid" | "outline" | null;
+  "align"?: "left" | "center" | "right" | null;
+  "new_tab"?: boolean | null;
+}
+
+export type PostBodyWidgetButtonBlock = PostBodyWidgetButtonV1Block;
+
+export interface PostBodyWidgetChecklistV1Block {
+  _type: "widget_checklist";
+  _version: 1;
+  _key: string;
+  "title"?: string | null;
+  "items"?: { "text": string }[] | null;
+}
+
+export type PostBodyWidgetChecklistBlock = PostBodyWidgetChecklistV1Block;
+
+export interface PostBodyWidgetEmbedV1Block {
+  _type: "widget_embed";
+  _version: 1;
+  _key: string;
+  "url": string;
+  "title": string;
+  "aspect"?: "16:9" | "4:3" | "1:1" | "9:16" | null;
+}
+
+export type PostBodyWidgetEmbedBlock = PostBodyWidgetEmbedV1Block;
+
+export interface PostBodyWidgetFactsV1Block {
+  _type: "widget_facts";
+  _version: 1;
+  _key: string;
+  "title"?: string | null;
+  "items"?: { "label": string; "value": string }[] | null;
+}
+
+export type PostBodyWidgetFactsBlock = PostBodyWidgetFactsV1Block;
+
+export interface PostBodyWidgetLatestPostsV1Block {
+  _type: "widget_latest_posts";
+  _version: 1;
+  _key: string;
+  "heading"?: string | null;
+  "collection"?: string | null;
+  "limit"?: number | null;
+  "exclude_current"?: boolean | null;
+}
+
+export type PostBodyWidgetLatestPostsBlock = PostBodyWidgetLatestPostsV1Block;
+
+export interface PostBodyWidgetNoticeV1Block {
+  _type: "widget_notice";
+  _version: 1;
+  _key: string;
+  "kind": "info" | "success" | "warning" | "danger";
+  "title"?: string | null;
+  "body": PortableTextBlock[];
+}
+
+export type PostBodyWidgetNoticeBlock = PostBodyWidgetNoticeV1Block;
+
+export interface PostBodyWidgetProductV1Block {
+  _type: "widget_product";
+  _version: 1;
+  _key: string;
+  "name": string;
+  "image"?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } } | null;
+  "rating"?: number | null;
+  "description"?: string | null;
+  "pros"?: { "text": string }[] | null;
+  "cons"?: { "text": string }[] | null;
+  "price"?: string | null;
+  "url"?: string | null;
+  "cta_label"?: string | null;
+}
+
+export type PostBodyWidgetProductBlock = PostBodyWidgetProductV1Block;
+
+export interface PostBodyWidgetProseV1Block {
+  _type: "widget_prose";
+  _version: 1;
+  _key: string;
+  "body": PortableTextBlock[];
+}
+
+export type PostBodyWidgetProseBlock = PostBodyWidgetProseV1Block;
+
+export interface PostBodyWidgetQuoteV1Block {
+  _type: "widget_quote";
+  _version: 1;
+  _key: string;
+  "quote": string;
+  "attribution"?: string | null;
+  "role"?: string | null;
+}
+
+export type PostBodyWidgetQuoteBlock = PostBodyWidgetQuoteV1Block;
+
+export interface PostBodyWidgetSeriesV1Block {
+  _type: "widget_series";
+  _version: 1;
+  _key: string;
+  "title"?: string | null;
+  "items"?: { "label": string; "url": string }[] | null;
+}
+
+export type PostBodyWidgetSeriesBlock = PostBodyWidgetSeriesV1Block;
+
+export interface PostBodyWidgetTabsV1Block {
+  _type: "widget_tabs";
+  _version: 1;
+  _key: string;
+  "items"?: { "label": string; "body": string }[] | null;
+}
+
+export type PostBodyWidgetTabsBlock = PostBodyWidgetTabsV1Block;
+
+export interface PostBodyWidgetTocV1Block {
+  _type: "widget_toc";
+  _version: 1;
+  _key: string;
+  "title"?: string | null;
+}
+
+export type PostBodyWidgetTocBlock = PostBodyWidgetTocV1Block;
+
+export interface PostBodyWidgetYoutubeV1Block {
+  _type: "widget_youtube";
+  _version: 1;
+  _key: string;
+  "url": string;
+  "title": string;
+  "caption"?: string | null;
+}
+
+export type PostBodyWidgetYoutubeBlock = PostBodyWidgetYoutubeV1Block;
+
+export interface PostBodyContactFormV1Block {
+  _type: "contact_form";
+  _version: 1;
+  _key: string;
+  "anchor_id"?: string | null;
+  "headline"?: string | null;
+  "subheadline"?: string | null;
+  "form": string;
+}
+
+export type PostBodyContactFormBlock = PostBodyContactFormV1Block;
+
+export type PostBodyBlock = PostBodyWidgetAccordionBlock | PostBodyWidgetButtonBlock | PostBodyWidgetChecklistBlock | PostBodyWidgetEmbedBlock | PostBodyWidgetFactsBlock | PostBodyWidgetLatestPostsBlock | PostBodyWidgetNoticeBlock | PostBodyWidgetProductBlock | PostBodyWidgetProseBlock | PostBodyWidgetQuoteBlock | PostBodyWidgetSeriesBlock | PostBodyWidgetTabsBlock | PostBodyWidgetTocBlock | PostBodyWidgetYoutubeBlock | PostBodyContactFormBlock;
+
+export interface Post {
+  id: string;
+  slug: string | null;
+  status: string;
+  title: string;
+  excerpt?: string;
+  cover?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } };
+  body?: PostBodyBlock[];
+  featured?: boolean;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
@@ -242,6 +594,12 @@ export interface Resource {
   image?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } };
   cta_label?: string;
   featured?: boolean;
+  latest_version?: string;
+  license?: string;
+  package?: string;
+  publisher?: string;
+  updated?: string;
+  changelog?: string;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
@@ -274,6 +632,7 @@ export interface Service {
 declare module "emdash" {
   interface EmDashCollections {
     pages: Page;
+    posts: Post;
     tutorials: Tutorial;
     videos: Video;
     resources: Resource;

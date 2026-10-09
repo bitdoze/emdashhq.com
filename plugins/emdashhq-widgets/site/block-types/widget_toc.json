@@ -1,0 +1,20 @@
+{
+	"slug": "widget_toc",
+	"label": "Table of contents",
+	"description": "Lists the article's headings and links to them. Filled automatically in the browser.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"defaultValue": "On this page"
+				}
+			]
+		}
+	]
+}

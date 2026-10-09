@@ -13,6 +13,14 @@ export function lines(value: string | undefined | null): string[] {
 		.filter(Boolean);
 }
 
+/** Renders a Date or ISO string as "Oct 9, 2026", or an empty string if invalid. */
+export function formatDate(value: Date | string | undefined | null): string {
+	if (!value) return "";
+	const date = value instanceof Date ? value : new Date(value);
+	if (Number.isNaN(date.getTime())) return "";
+	return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
 /** Shows the host of a URL without "www.", or an empty string if it cannot be parsed. */
 export function hostOf(url: string | undefined | null): string {
 	if (!url) return "";

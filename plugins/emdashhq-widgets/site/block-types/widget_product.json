@@ -1,0 +1,91 @@
+{
+	"slug": "widget_product",
+	"label": "Product box",
+	"description": "Review or affiliate card: rating, description, pros and cons, price and a buy button.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "name",
+					"label": "Product name",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "image",
+					"label": "Image",
+					"type": "image"
+				},
+				{
+					"slug": "rating",
+					"label": "Rating (0-5)",
+					"type": "integer",
+					"validation": {
+						"min": 0,
+						"max": 5
+					}
+				},
+				{
+					"slug": "description",
+					"label": "Description",
+					"type": "text"
+				},
+				{
+					"slug": "pros",
+					"label": "Pros",
+					"type": "repeater",
+					"validation": {
+						"subFields": [
+							{
+								"slug": "text",
+								"label": "Text",
+								"type": "string",
+								"required": true
+							}
+						],
+						"maxItems": 10
+					}
+				},
+				{
+					"slug": "cons",
+					"label": "Cons",
+					"type": "repeater",
+					"validation": {
+						"subFields": [
+							{
+								"slug": "text",
+								"label": "Text",
+								"type": "string",
+								"required": true
+							}
+						],
+						"maxItems": 10
+					}
+				},
+				{
+					"slug": "price",
+					"label": "Price label",
+					"type": "string",
+					"description": "Free text \u2014 \"from $5/mo\", \"$49\", \"Free\"."
+				},
+				{
+					"slug": "url",
+					"label": "Product URL",
+					"type": "string",
+					"validation": {
+						"pattern": "^(?:$|(?:https?://|mailto:|tel:|/(?!/)).+)$"
+					}
+				},
+				{
+					"slug": "cta_label",
+					"label": "Button label",
+					"type": "string",
+					"defaultValue": "Check price"
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,22 @@
+---
+/**
+ * WidgetBlocks.astro — renders a blocks field that accepts the widget_*
+ * block types shipped by the emdashhq-widgets plugin:
+ *
+ *   <WidgetBlocks value={entry.data.body} />
+ *
+ * To mix widgets with your own block types, import `widgetComponents` from
+ * `./widget-components` and spread it inside your own defineBlockComponents().
+ */
+import { Blocks, defineBlockComponents, type BlockValue } from "emdash/ui";
+import { widgetComponents } from "./widget-components";
+
+interface Props {
+	value?: BlockValue[] | null;
+}
+
+const { value } = Astro.props;
+const blockComponents = defineBlockComponents(widgetComponents as never);
+---
+
+<Blocks {value} components={blockComponents} />

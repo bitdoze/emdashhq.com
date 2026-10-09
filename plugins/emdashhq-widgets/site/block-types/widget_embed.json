@@ -1,0 +1,41 @@
+{
+	"slug": "widget_embed",
+	"label": "Embed",
+	"description": "Generic iframe embed with a fixed aspect ratio \u2014 CodePen, maps, third-party players.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "url",
+					"label": "Embed URL",
+					"type": "url",
+					"required": true
+				},
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"description": "Accessible name for the iframe."
+				},
+				{
+					"slug": "aspect",
+					"label": "Aspect ratio",
+					"type": "select",
+					"validation": {
+						"options": [
+							"16:9",
+							"4:3",
+							"1:1",
+							"9:16"
+						]
+					},
+					"defaultValue": "16:9"
+				}
+			]
+		}
+	]
+}

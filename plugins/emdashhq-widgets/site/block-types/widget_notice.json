@@ -1,0 +1,40 @@
+{
+	"slug": "widget_notice",
+	"label": "Notice",
+	"description": "Colored callout for tips, warnings, prerequisites and pitfalls.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "kind",
+					"label": "Kind",
+					"type": "select",
+					"required": true,
+					"validation": {
+						"options": [
+							"info",
+							"success",
+							"warning",
+							"danger"
+						]
+					},
+					"defaultValue": "info"
+				},
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string"
+				},
+				{
+					"slug": "body",
+					"label": "Body",
+					"type": "portableText",
+					"required": true
+				}
+			]
+		}
+	]
+}

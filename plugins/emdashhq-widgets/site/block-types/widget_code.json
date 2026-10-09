@@ -1,0 +1,45 @@
+{
+	"slug": "widget_code",
+	"label": "Code block",
+	"description": "A code sample with language label, optional filename and copy button.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "language",
+					"label": "Language",
+					"type": "select",
+					"defaultValue": "plaintext",
+					"validation": {
+						"options": [
+							"plaintext",
+							"bash",
+							"typescript",
+							"javascript",
+							"json",
+							"html",
+							"css",
+							"yaml",
+							"sql",
+							"python"
+						]
+					}
+				},
+				{
+					"slug": "filename",
+					"label": "Filename",
+					"type": "string"
+				},
+				{
+					"slug": "code",
+					"label": "Code",
+					"type": "text",
+					"required": true
+				}
+			]
+		}
+	]
+}

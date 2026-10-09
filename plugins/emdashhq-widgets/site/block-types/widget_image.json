@@ -1,0 +1,32 @@
+{
+	"slug": "widget_image",
+	"label": "Image",
+	"description": "A figure with an optional caption — screenshots, diagrams, photos inside an article.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "image",
+					"label": "Image",
+					"type": "image",
+					"required": true
+				},
+				{
+					"slug": "caption",
+					"label": "Caption",
+					"type": "text"
+				},
+				{
+					"slug": "wide",
+					"label": "Wide",
+					"type": "boolean",
+					"defaultValue": false,
+					"description": "Let the image break out wider than the text column."
+				}
+			]
+		}
+	]
+}

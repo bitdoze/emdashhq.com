@@ -19,15 +19,16 @@
 	"dependencies": {
 		"@astrojs/cloudflare": "^14.3.1",
 		"@astrojs/react": "^6.0.5",
-		"@emdash-cms/cloudflare": "^1.1.0",
-		"emdashhq-contact-forms": "file:plugins/emdashhq-contact-forms",
+		"@emdash-cms/cloudflare": "^1.2.0",
 		"@iconify-json/ph": "^1.2.2",
 		"astro": "^7.3.2",
 		"astro-iconset": "^0.0.4",
-		"emdash": "^1.1.0",
+		"emdash": "^1.2.0",
+		"emdashhq-contact-forms": "file:plugins/emdashhq-contact-forms",
+		"emdashhq-site-scripts": "file:plugins/emdashhq-site-scripts",
+		"emdashhq-widgets": "file:plugins/emdashhq-widgets",
 		"react": "19.2.4",
-		"react-dom": "19.2.4",
-		"emdashhq-site-scripts": "file:plugins/emdashhq-site-scripts"
+		"react-dom": "19.2.4"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.10",

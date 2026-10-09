@@ -1,0 +1,168 @@
+---
+/**
+ * widget_youtube — click-to-play YouTube facade. No player loads until the
+ * visitor clicks. The embed host follows the plugin's "Privacy-enhanced
+ * YouTube embeds" setting. Copy into your site's components and register it
+ * for the `widget_youtube` block type (see README).
+ */
+import { getWidgetConfig } from "./config";
+
+type Props = {
+	value: {
+		url: string;
+		title: string;
+		caption?: string | null;
+	};
+};
+
+const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
+
+function parseYouTubeId(input: string | undefined | null): string | null {
+	if (!input) return null;
+	let url: URL;
+	try {
+		url = new URL(input);
+	} catch {
+		return null;
+	}
+	const host = url.hostname.replace(/^www\./, "");
+	let id: string | null = null;
+	if (host === "youtu.be") {
+		id = url.pathname.slice(1).split("/")[0] ?? null;
+	} else if (["youtube.com", "m.youtube.com", "youtube-nocookie.com"].includes(host)) {
+		id = url.searchParams.get("v") ?? url.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)/)?.[1] ?? null;
+	}
+	return id && VIDEO_ID.test(id) ? id : null;
+}
+
+const { value } = Astro.props;
+const videoId = parseYouTubeId(value.url);
+const config = await getWidgetConfig(Astro);
+const embedHost = config.youtubeNoCookie ? "www.youtube-nocookie.com" : "www.youtube.com";
+---
+
+{
+	videoId ? (
+		<figure class="wgt-youtube">
+			<a
+				href={`https://www.youtube.com/watch?v=${videoId}`}
+				class="wgt-youtube-facade"
+				data-video-id={videoId}
+				data-video-host={embedHost}
+				data-video-title={value.title}
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label={`Play video: ${value.title}`}
+			>
+				<img
+					src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+					class="wgt-youtube-thumb"
+					alt=""
+					width="480"
+					height="360"
+					loading="lazy"
+				/>
+				<span class="wgt-youtube-play" aria-hidden="true">
+					<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z" /></svg>
+				</span>
+			</a>
+			{value.caption && <figcaption class="wgt-youtube-caption">{value.caption}</figcaption>}
+		</figure>
+	) : (
+		<p class="wgt-youtube-invalid">Invalid YouTube URL: {value.url}</p>
+	)
+}
+
+<script>
+	// Click swaps the facade for the real iframe. Without JS the link opens
+	// the video on YouTube.
+	document.addEventListener("click", (event) => {
+		const facade = (event.target as HTMLElement).closest<HTMLAnchorElement>("a.wgt-youtube-facade");
+		if (!facade || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+		const id = facade.dataset.videoId;
+		if (!id) return;
+		event.preventDefault();
+		const frame = document.createElement("iframe");
+		frame.src = `https://${facade.dataset.videoHost || "www.youtube-nocookie.com"}/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
+		frame.title = facade.dataset.videoTitle ?? "YouTube video";
+		frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+		frame.allowFullscreen = true;
+		frame.className = "wgt-youtube-frame";
+		const transferFocus = document.activeElement === facade;
+		facade.replaceWith(frame);
+		if (transferFocus) frame.focus({ preventScroll: true });
+	});
+</script>
+
+<style>
+	.wgt-youtube {
+		margin-block: var(--spacing-xl, 2rem);
+	}
+
+	.wgt-youtube-facade {
+		position: relative;
+		display: block;
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
+		background: #000;
+		border-radius: var(--radius, 10px);
+		border: 1px solid var(--color-border, #e2e0d8);
+	}
+
+	.wgt-youtube-thumb {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.wgt-youtube-play {
+		position: absolute;
+		inset: 0;
+		margin: auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 4rem;
+		height: 4rem;
+		font-size: 1.5rem;
+		color: #fff;
+		background: color-mix(in srgb, var(--color-brand-strong, #3730a3) 92%, transparent);
+		border-radius: 999px;
+		box-shadow: var(--shadow-lg, 0 8px 24px rgb(0 0 0 / 0.2));
+		transition: transform 140ms ease;
+	}
+
+	.wgt-youtube-play svg {
+		width: 55%;
+		height: 55%;
+		margin-left: 8%;
+	}
+
+	.wgt-youtube-facade:hover .wgt-youtube-play,
+	.wgt-youtube-facade:focus-visible .wgt-youtube-play {
+		transform: scale(1.06);
+	}
+
+	.wgt-youtube-caption {
+		margin-top: var(--spacing-sm, 0.75rem);
+		font-size: var(--font-size-sm, 0.875rem);
+		color: var(--color-muted, #555);
+	}
+
+	.wgt-youtube-invalid {
+		padding: var(--spacing-md, 1rem);
+		border: 1px dashed var(--color-danger, #b91c1c);
+		border-radius: var(--radius, 10px);
+		font-size: var(--font-size-sm, 0.875rem);
+	}
+</style>
+
+<style is:global>
+	.wgt-youtube-frame {
+		display: block;
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		border: 0;
+		border-radius: var(--radius, 10px);
+	}
+</style>

@@ -1,0 +1,54 @@
+---
+/**
+ * widget_image — a figure with an optional caption. Copy into your site's
+ * components and register it for the `widget_image` block type (see README).
+ */
+import { Image } from "emdash/ui";
+import type { ImageValue } from "emdash";
+
+type Props = {
+	value: {
+		image: ImageValue;
+		caption?: string | null;
+		wide?: boolean | null;
+	};
+};
+
+const { value } = Astro.props;
+---
+
+{
+	(value.image?.id || value.image?.src) && (
+		<figure class:list={["wgt-image", { "wgt-image-wide": value.wide }]}>
+			<Image image={value.image} class="wgt-image-img" alt={value.image.alt ?? ""} />
+			{value.caption && <figcaption class="wgt-image-caption">{value.caption}</figcaption>}
+		</figure>
+	)
+}
+
+<style>
+	.wgt-image {
+		margin-block: var(--spacing-xl, 2rem);
+	}
+
+	.wgt-image-wide {
+		width: min(100%, 58rem);
+		margin-inline: auto;
+	}
+
+	.wgt-image-img {
+		display: block;
+		width: 100%;
+		height: auto;
+		border-radius: var(--radius, 10px);
+		border: 1px solid var(--color-border, #e2e0d8);
+		box-shadow: var(--shadow-sm, 0 1px 3px rgb(0 0 0 / 0.08));
+	}
+
+	.wgt-image-caption {
+		margin-top: var(--spacing-sm, 0.75rem);
+		font-size: var(--font-size-sm, 0.875rem);
+		color: var(--color-muted, #555);
+		text-align: center;
+	}
+</style>

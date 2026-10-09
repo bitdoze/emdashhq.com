@@ -1,0 +1,34 @@
+---
+/**
+ * widget_prose — rich text section. Copy into your site's components and
+ * register for the `widget_prose` block type (see README).
+ */
+import { PortableText } from "emdash/ui";
+
+type Props = {
+	value: {
+		body: unknown[];
+	};
+};
+
+const { value } = Astro.props;
+---
+
+<div class="wgt-prose">
+	<PortableText value={value.body} />
+</div>
+
+<style>
+	.wgt-prose {
+		margin-block: var(--spacing-lg, 1.5rem);
+		line-height: var(--leading-normal, 1.7);
+	}
+
+	.wgt-prose > :global(*:first-child) {
+		margin-top: 0;
+	}
+
+	.wgt-prose > :global(*:last-child) {
+		margin-bottom: 0;
+	}
+</style>

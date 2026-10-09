@@ -10,6 +10,13 @@
 	"name": "Contact Forms",
 	"description": "Contact form builder: embed forms on pages, store every submission, send email through the site's provider.",
 	"keywords": ["forms", "contact", "email", "submissions"],
+	"sections": {
+		"description": { "file": "./docs/description.md" },
+		"installation": { "file": "./docs/installation.md" },
+		"faq": { "file": "./docs/faq.md" },
+		"changelog": { "file": "./docs/changelog.md" }
+	},
+	"repo": "https://github.com/bitdoze/emdashhq.com",
 
 	"capabilities": ["email:send", "network:request"],
 	"allowedHosts": ["challenges.cloudflare.com"],
@@ -87,6 +94,18 @@
 	},
 
 	"release": {
-		"requires": { "env:emdash": ">=1.0.0" }
+		"requires": { "env:emdash": ">=1.0.0" },
+		"artifacts": {
+			"icon": { "file": "./images/icon.png" },
+			"banner": { "file": "./images/banner.png" },
+			"screenshots": [
+				{ "file": "./images/screenshot-forms.png", "lang": "en" },
+				{ "file": "./images/screenshot-submissions.png", "lang": "en" },
+				{ "file": "./images/screenshot-log.png", "lang": "en" },
+				{ "file": "./images/screenshot-settings.png", "lang": "en" },
+				{ "file": "./images/screenshot-widget.png", "lang": "en" },
+				{ "file": "./images/screenshot-public-form.png", "lang": "en" }
+			]
+		}
 	}
 }

@@ -1,0 +1,56 @@
+---
+/**
+ * widget_divider — a section break inside an article. Copy into your site's
+ * components and register it for the `widget_divider` block type (see README).
+ */
+
+type Props = {
+	value: {
+		style?: "line" | "dots" | "space" | null;
+	};
+};
+
+const { value } = Astro.props;
+const style = value.style ?? "line";
+---
+
+{
+	style === "dots" ? (
+		<div class="wgt-divider wgt-divider-dots" role="separator" aria-hidden="true">
+			<span />
+			<span />
+			<span />
+		</div>
+	) : (
+		<hr class={`wgt-divider wgt-divider-${style}`} />
+	)
+}
+
+<style>
+	.wgt-divider {
+		margin-block: var(--spacing-2xl, 3rem);
+		border: 0;
+	}
+
+	.wgt-divider-line {
+		height: 1px;
+		background: var(--color-border, #e2e0d8);
+	}
+
+	.wgt-divider-space {
+		height: var(--spacing-lg, 1.5rem);
+	}
+
+	.wgt-divider-dots {
+		display: flex;
+		justify-content: center;
+		gap: 0.5rem;
+	}
+
+	.wgt-divider-dots span {
+		width: 0.35rem;
+		height: 0.35rem;
+		border-radius: 999px;
+		background: var(--color-muted, #999);
+	}
+</style>

@@ -1,0 +1,171 @@
+---
+import { extractPlainText, getEmDashEntry, getSeoMeta } from "emdash";
+import { Image } from "emdash/ui";
+import WidgetBlocks from "../../components/blocks/widgets/WidgetBlocks.astro";
+import Base from "../../layouts/Base.astro";
+import { formatDate } from "../../lib/format";
+import { getSiteChrome } from "../../lib/site-data";
+import { unavailableResponse } from "../../lib/unavailable";
+
+const slug = Astro.params.slug;
+if (!slug) return Astro.redirect(`/blog/${Astro.url.search}`, 301);
+if (!Astro.url.pathname.endsWith("/")) {
+	return Astro.redirect(`${Astro.url.pathname}/${Astro.url.search}`, 301);
+}
+
+let post: Awaited<ReturnType<typeof getEmDashEntry<"posts">>>["entry"];
+const started = performance.now();
+try {
+	const [result] = await Promise.all([getEmDashEntry("posts", slug), getSiteChrome(Astro)]);
+	if (result.error) throw result.error;
+	post = result.entry;
+	if (Astro.cache.enabled) Astro.cache.set(result.cacheHint);
+} catch (error) {
+	console.error("Unable to render blog post", { slug, error });
+	Astro.cache.set(false);
+	return unavailableResponse();
+}
+Astro.response.headers.set("X-Site-Data-Ms", (performance.now() - started).toFixed(1));
+
+if (!post) return Astro.rewrite("/404");
+
+// Reading time from the prose blocks — ~200 words a minute.
+const body = post.data.body ?? [];
+const words = body
+	.filter((block) => block._type === "widget_prose")
+	.map((block) => extractPlainText(block.body))
+	.join(" ")
+	.split(/\s+/)
+	.filter(Boolean).length;
+const minutes = Math.max(1, Math.round(words / 200));
+
+const seo = getSeoMeta(post, {
+	siteUrl: Astro.url.origin,
+	path: `/blog/${post.id}/`,
+});
+---
+
+<Base
+	title={seo?.title ?? post.data.title}
+	pageTitle={post.data.title}
+	description={seo?.description ?? post.data.excerpt}
+	image={seo?.ogImage}
+	canonical={seo?.canonical}
+	robots={seo?.robots}
+	content={{ collection: "posts", id: post.data.id, slug: post.id }}
+>
+	<article class="post">
+		<header class="post-header">
+			<div class="container post-container">
+				<p class="post-eyebrow">
+					<a href="/blog/" class="post-back">Blog</a>
+					{post.data.featured && <span class="badge">Featured</span>}
+				</p>
+				<h1 class="post-title">{post.data.title}</h1>
+				{post.data.excerpt && <p class="post-excerpt">{post.data.excerpt}</p>}
+				<p class="post-meta">
+					{post.data.publishedAt && (
+						<time datetime={post.data.publishedAt.toISOString()}>{formatDate(post.data.publishedAt)}</time>
+					)}
+					<span aria-hidden="true">·</span>
+					<span>{minutes} min read</span>
+				</p>
+			</div>
+		</header>
+		{
+			post.data.cover?.id && (
+				<div class="container post-container">
+					<Image image={post.data.cover} class="post-cover" alt={post.data.cover.alt || post.data.title} priority />
+				</div>
+			)
+		}
+		<div class="container post-container post-body" {...post.edit.body} data-wgt-article>
+			<WidgetBlocks value={body} />
+		</div>
+	</article>
+</Base>
+
+<style>
+	.post {
+		padding-bottom: var(--spacing-5xl);
+	}
+
+	.post-container {
+		max-width: var(--max-width);
+	}
+
+	.post-header {
+		padding: var(--spacing-4xl) 0 var(--spacing-2xl);
+	}
+
+	.post-eyebrow {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-sm);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		margin-bottom: var(--spacing-lg);
+	}
+
+	.post-back {
+		color: var(--color-brand-strong);
+		font-weight: 600;
+	}
+
+	.post-back::before {
+		content: "← ";
+	}
+
+	.post-title {
+		font-size: var(--font-size-4xl);
+		font-weight: var(--font-weight-display);
+		line-height: 1.1;
+		text-wrap: balance;
+	}
+
+	.post-excerpt {
+		margin-top: var(--spacing-md);
+		font-size: var(--font-size-lg);
+		color: var(--color-muted);
+		line-height: 1.55;
+		text-wrap: pretty;
+	}
+
+	.post-meta {
+		display: flex;
+		gap: var(--spacing-sm);
+		margin-top: var(--spacing-lg);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		letter-spacing: 0.05em;
+	}
+
+	.post-cover {
+		width: 100%;
+		border-radius: var(--radius-lg);
+		border: 1px solid var(--color-border);
+		box-shadow: var(--shadow-lg);
+		margin-bottom: var(--spacing-2xl);
+	}
+
+	.post-body {
+		line-height: var(--leading-normal);
+	}
+
+	.post-body :global(h2) {
+		margin-top: var(--spacing-3xl);
+		margin-bottom: var(--spacing-md);
+	}
+
+	.post-body :global(h3) {
+		margin-top: var(--spacing-2xl);
+		margin-bottom: var(--spacing-sm);
+	}
+
+	.post-body :global(p) {
+		margin-bottom: var(--spacing-md);
+	}
+</style>

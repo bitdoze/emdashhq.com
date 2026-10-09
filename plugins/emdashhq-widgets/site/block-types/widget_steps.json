@@ -1,0 +1,41 @@
+{
+	"slug": "widget_steps",
+	"label": "Steps",
+	"description": "Numbered how-to steps — walkthroughs, setup guides, ordered processes.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string"
+				},
+				{
+					"slug": "items",
+					"label": "Steps",
+					"type": "repeater",
+					"validation": {
+						"subFields": [
+							{
+								"slug": "title",
+								"label": "Step title",
+								"type": "string",
+								"required": true
+							},
+							{
+								"slug": "body",
+								"label": "Details",
+								"type": "text"
+							}
+						],
+						"minItems": 1,
+						"maxItems": 20
+					}
+				}
+			]
+		}
+	]
+}

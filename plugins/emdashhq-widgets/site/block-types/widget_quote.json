@@ -1,0 +1,32 @@
+{
+	"slug": "widget_quote",
+	"label": "Pull quote",
+	"description": "Highlighted quotation with attribution.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "quote",
+					"label": "Quote",
+					"type": "text",
+					"required": true
+				},
+				{
+					"slug": "attribution",
+					"label": "Attribution",
+					"type": "string",
+					"description": "Who said it."
+				},
+				{
+					"slug": "role",
+					"label": "Role or source",
+					"type": "string",
+					"description": "Optional \u2014 \"Docs\", a job title, a publication."
+				}
+			]
+		}
+	]
+}

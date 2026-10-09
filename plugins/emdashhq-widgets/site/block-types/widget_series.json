@@ -1,0 +1,43 @@
+{
+	"slug": "widget_series",
+	"label": "Series nav",
+	"description": "Ordered navigation for multi-part posts. The current part is highlighted automatically from the URL.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"defaultValue": "This post is part of a series"
+				},
+				{
+					"slug": "items",
+					"label": "Parts",
+					"type": "repeater",
+					"validation": {
+						"subFields": [
+							{
+								"slug": "label",
+								"label": "Label",
+								"type": "string",
+								"required": true
+							},
+							{
+								"slug": "url",
+								"label": "URL",
+								"type": "string",
+								"required": true
+							}
+						],
+						"maxItems": 20,
+						"minItems": 2
+					}
+				}
+			]
+		}
+	]
+}

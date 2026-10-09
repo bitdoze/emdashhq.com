@@ -8,11 +8,13 @@ import Hero from "./blocks/Hero.astro";
 import Pricing from "./blocks/Pricing.astro";
 import SiteContact from "./blocks/SiteContact.astro";
 import SiteCta from "./blocks/SiteCta.astro";
+import SitePosts from "./blocks/SitePosts.astro";
 import SiteResources from "./blocks/SiteResources.astro";
 import SiteServices from "./blocks/SiteServices.astro";
 import SiteTutorials from "./blocks/SiteTutorials.astro";
 import SiteVideos from "./blocks/SiteVideos.astro";
 import Testimonials from "./blocks/Testimonials.astro";
+import { widgetComponents } from "./blocks/widgets/widget-components";
 
 interface Props {
 	value?: PageContentBlock[] | null;
@@ -32,7 +34,9 @@ const blockComponents = defineBlockComponents<PageContentBlock>({
 	site_services: SiteServices,
 	site_cta: SiteCta,
 	site_contact: SiteContact,
+	site_posts: SitePosts,
 	contact_form: ContactForm,
+	...widgetComponents,
 });
 ---
 

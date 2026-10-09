@@ -56,7 +56,7 @@ Voice: plain and specific. No hype, no invented testimonials, no em dashes. Seed
 
 One route, `src/pages/[...slug].astro`, renders every entry in the `pages` collection. The slug is the URL, `home` is `/`, and `/home` redirects to `/`. A missing slug rewrites to `404.astro`. New pages need no code. `src/pages/rss.xml.ts` serves an RSS 2.0 feed of published tutorials, videos and resources (items link to their real destinations); it is advertised via `<link rel="alternate">` in the head.
 
-Seeded pages: `home`, `tutorials`, `videos`, `themes`, `plugins`, `services`, `contact`.
+Seeded pages: `home`, `tutorials`, `videos`, `blog`, `themes`, `plugins`, `services`, `contact`. Seeded posts: `contact-form-spam-turnstile`, `emdash-widgets-plugin`, `emdash-blog-section`, `widget-gallery` (a kitchen-sink demo exercising every widget).
 
 ## Site stats strip
 
@@ -65,6 +65,7 @@ Seeded pages: `home`, `tutorials`, `videos`, `themes`, `plugins`, `services`, `c
 ## Schema
 
 - `pages`: `title`, `content` (a `blocks` field).
+- `posts`: `title`, `excerpt`, `cover` (image), `body` (a `blocks` field allowing all `widget_*` types), `featured`. Routed by `src/pages/blog/[slug].astro` under `/blog/<slug>/`; the `blog` page itself uses the `site_posts` block to list published posts.
 - Content hub collections (grouped in the admin): `tutorials`, `videos`, `resources` (themes and plugins), `services`. Each has a `featured` boolean. Blocks use `src/lib/hub-content.ts` for CMS filters, ordering, cache hints, and cursor traversal. The page preloads these reads before streaming so query errors return a noncached 503.
 - No taxonomies.
 - Menus: `primary` (header links), `header_cta` (only the first item is used, as the header button — currently an external link to docs.emdashcms.com), `footer_learn`, `footer_resources`, `footer_company`. Footer column headings are the menu labels.
@@ -72,7 +73,7 @@ Seeded pages: `home`, `tutorials`, `videos`, `themes`, `plugins`, `services`, `c
 
 ## Blocks
 
-Eleven block types, mapped to `src/components/blocks/*.astro` in `src/components/MarketingBlocks.astro` with `defineBlockComponents()`.
+Twelve page block types, mapped to `src/components/blocks/*.astro` in `src/components/MarketingBlocks.astro` with `defineBlockComponents()`. Post bodies use the `widget_*` blocks via `src/components/blocks/widgets/WidgetBlocks.astro`; `widget_*` types are also allowed in `pages.content`.
 
 | Block | Purpose |
 | --- | --- |
@@ -84,6 +85,9 @@ Eleven block types, mapped to `src/components/blocks/*.astro` in `src/components
 | `site_services` | Cards from `services`, sorted by `sort_order`. |
 | `site_cta` | Banner with one or two buttons, `gradient` or `plain`. |
 | `site_contact` | Contact method cards (email, YouTube, GitHub) in the shared `.card-grid` with `.hub-card`. |
+| `site_posts` | Rows of published `posts` (newest first), shown on `/blog/`. |
+
+The 19 `widget_*` block types (prose, notice, accordion, tabs, checklist, steps, button, youtube, embed, image, code, product, cards, quote, facts, toc, series, latest_posts, divider) come from the Widgets plugin below.
 
 Constraints worth remembering:
 
@@ -97,6 +101,7 @@ Constraints worth remembering:
 - A row or card that contains a stretched `.card-link::after` must be `position: relative`, or the overlay covers the page above it.
 - External links (`target="_blank"`) get a visible `↗` marker via a rule in `theme.css` and a screen-reader `(opens in a new tab)` via `src/components/NewTab.astro` — add `<NewTab />` inside any new `_blank` anchor. Stretched `.card-link`s, `.video-facade`s, `.contact-card`s and `aria-label`ed icon links are excluded from the marker rule because they carry their own affordances.
 - Block and collection fields are defined in `seed/seed.json`. After changing them, start the dev server so it rewrites `emdash-env.d.ts`.
+- Do not set Astro `trailingSlash: "always"`: it makes every `/_emdash/api/` route without a trailing slash 404, which breaks public plugin endpoints (e.g. the contact-form `submit` POST). Slashless content URLs get a 301 to the canonical `/…/` form anyway — `interpolateUrlPattern` strips pattern slashes, so a `/blog/{slug}/` pattern does nothing; canonical URLs come from the redirect.
 
 ## Plugin: Site Scripts
 
@@ -105,6 +110,12 @@ Constraints worth remembering:
 ## Plugin: Contact Forms
 
 `plugins/emdashhq-contact-forms` (package `emdashhq-contact-forms`, plugin id `emdashhq-contact-forms`) is a standard-format sandboxed plugin published to the EmDash registry as `@bitdoze.com/emdashhq-contact-forms` -- keep it free of site-specific references. Registered under `sandboxed:` in `astro.config.mjs` with `sandboxRunner: sandbox()`. It provides form CRUD, a submissions inbox, and an email log under Plugins, Contact forms (Block Kit pages via the private `admin` route; no React), plus a dashboard widget. Storage lives in `_plugin_storage` (`forms`, `submissions`, `email_log` collections). Public routes: `GET .../form?slug=` (public form definition, strips recipient) and `POST .../submit` (form-data, answers a same-origin 303 with `cf`/`cf_status`/`cf_fields`). Email goes through `ctx.email.send()`, so it uses the site's active provider; no provider means submissions still store with `emailStatus: "skipped"`. `orderBy` fields must be declared in the collection's `indexes` or the query throws. Anti-spam: `cf_hp` honeypot, `cf_ts` minimum-fill-time, per-IP hourly limit. The `contact_form` seed block type renders through `src/components/blocks/ContactForm.astro`, which resolves the form in-process via `Astro.locals.emdash.handlePublicPluginApiRoute` -- no HTTP fetch. A generic copy of that component plus the block-type JSON ship in the package's `site/` dir for other sites; see the plugin README.
+
+## Plugin: Widgets
+
+`plugins/emdashhq-widgets` (published as `@bitdoze.com/emdashhq-widgets`) is a sandboxed plugin that distributes 19 `widget_*` article block types plus the Astro components that render them. Sandboxed plugins can't ship renderers into the site runtime, so the package's `site/` dir is the copy source: `site/block-types/*.json` are the single source of truth for the seed block defs, `site/components/*.astro` + `icons.ts` + `widget-components.ts` are mirrored into `src/components/blocks/widgets/`, and `WidgetBlocks.astro` maps `_type` to component. When editing a widget, patch the copy under `plugins/emdashhq-widgets/site/` first, then `cp` it into `src/components/blocks/widgets/` (and sync the block JSON into `seed/seed.json`). Public routes: `.../config` (plugin settings: YouTube nocookie toggle, affiliate disclosure, posts collection) and `.../posts` (latest published entries for `widget_latest_posts`); the site resolves both in-process via `Astro.locals.emdash.handlePublicPluginApiRoute` through `components/blocks/widgets/config.ts` (WeakMap-cached per request). Admin gets a Block Kit catalog + setup page under Plugins. `astro check` must stay clean — generated optional fields are `T | null`, so widget props need `| null`. Repeater sub-fields only support scalar/select/image types (no `portableText`); accordion/tab bodies use `text` split on blank lines.
+
+Schema changes (block types, the `posts` collection, `pages.content`/`posts.body` allowedTypes, seed content, menus) reach a running site via `node scripts/apply-blog-schema.mjs --url=<site> --token=<api-token>` — the seed file itself only applies at bootstrap. On this repo it was applied to prod with a temporary `admin`-scoped `ec_pat_` token inserted into `_emdash_api_tokens` via `wrangler d1 execute --remote` and revoked after.
 
 ## Visual character
 

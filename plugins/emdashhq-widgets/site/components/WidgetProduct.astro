@@ -1,0 +1,226 @@
+---
+/**
+ * widget_product — review/affiliate card with rating, pros/cons and a buy
+ * button. The affiliate disclosure line comes from the plugin settings.
+ * Copy into your site's components and register it for the `widget_product`
+ * block type (see README).
+ */
+import { Image } from "emdash/ui";
+import { sanitizeHref, type ImageValue } from "emdash";
+import { getWidgetConfig } from "./config";
+
+type Props = {
+	value: {
+		name: string;
+		image?: ImageValue | null;
+		rating?: number | null;
+		description?: string | null;
+		pros?: { text: string }[] | null;
+		cons?: { text: string }[] | null;
+		price?: string | null;
+		url?: string | null;
+		cta_label?: string | null;
+	};
+};
+
+const { value } = Astro.props;
+const config = await getWidgetConfig(Astro);
+const rating = Math.max(0, Math.min(5, Math.round(value.rating ?? 0)));
+const pros = (value.pros ?? []).filter((item) => item?.text);
+const cons = (value.cons ?? []).filter((item) => item?.text);
+const href = value.url ? sanitizeHref(value.url) : "";
+const ctaLabel = value.cta_label || "Check price";
+const sponsored = /^https?:\/\//i.test(href);
+---
+
+<section class="wgt-product">
+	{config.affiliateDisclosure && <p class="wgt-product-disclosure">{config.affiliateDisclosure}</p>}
+	<div class="wgt-product-card">
+		{
+			value.image?.id && (
+				<div class="wgt-product-media">
+					<Image image={value.image} alt={value.image.alt || value.name} />
+				</div>
+			)
+		}
+		<div class="wgt-product-body">
+			<div class="wgt-product-head">
+				<h3 class="wgt-product-name">{value.name}</h3>
+				{
+					rating > 0 && (
+						<span class="wgt-product-rating" role="img" aria-label={`Rated ${rating} out of 5`}>
+							{Array.from({ length: 5 }, (_, i) => (
+								<svg viewBox="0 0 20 20" fill="currentColor" class={i < rating ? "star-on" : "star-off"} aria-hidden="true">
+									<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+								</svg>
+							))}
+						</span>
+					)
+				}
+				{value.price && <span class="wgt-product-price">{value.price}</span>}
+			</div>
+			{value.description && <p class="wgt-product-desc">{value.description}</p>}
+			{
+				(pros.length > 0 || cons.length > 0) && (
+					<div class="wgt-product-lists">
+						{pros.length > 0 && (
+							<div class="wgt-product-col">
+								<p class="wgt-product-col-title wgt-pros">Pros</p>
+								<ul>
+									{pros.map((item) => (
+										<li>{item.text}</li>
+									))}
+								</ul>
+							</div>
+						)}
+						{cons.length > 0 && (
+							<div class="wgt-product-col">
+								<p class="wgt-product-col-title wgt-cons">Cons</p>
+								<ul>
+									{cons.map((item) => (
+										<li>{item.text}</li>
+									))}
+								</ul>
+							</div>
+						)}
+					</div>
+				)
+			}
+			{
+				href && (
+					<a class="wgt-product-cta" href={href} target={sponsored ? "_blank" : undefined} rel={sponsored ? "sponsored noopener noreferrer" : undefined}>
+						{ctaLabel}
+					</a>
+				)
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.wgt-product {
+		margin-block: var(--spacing-xl, 2rem);
+	}
+
+	.wgt-product-disclosure {
+		font-size: var(--font-size-xs, 0.75rem);
+		color: var(--color-muted, #666);
+		margin-bottom: var(--spacing-xs, 0.5rem);
+		font-style: italic;
+	}
+
+	.wgt-product-card {
+		display: grid;
+		grid-template-columns: minmax(0, 200px) 1fr;
+		gap: var(--spacing-lg, 1.5rem);
+		padding: var(--spacing-lg, 1.5rem);
+		border: 1px solid var(--color-border, #e2e0d8);
+		border-radius: var(--radius-lg, 16px);
+		background: var(--color-surface, #fff);
+		box-shadow: var(--shadow-sm, 0 1px 3px rgb(0 0 0 / 0.06));
+	}
+
+	.wgt-product-media :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		max-height: 160px;
+	}
+
+	.wgt-product-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--spacing-md, 1rem);
+	}
+
+	.wgt-product-name {
+		font-size: var(--font-size-xl, 1.25rem);
+		margin: 0;
+	}
+
+	.wgt-product-rating {
+		display: inline-flex;
+		gap: 2px;
+	}
+
+	.wgt-product-rating svg {
+		width: 1rem;
+		height: 1rem;
+	}
+
+	.wgt-product-rating .star-on {
+		color: var(--color-warm, #d97706);
+	}
+
+	.wgt-product-rating .star-off {
+		color: var(--color-border, #d5d3c8);
+	}
+
+	.wgt-product-price {
+		font-size: var(--font-size-sm, 0.875rem);
+		font-weight: 700;
+		color: var(--color-brand-strong, #3730a3);
+	}
+
+	.wgt-product-desc {
+		margin-top: var(--spacing-sm, 0.75rem);
+		color: var(--color-muted, #555);
+		line-height: 1.6;
+	}
+
+	.wgt-product-lists {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--spacing-md, 1rem);
+		margin-top: var(--spacing-md, 1rem);
+	}
+
+	.wgt-product-col-title {
+		font-size: var(--font-size-xs, 0.75rem);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		margin-bottom: var(--spacing-xs, 0.5rem);
+	}
+
+	.wgt-product-col-title.wgt-pros {
+		color: var(--color-success, #15803d);
+	}
+	.wgt-product-col-title.wgt-cons {
+		color: var(--color-danger, #b91c1c);
+	}
+
+	.wgt-product-col ul {
+		margin: 0;
+		padding-left: 1.1rem;
+		font-size: var(--font-size-sm, 0.875rem);
+		line-height: 1.6;
+	}
+
+	.wgt-product-cta {
+		display: inline-flex;
+		align-items: center;
+		margin-top: var(--spacing-md, 1rem);
+		padding: 0.55rem 1.1rem;
+		font-weight: 600;
+		font-size: var(--font-size-sm, 0.875rem);
+		color: var(--color-on-brand, #fff);
+		background: var(--color-brand-strong, #3730a3);
+		border-radius: var(--radius, 10px);
+		text-decoration: none;
+	}
+
+	.wgt-product-cta:hover {
+		background: var(--color-brand, #4f46e5);
+	}
+
+	@media (max-width: 640px) {
+		.wgt-product-card {
+			grid-template-columns: 1fr;
+		}
+		.wgt-product-lists {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

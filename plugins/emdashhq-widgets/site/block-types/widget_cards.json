@@ -1,0 +1,69 @@
+{
+	"slug": "widget_cards",
+	"label": "Link cards",
+	"description": "A grid of linked cards — related tools, further reading, resources.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string"
+				},
+				{
+					"slug": "items",
+					"label": "Cards",
+					"type": "repeater",
+					"validation": {
+						"subFields": [
+							{
+								"slug": "icon",
+								"label": "Icon",
+								"type": "select",
+								"options": [
+									"arrow-right",
+									"arrow-up-right",
+									"download",
+									"play",
+									"check",
+									"star",
+									"info",
+									"rocket",
+									"book",
+									"github",
+									"mail",
+									"terminal"
+								]
+							},
+							{
+								"slug": "title",
+								"label": "Title",
+								"type": "string",
+								"required": true
+							},
+							{
+								"slug": "url",
+								"label": "URL",
+								"type": "string",
+								"required": true,
+								"validation": {
+									"pattern": "^(?:https?://|mailto:|tel:|/(?!/)|#).+$"
+								}
+							},
+							{
+								"slug": "description",
+								"label": "Description",
+								"type": "text"
+							}
+						],
+						"minItems": 1,
+						"maxItems": 12
+					}
+				}
+			]
+		}
+	]
+}

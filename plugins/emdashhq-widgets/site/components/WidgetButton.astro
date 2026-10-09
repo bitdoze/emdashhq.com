@@ -1,0 +1,88 @@
+---
+/**
+ * widget_button — standalone call-to-action link. Copy into your site's
+ * components and register it for the `widget_button` block type (see README).
+ */
+import { sanitizeHref } from "emdash";
+import { widgetIcon } from "./icons";
+
+type Props = {
+	value: {
+		label: string;
+		url: string;
+		icon?: string | null;
+		variant?: "solid" | "outline" | null;
+		align?: "left" | "center" | "right" | null;
+		new_tab?: boolean | null;
+	};
+};
+
+const { value } = Astro.props;
+const href = sanitizeHref(value.url);
+const external = /^https?:\/\//i.test(href);
+const newTab = value.new_tab || external;
+const icon = widgetIcon(value.icon);
+---
+
+<div class={`wgt-button wgt-button-${value.align ?? "left"}`}>
+	<a
+		class={`wgt-button-link wgt-button-${value.variant ?? "solid"}`}
+		href={href}
+		target={newTab ? "_blank" : undefined}
+		rel={newTab ? "noopener noreferrer" : undefined}
+	>
+		{icon && <span class="wgt-button-icon" set:html={icon} />}
+		{value.label}
+	</a>
+</div>
+
+<style>
+	.wgt-button {
+		display: flex;
+		margin-block: var(--spacing-lg, 1.5rem);
+	}
+	.wgt-button-center {
+		justify-content: center;
+	}
+	.wgt-button-right {
+		justify-content: flex-end;
+	}
+
+	.wgt-button-link {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-xs, 0.5rem);
+		padding: 0.625rem 1.25rem;
+		font-weight: 600;
+		font-size: var(--font-size-sm, 0.875rem);
+		border-radius: var(--radius, 10px);
+		border: 1.5px solid var(--color-brand-strong, #3730a3);
+		text-decoration: none;
+		transition: transform 120ms ease, background 120ms ease;
+	}
+
+	.wgt-button-link:hover {
+		transform: translateY(-1px);
+	}
+
+	.wgt-button-icon {
+		display: inline-flex;
+		font-size: 1.1em;
+	}
+
+	.wgt-button-solid {
+		color: var(--color-on-brand, #fff);
+		background: var(--color-brand-strong, #3730a3);
+	}
+	.wgt-button-solid:hover {
+		background: var(--color-brand, #4f46e5);
+	}
+
+	.wgt-button-outline {
+		color: var(--color-brand-strong, #3730a3);
+		background: transparent;
+	}
+	.wgt-button-outline:hover {
+		background: color-mix(in srgb, var(--color-brand, #4f46e5) 8%, transparent);
+	}
+</style>

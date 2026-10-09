@@ -8,6 +8,7 @@ import { defineConfig, fontProviders } from "astro/config";
 import emdash from "emdash/astro";
 import contactFormsPlugin from "emdashhq-contact-forms";
 import siteScriptsPlugin from "emdashhq-site-scripts";
+import widgetsPlugin from "emdashhq-widgets";
 
 export default defineConfig({
 	output: "server",
@@ -30,6 +31,9 @@ export default defineConfig({
 	build: {
 		inlineStylesheets: "auto",
 	},
+	// Leave trailingSlash unset ("ignore"): "always" makes every
+	// /_emdash/api/ plugin route without a trailing slash 404, which
+	// breaks public plugin endpoints like the contact-form submit.
 	image: {
 		layout: "constrained",
 		responsiveStyles: true,
@@ -118,7 +122,7 @@ export default defineConfig({
 			// Sandboxed plugins run in a Worker Loader isolate (the same
 			// format the plugin registry distributes). Contact-forms mail
 			// goes through ctx.email.
-			sandboxed: [contactFormsPlugin],
+			sandboxed: [contactFormsPlugin, widgetsPlugin],
 			sandboxRunner: sandbox(),
 		}),
 	],

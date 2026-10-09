@@ -1,0 +1,75 @@
+---
+/**
+ * widget_facts — key/value spec sheet (pricing, versions, limits).
+ * Copy into your site's components and register it for the `widget_facts`
+ * block type (see README).
+ */
+
+type Props = {
+	value: {
+		title?: string | null;
+		items?: { label: string; value: string }[] | null;
+	};
+};
+
+const { value } = Astro.props;
+const items = (value.items ?? []).filter((item) => item?.label);
+---
+
+<div class="wgt-facts">
+	{value.title && <p class="wgt-facts-title">{value.title}</p>}
+	<dl class="wgt-facts-list">
+		{
+			items.map((item) => (
+				<div class="wgt-facts-row">
+					<dt>{item.label}</dt>
+					<dd>{item.value}</dd>
+				</div>
+			))
+		}
+	</dl>
+</div>
+
+<style>
+	.wgt-facts {
+		margin-block: var(--spacing-xl, 2rem);
+		border: 1px solid var(--color-border, #e2e0d8);
+		border-radius: var(--radius, 10px);
+		background: var(--color-surface, #fff);
+		overflow: hidden;
+	}
+
+	.wgt-facts-title {
+		padding: var(--spacing-md, 1rem) var(--spacing-lg, 1.5rem);
+		font-weight: 700;
+		border-bottom: 1px solid var(--color-border, #e2e0d8);
+		background: color-mix(in srgb, var(--color-border, #e2e0d8) 20%, transparent);
+		margin: 0;
+	}
+
+	.wgt-facts-list {
+		margin: 0;
+	}
+
+	.wgt-facts-row {
+		display: grid;
+		grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+		gap: var(--spacing-md, 1rem);
+		padding: var(--spacing-sm, 0.75rem) var(--spacing-lg, 1.5rem);
+	}
+
+	.wgt-facts-row + .wgt-facts-row {
+		border-top: 1px solid var(--color-border, #e2e0d8);
+	}
+
+	.wgt-facts-row dt {
+		font-weight: 600;
+		font-size: var(--font-size-sm, 0.875rem);
+	}
+
+	.wgt-facts-row dd {
+		margin: 0;
+		color: var(--color-muted, #555);
+		font-size: var(--font-size-sm, 0.875rem);
+	}
+</style>

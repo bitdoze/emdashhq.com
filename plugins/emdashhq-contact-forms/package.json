@@ -1,6 +1,6 @@
 {
 	"name": "emdashhq-contact-forms",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "Contact form builder for EmDash CMS: forms as page blocks, submissions stored in the database, delivery through the site's active email provider.",
 	"type": "module",
 	"main": "dist/index.mjs",
@@ -16,6 +16,8 @@
 		"dist",
 		"emdash-plugin.jsonc",
 		"site",
+		"docs",
+		"images",
 		"README.md"
 	],
 	"keywords": [

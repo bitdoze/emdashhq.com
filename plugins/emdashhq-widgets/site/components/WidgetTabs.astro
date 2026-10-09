@@ -1,0 +1,139 @@
+---
+/**
+ * widget_tabs — tabbed panels, one tab per OS or package manager. Without
+ * JavaScript all panels render stacked. Copy into your site's components and
+ * register it for the `widget_tabs` block type (see README).
+ */
+
+type TabItem = { label: string; body: string };
+
+type Props = {
+	value: {
+		items?: TabItem[] | null;
+	};
+};
+
+const { value } = Astro.props;
+const items = (value.items ?? []).filter((item) => item?.label);
+const id = `wgt-tabs-${Math.random().toString(36).slice(2, 8)}`;
+
+function paragraphs(text: string): string[] {
+	return (text ?? "")
+		.split(/\n\s*\n/)
+		.map((chunk) => chunk.trim())
+		.filter(Boolean);
+}
+---
+
+<div class="wgt-tabs" data-wgt-tabs>
+	<div class="wgt-tabs-list" role="tablist" aria-label="Content tabs">
+		{
+			items.map((item, i) => (
+				<button
+					type="button"
+					role="tab"
+					id={`${id}-tab-${i}`}
+					aria-controls={`${id}-panel-${i}`}
+					aria-selected={i === 0 ? "true" : "false"}
+					tabindex={i === 0 ? 0 : -1}
+					class="wgt-tab"
+				>
+					{item.label}
+				</button>
+			))
+		}
+	</div>
+	{
+		items.map((item, i) => (
+			<div
+				role="tabpanel"
+				id={`${id}-panel-${i}`}
+				aria-labelledby={`${id}-tab-${i}`}
+				class="wgt-tab-panel"
+				hidden={i !== 0}
+			>
+				{paragraphs(item.body).map((paragraph) => <p>{paragraph}</p>)}
+			</div>
+		))
+	}
+</div>
+
+<script>
+	for (const root of document.querySelectorAll<HTMLElement>("[data-wgt-tabs]")) {
+		if (root.dataset.enhanced) continue;
+		root.dataset.enhanced = "1";
+		const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+		const panels = Array.from(root.querySelectorAll<HTMLElement>('[role="tabpanel"]'));
+		function select(index: number) {
+			tabs.forEach((tab, i) => {
+				tab.setAttribute("aria-selected", String(i === index));
+				tab.tabIndex = i === index ? 0 : -1;
+			});
+			panels.forEach((panel, i) => (panel.hidden = i !== index));
+		}
+		tabs.forEach((tab, i) => {
+			tab.addEventListener("click", () => select(i));
+			tab.addEventListener("keydown", (event) => {
+				const delta = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+				if (!delta) return;
+				event.preventDefault();
+				const next = (i + delta + tabs.length) % tabs.length;
+				select(next);
+				tabs[next].focus();
+			});
+		});
+	}
+</script>
+
+<style>
+	.wgt-tabs {
+		margin-block: var(--spacing-xl, 2rem);
+		border: 1px solid var(--color-border, #e2e0d8);
+		border-radius: var(--radius, 10px);
+		background: var(--color-surface, #fff);
+		overflow: hidden;
+	}
+
+	.wgt-tabs-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0;
+		border-bottom: 1px solid var(--color-border, #e2e0d8);
+		background: color-mix(in srgb, var(--color-border, #e2e0d8) 25%, transparent);
+	}
+
+	.wgt-tab {
+		padding: var(--spacing-sm, 0.75rem) var(--spacing-lg, 1.5rem);
+		font: inherit;
+		font-size: var(--font-size-sm, 0.875rem);
+		font-weight: 600;
+		color: var(--color-muted, #555);
+		background: transparent;
+		border: none;
+		border-bottom: 2px solid transparent;
+		margin-bottom: -1px;
+		cursor: pointer;
+	}
+
+	.wgt-tab:hover {
+		color: var(--color-text, inherit);
+	}
+
+	.wgt-tab[aria-selected="true"] {
+		color: var(--color-brand-strong, #3730a3);
+		border-bottom-color: var(--color-brand-strong, #3730a3);
+		background: var(--color-surface, #fff);
+	}
+
+	.wgt-tab-panel {
+		padding: var(--spacing-lg, 1.5rem);
+		line-height: 1.65;
+	}
+
+	.wgt-tab-panel p {
+		margin: 0 0 var(--spacing-sm, 0.75rem);
+	}
+	.wgt-tab-panel p:last-child {
+		margin-bottom: 0;
+	}
+</style>

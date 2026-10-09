@@ -1,0 +1,43 @@
+{
+	"slug": "widget_accordion",
+	"label": "Accordion",
+	"description": "Collapsible sections \u2014 FAQs, optional steps, details that should not dominate the page.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "heading",
+					"label": "Heading",
+					"type": "string",
+					"description": "Optional heading above the accordion."
+				},
+				{
+					"slug": "items",
+					"label": "Items",
+					"type": "repeater",
+					"validation": {
+						"subFields": [
+							{
+								"slug": "title",
+								"label": "Title",
+								"type": "string",
+								"required": true
+							},
+							{
+								"slug": "body",
+								"label": "Body",
+								"type": "text",
+								"required": true
+							}
+						],
+						"maxItems": 12,
+						"minItems": 1
+					}
+				}
+			]
+		}
+	]
+}

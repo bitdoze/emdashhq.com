@@ -1,0 +1,37 @@
+{
+	"slug": "widget_tabs",
+	"label": "Tabs",
+	"description": "Tabbed panels \u2014 one tab per OS, per package manager, per plan.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "items",
+					"label": "Tabs",
+					"type": "repeater",
+					"validation": {
+						"subFields": [
+							{
+								"slug": "label",
+								"label": "Label",
+								"type": "string",
+								"required": true
+							},
+							{
+								"slug": "body",
+								"label": "Body",
+								"type": "text",
+								"required": true
+							}
+						],
+						"maxItems": 8,
+						"minItems": 1
+					}
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,43 @@
+{
+	"slug": "widget_latest_posts",
+	"label": "Latest posts",
+	"description": "Live list of the newest published entries in a collection, resolved by the Widgets plugin.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "heading",
+					"label": "Heading",
+					"type": "string",
+					"defaultValue": "Keep reading"
+				},
+				{
+					"slug": "collection",
+					"label": "Collection slug",
+					"type": "string",
+					"description": "Defaults to the plugin's posts collection setting."
+				},
+				{
+					"slug": "limit",
+					"label": "How many",
+					"type": "integer",
+					"validation": {
+						"min": 1,
+						"max": 20
+					},
+					"defaultValue": 5
+				},
+				{
+					"slug": "exclude_current",
+					"label": "Exclude the current post",
+					"type": "boolean",
+					"description": "Skips the entry whose URL matches this page.",
+					"defaultValue": true
+				}
+			]
+		}
+	]
+}

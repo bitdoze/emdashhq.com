@@ -1,0 +1,36 @@
+{
+	"slug": "widget_checklist",
+	"label": "Checklist",
+	"description": "Checkmarked list \u2014 requirements, takeaways, do-this-first items.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string"
+				},
+				{
+					"slug": "items",
+					"label": "Items",
+					"type": "repeater",
+					"validation": {
+						"subFields": [
+							{
+								"slug": "text",
+								"label": "Text",
+								"type": "string",
+								"required": true
+							}
+						],
+						"maxItems": 20,
+						"minItems": 1
+					}
+				}
+			]
+		}
+	]
+}

@@ -2,7 +2,7 @@
 import { getHubEntries } from "../../lib/hub-content";
 import { Image, type BlockComponentProps } from "emdash/ui";
 import type { PageContentBlock } from "../../../emdash-env";
-import { labelize } from "../../lib/format";
+import { formatDate, labelize, lines } from "../../lib/format";
 import { linkAttrs } from "../../lib/links";
 import FilterBar from "./FilterBar.astro";
 import NewTab from "../NewTab.astro";
@@ -35,6 +35,15 @@ const priceOptions = [...new Set(resources.map((entry) => entry.data.price_type)
 						const link = linkAttrs(entry.data.url);
 						const demo = entry.data.demo_url ? linkAttrs(entry.data.demo_url) : undefined;
 						const isPaid = entry.data.price_type === "paid";
+						const updated = formatDate(entry.data.updated);
+						const meta = [
+							entry.data.latest_version && `v${entry.data.latest_version.replace(/^v/, "")}`,
+							entry.data.license,
+							entry.data.package,
+							entry.data.publisher,
+							updated && `Updated ${updated}`,
+						].filter(Boolean);
+						const changes = lines(entry.data.changelog);
 						return (
 							<article class="hub-card resource-card" data-filter-item data-filter-value={entry.data.price_type}>
 								{entry.data.image && (
@@ -50,7 +59,18 @@ const priceOptions = [...new Set(resources.map((entry) => entry.data.price_type)
 										</span>
 									</div>
 									<h3 class="resource-title">{entry.data.title}</h3>
+									{meta.length > 0 && <p class="resource-meta">{meta.join(" · ")}</p>}
 									{entry.data.summary && <p class="resource-summary">{entry.data.summary}</p>}
+									{changes.length > 0 && (
+										<details class="resource-changes">
+											<summary>What changed</summary>
+											<ul class="resource-changes-list">
+												{changes.map((line) => (
+													<li>{line}</li>
+												))}
+											</ul>
+										</details>
+									)}
 									<div class="resource-actions">
 										<a href={link.href} target={link.target} rel={link.rel} class="btn btn-primary">
 											{entry.data.cta_label || "View"}
@@ -126,10 +146,46 @@ const priceOptions = [...new Set(resources.map((entry) => entry.data.price_type)
 		text-wrap: pretty;
 	}
 
+	.resource-meta {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		line-height: 1.6;
+		color: var(--color-muted);
+	}
+
 	.resource-summary {
 		flex: 1;
 		font-size: var(--font-size-sm);
 		color: var(--color-muted);
+	}
+
+	.resource-changes {
+		border-top: 1px solid var(--color-border);
+		padding-top: var(--spacing-md);
+	}
+
+	.resource-changes summary {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-accent-text);
+		cursor: pointer;
+	}
+
+	.resource-changes-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.375rem;
+		margin-top: var(--spacing-sm);
+		padding-left: 1rem;
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+	}
+
+	.resource-changes-list li::marker {
+		color: var(--color-accent-text);
 	}
 
 	.resource-actions {

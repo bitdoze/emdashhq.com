@@ -1,0 +1,42 @@
+{
+	"slug": "widget_facts",
+	"label": "Facts table",
+	"description": "Key/value spec sheet \u2014 pricing tiers, versions, limits, requirements.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string"
+				},
+				{
+					"slug": "items",
+					"label": "Facts",
+					"type": "repeater",
+					"validation": {
+						"subFields": [
+							{
+								"slug": "label",
+								"label": "Label",
+								"type": "string",
+								"required": true
+							},
+							{
+								"slug": "value",
+								"label": "Value",
+								"type": "string",
+								"required": true
+							}
+						],
+						"maxItems": 20,
+						"minItems": 1
+					}
+				}
+			]
+		}
+	]
+}

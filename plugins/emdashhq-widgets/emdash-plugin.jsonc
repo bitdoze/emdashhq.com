@@ -1,0 +1,53 @@
+{
+	"$schema": "./node_modules/@emdash-cms/plugin-cli/schemas/emdash-plugin.schema.json",
+
+	"slug": "emdashhq-widgets",
+	"publisher": "did:plc:qr4gckwrgatg5h3lzc57bsnp", // bitdoze.com
+
+	"license": "MIT",
+	"author": { "name": "Bitdoze", "url": "https://bitdoze.com" },
+	"security": { "email": "dragos@emdashhq.com" },
+	"name": "Content Widgets",
+	"description": "Article widgets as content blocks: notices, accordions, tabs, steps, product boxes, embeds, code, cards, quotes, TOC and latest posts.",
+	"keywords": ["widgets", "blocks", "blog", "articles", "content"],
+	"sections": {
+		"description": { "file": "./docs/description.md" },
+		"installation": { "file": "./docs/installation.md" },
+		"faq": { "file": "./docs/faq.md" },
+		"changelog": { "file": "./docs/changelog.md" }
+	},
+	"repo": "https://github.com/bitdoze/emdashhq.com",
+
+	"capabilities": ["content:read", "schema:read"],
+
+	"admin": {
+		"pages": [
+			{ "path": "/widgets", "label": "Widget catalog", "icon": "shapes" },
+			{ "path": "/setup", "label": "Setup guide", "icon": "rocket-launch" }
+		],
+		"settingsSchema": {
+			"youtubeNoCookie": {
+				"type": "boolean",
+				"label": "Privacy-enhanced YouTube embeds",
+				"description": "Serve YouTube players from youtube-nocookie.com so no cookies are set until the visitor plays the video.",
+				"default": true
+			},
+			"affiliateDisclosure": {
+				"type": "string",
+				"label": "Affiliate disclosure",
+				"description": "Shown in small print inside Product box widgets. Leave empty to hide it.",
+				"default": "This post contains affiliate links. If you buy through them, the site may earn a commission at no extra cost to you."
+			},
+			"postsCollection": {
+				"type": "string",
+				"label": "Posts collection",
+				"description": "Collection slug the Latest posts widget reads by default, e.g. posts. The block can override it per placement.",
+				"default": "posts"
+			}
+		}
+	},
+
+	"release": {
+		"requires": { "env:emdash": ">=1.0.0" }
+	}
+}

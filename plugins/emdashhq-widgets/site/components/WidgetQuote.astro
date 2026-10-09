@@ -1,0 +1,61 @@
+---
+/**
+ * widget_quote — pull quote with attribution. Copy into your site's
+ * components and register it for the `widget_quote` block type (see README).
+ */
+
+type Props = {
+	value: {
+		quote: string;
+		attribution?: string | null;
+		role?: string | null;
+	};
+};
+
+const { value } = Astro.props;
+---
+
+<blockquote class="wgt-quote">
+	<p class="wgt-quote-text">{value.quote}</p>
+	{
+		(value.attribution || value.role) && (
+			<footer class="wgt-quote-footer">
+				{value.attribution && <cite class="wgt-quote-author">{value.attribution}</cite>}
+				{value.role && <span class="wgt-quote-role">{value.role}</span>}
+			</footer>
+		)
+	}
+</blockquote>
+
+<style>
+	.wgt-quote {
+		margin-block: var(--spacing-xl, 2rem);
+		padding: var(--spacing-lg, 1.5rem) var(--spacing-xl, 2rem);
+		border-left: 3px solid var(--color-accent, #c4736a);
+		background: color-mix(in srgb, var(--color-accent, #c4736a) 5%, transparent);
+		border-radius: 0 var(--radius, 10px) var(--radius, 10px) 0;
+	}
+
+	.wgt-quote-text {
+		font-family: var(--font-heading, inherit);
+		font-size: var(--font-size-xl, 1.25rem);
+		line-height: 1.5;
+		font-weight: 500;
+		margin: 0;
+	}
+
+	.wgt-quote-footer {
+		margin-top: var(--spacing-sm, 0.75rem);
+		font-size: var(--font-size-sm, 0.875rem);
+		color: var(--color-muted, #555);
+	}
+
+	.wgt-quote-author {
+		font-style: normal;
+		font-weight: 600;
+	}
+
+	.wgt-quote-author + .wgt-quote-role::before {
+		content: " — ";
+	}
+</style>

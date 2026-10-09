@@ -1,0 +1,70 @@
+---
+/**
+ * widget_checklist — checkmarked list for requirements and takeaways.
+ * Copy into your site's components and register it for the
+ * `widget_checklist` block type (see README).
+ */
+
+type Props = {
+	value: {
+		title?: string | null;
+		items?: { text: string }[] | null;
+	};
+};
+
+const { value } = Astro.props;
+const items = (value.items ?? []).filter((item) => item?.text);
+---
+
+<div class="wgt-checklist">
+	{value.title && <p class="wgt-checklist-title">{value.title}</p>}
+	<ul class="wgt-checklist-items">
+		{
+			items.map((item) => (
+				<li>
+					<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+						<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+					</svg>
+					<span>{item.text}</span>
+				</li>
+			))
+		}
+	</ul>
+</div>
+
+<style>
+	.wgt-checklist {
+		margin-block: var(--spacing-xl, 2rem);
+		padding: var(--spacing-lg, 1.5rem);
+		border: 1px solid var(--color-border, #e2e0d8);
+		border-radius: var(--radius, 10px);
+		background: color-mix(in srgb, var(--color-surface, #fff) 70%, transparent);
+	}
+
+	.wgt-checklist-title {
+		font-weight: 700;
+		margin-bottom: var(--spacing-sm, 0.75rem);
+	}
+
+	.wgt-checklist-items {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: var(--spacing-sm, 0.75rem);
+	}
+
+	.wgt-checklist-items li {
+		display: flex;
+		gap: var(--spacing-sm, 0.75rem);
+		align-items: flex-start;
+	}
+
+	.wgt-checklist-items svg {
+		width: 1.1rem;
+		height: 1.1rem;
+		flex-shrink: 0;
+		margin-top: 0.2em;
+		color: var(--color-success, #15803d);
+	}
+</style>

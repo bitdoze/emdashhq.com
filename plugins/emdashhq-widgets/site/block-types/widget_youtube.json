@@ -1,0 +1,34 @@
+{
+	"slug": "widget_youtube",
+	"label": "YouTube video",
+	"description": "Click-to-play YouTube embed. Loads no player (and sets no cookies) until the visitor asks.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "url",
+					"label": "Video URL",
+					"type": "url",
+					"required": true,
+					"description": "Watch, youtu.be, embed or shorts URL."
+				},
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"description": "Used for the embed's accessible label."
+				},
+				{
+					"slug": "caption",
+					"label": "Caption",
+					"type": "text",
+					"description": "Optional line under the video."
+				}
+			]
+		}
+	]
+}

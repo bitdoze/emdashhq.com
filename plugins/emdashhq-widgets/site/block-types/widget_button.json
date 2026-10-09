@@ -1,0 +1,82 @@
+{
+	"slug": "widget_button",
+	"label": "Button",
+	"description": "Standalone call-to-action or download link.",
+	"category": "Widgets",
+	"currentVersion": 1,
+	"versions": [
+		{
+			"version": 1,
+			"fields": [
+				{
+					"slug": "label",
+					"label": "Label",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "url",
+					"label": "URL",
+					"type": "string",
+					"required": true,
+					"validation": {
+						"pattern": "^(?:https?://|mailto:|tel:|/(?!/)|#).+$"
+					}
+				},
+				{
+					"slug": "icon",
+					"label": "Icon",
+					"type": "select",
+					"validation": {
+						"options": [
+							"arrow-right",
+							"arrow-up-right",
+							"download",
+							"play",
+							"check",
+							"star",
+							"info",
+							"rocket",
+							"book",
+							"github",
+							"mail",
+							"terminal"
+						]
+					},
+					"description": "Optional icon before the label."
+				},
+				{
+					"slug": "variant",
+					"label": "Variant",
+					"type": "select",
+					"validation": {
+						"options": [
+							"solid",
+							"outline"
+						]
+					},
+					"defaultValue": "solid"
+				},
+				{
+					"slug": "align",
+					"label": "Alignment",
+					"type": "select",
+					"validation": {
+						"options": [
+							"left",
+							"center",
+							"right"
+						]
+					},
+					"defaultValue": "left"
+				},
+				{
+					"slug": "new_tab",
+					"label": "Open in a new tab",
+					"type": "boolean",
+					"defaultValue": false
+				}
+			]
+		}
+	]
+}

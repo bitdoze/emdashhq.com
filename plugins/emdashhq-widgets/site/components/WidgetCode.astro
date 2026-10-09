@@ -1,0 +1,125 @@
+---
+/**
+ * widget_code — a code sample on the dark "plate" surface with a language
+ * label, optional filename and a copy button. Copy into your site's
+ * components and register it for the `widget_code` block type (see README).
+ */
+
+type Props = {
+	value: {
+		language?: string | null;
+		filename?: string | null;
+		code: string;
+	};
+};
+
+const { value } = Astro.props;
+const language = value.language && value.language !== "plaintext" ? value.language : null;
+const hasChrome = language || value.filename;
+---
+
+<figure class="wgt-code">
+	{
+		hasChrome && (
+			<figcaption class="wgt-code-bar">
+				<span class="wgt-code-filename">{value.filename || language}</span>
+				{language && value.filename && <span class="wgt-code-lang">{language}</span>}
+				<button type="button" class="wgt-code-copy" data-wgt-copy>Copy</button>
+			</figcaption>
+		)
+	}
+	{
+		!hasChrome && (
+			<button type="button" class="wgt-code-copy wgt-code-copy-float" data-wgt-copy>Copy</button>
+		)
+	}
+	<pre class="wgt-code-pre"><code>{value.code}</code></pre>
+</figure>
+
+<script>
+	// One delegated listener covers every code block on the page.
+	if (!(window as unknown as { __wgtCopy?: boolean }).__wgtCopy) {
+		(window as unknown as { __wgtCopy?: boolean }).__wgtCopy = true;
+		document.addEventListener("click", async (event) => {
+			const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-wgt-copy]");
+			if (!button) return;
+			const code = button.closest(".wgt-code")?.querySelector("code")?.textContent ?? "";
+			try {
+				await navigator.clipboard.writeText(code);
+				button.textContent = "Copied";
+				setTimeout(() => (button.textContent = "Copy"), 1600);
+			} catch {
+				button.textContent = "Failed";
+			}
+		});
+	}
+</script>
+
+<style>
+	.wgt-code {
+		position: relative;
+		margin-block: var(--spacing-xl, 2rem);
+		border-radius: var(--radius, 10px);
+		overflow: hidden;
+		background: var(--color-plate, #1e1b4b);
+		color: var(--color-plate-ink, #f4f1ea);
+		border: 1px solid var(--color-plate-border, #312e81);
+	}
+
+	.wgt-code-bar {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-sm, 0.75rem);
+		padding: 0.5rem var(--spacing-md, 1rem);
+		font-family: var(--font-mono, ui-monospace, monospace);
+		font-size: var(--font-size-xs, 0.75rem);
+		border-bottom: 1px solid var(--color-plate-border, #312e81);
+		color: var(--color-plate-muted, #b8b4d8);
+	}
+
+	.wgt-code-filename {
+		font-weight: 600;
+		color: var(--color-plate-ink, #f4f1ea);
+	}
+
+	.wgt-code-lang {
+		opacity: 0.8;
+	}
+
+	.wgt-code-copy {
+		margin-left: auto;
+		font-family: var(--font-mono, ui-monospace, monospace);
+		font-size: var(--font-size-xs, 0.75rem);
+		padding: 0.2rem 0.6rem;
+		border-radius: var(--radius-sm, 6px);
+		border: 1px solid var(--color-plate-border, #312e81);
+		background: transparent;
+		color: var(--color-plate-ink, #f4f1ea);
+		cursor: pointer;
+	}
+
+	.wgt-code-copy:hover {
+		background: color-mix(in srgb, var(--color-plate-ink, #f4f1ea) 12%, transparent);
+	}
+
+	.wgt-code-copy-float {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+	}
+
+	.wgt-code-pre {
+		margin: 0;
+		padding: var(--spacing-md, 1rem) var(--spacing-lg, 1.5rem);
+		overflow-x: auto;
+		font-family: var(--font-mono, ui-monospace, monospace);
+		font-size: var(--font-size-sm, 0.875rem);
+		line-height: 1.6;
+		tab-size: 2;
+	}
+
+	.wgt-code-pre code {
+		font-family: inherit;
+		white-space: pre;
+	}
+</style>

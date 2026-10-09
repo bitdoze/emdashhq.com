@@ -1,0 +1,115 @@
+---
+/**
+ * widget_accordion — collapsible sections built on native details/summary,
+ * so they work without JavaScript. Copy into your site's components and
+ * register it for the `widget_accordion` block type (see README).
+ */
+
+type AccordionItem = { title: string; body: string };
+
+type Props = {
+	value: {
+		heading?: string | null;
+		items?: AccordionItem[] | null;
+	};
+};
+
+const { value } = Astro.props;
+const items = (value.items ?? []).filter((item) => item?.title);
+
+/** Repeater bodies are plain text — blank lines split paragraphs. */
+function paragraphs(text: string): string[] {
+	return (text ?? "")
+		.split(/\n\s*\n/)
+		.map((chunk) => chunk.trim())
+		.filter(Boolean);
+}
+---
+
+<section class="wgt-accordion">
+	{value.heading && <h2 class="wgt-accordion-heading">{value.heading}</h2>}
+	<div class="wgt-accordion-items">
+		{
+			items.map((item) => (
+				<details class="wgt-accordion-item">
+					<summary class="wgt-accordion-summary">
+						<span>{item.title}</span>
+						<svg class="wgt-accordion-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+							<path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+					</summary>
+					<div class="wgt-accordion-body">
+						{paragraphs(item.body).map((paragraph) => <p>{paragraph}</p>)}
+					</div>
+				</details>
+			))
+		}
+	</div>
+</section>
+
+<style>
+	.wgt-accordion {
+		margin-block: var(--spacing-xl, 2rem);
+	}
+
+	.wgt-accordion-heading {
+		font-size: var(--font-size-xl, 1.25rem);
+		margin-bottom: var(--spacing-md, 1rem);
+	}
+
+	.wgt-accordion-items {
+		border: 1px solid var(--color-border, #e2e0d8);
+		border-radius: var(--radius, 10px);
+		background: var(--color-surface, #fff);
+		overflow: hidden;
+	}
+
+	.wgt-accordion-item + .wgt-accordion-item {
+		border-top: 1px solid var(--color-border, #e2e0d8);
+	}
+
+	.wgt-accordion-summary {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--spacing-md, 1rem);
+		padding: var(--spacing-md, 1rem) var(--spacing-lg, 1.5rem);
+		font-weight: 600;
+		cursor: pointer;
+		list-style: none;
+		user-select: none;
+	}
+
+	.wgt-accordion-summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.wgt-accordion-summary:hover {
+		color: var(--color-brand-strong, #3730a3);
+	}
+
+	.wgt-accordion-chevron {
+		width: 1rem;
+		height: 1rem;
+		flex-shrink: 0;
+		transition: transform 160ms ease;
+	}
+
+	.wgt-accordion-item[open] .wgt-accordion-chevron {
+		transform: rotate(180deg);
+	}
+
+	.wgt-accordion-body {
+		padding: 0 var(--spacing-lg, 1.5rem) var(--spacing-md, 1rem);
+		color: var(--color-muted, #555);
+		font-size: var(--font-size-sm, 0.875rem);
+		line-height: 1.65;
+	}
+
+	.wgt-accordion-body p {
+		margin: 0 0 var(--spacing-sm, 0.75rem);
+	}
+	.wgt-accordion-body p:last-child {
+		margin-bottom: 0;
+	}
+</style>

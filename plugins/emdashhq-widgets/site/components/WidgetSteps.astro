@@ -1,0 +1,101 @@
+---
+/**
+ * widget_steps — numbered how-to steps. Copy into your site's components
+ * and register it for the `widget_steps` block type (see README).
+ */
+
+type StepItem = { title: string; body?: string | null };
+
+type Props = {
+	value: {
+		title?: string | null;
+		items?: StepItem[] | null;
+	};
+};
+
+const { value } = Astro.props;
+const items = (value.items ?? []).filter((item) => item.title);
+---
+
+{
+	items.length > 0 && (
+		<section class="wgt-steps">
+			{value.title && <p class="wgt-steps-title">{value.title}</p>}
+			<ol class="wgt-steps-list">
+				{items.map((item) => (
+					<li class="wgt-step">
+						<p class="wgt-step-title">{item.title}</p>
+						{item.body && <p class="wgt-step-body">{item.body}</p>}
+					</li>
+				))}
+			</ol>
+		</section>
+	)
+}
+
+<style>
+	.wgt-steps {
+		margin-block: var(--spacing-xl, 2rem);
+	}
+
+	.wgt-steps-title {
+		font-weight: 700;
+		font-size: var(--font-size-lg, 1.125rem);
+		margin: 0 0 var(--spacing-md, 1rem);
+	}
+
+	.wgt-steps-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		counter-reset: wgt-step;
+		display: grid;
+		gap: var(--spacing-md, 1rem);
+	}
+
+	.wgt-step {
+		position: relative;
+		padding-left: 2.75rem;
+		counter-increment: wgt-step;
+	}
+
+	.wgt-step::before {
+		content: counter(wgt-step);
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 2rem;
+		height: 2rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 700;
+		font-size: var(--font-size-sm, 0.875rem);
+		color: var(--color-on-brand, #fff);
+		background: var(--color-brand-strong, #3730a3);
+		border-radius: 999px;
+	}
+
+	.wgt-step:not(:last-child)::after {
+		content: "";
+		position: absolute;
+		left: 1rem;
+		top: 2.25rem;
+		bottom: -0.75rem;
+		width: 2px;
+		background: var(--color-border, #e2e0d8);
+	}
+
+	.wgt-step-title {
+		font-weight: 600;
+		margin: 0;
+		padding-top: 0.3rem;
+	}
+
+	.wgt-step-body {
+		margin: var(--spacing-xs, 0.5rem) 0 0;
+		font-size: var(--font-size-sm, 0.875rem);
+		color: var(--color-muted, #555);
+		line-height: 1.6;
+	}
+</style>

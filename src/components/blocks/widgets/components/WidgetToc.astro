@@ -1,0 +1,106 @@
+---
+/**
+ * widget_toc — table of contents filled in the browser from the article's
+ * h2/h3 headings (inside [data-wgt-article] when present, otherwise main).
+ * Copy into your site's components and register it for the `widget_toc`
+ * block type (see README).
+ */
+
+type Props = {
+	value: {
+		title?: string | null;
+	};
+};
+
+const { value } = Astro.props;
+---
+
+<nav class="wgt-toc" data-wgt-toc aria-label="Table of contents">
+	<p class="wgt-toc-title">{value.title || "On this page"}</p>
+	<ol class="wgt-toc-list"></ol>
+</nav>
+
+<script>
+	// Collect article headings, give them ids, and link them here. Runs once
+	// per document even when several TOC widgets exist (later ones share it).
+	const tocRoots = document.querySelectorAll<HTMLElement>("[data-wgt-toc]");
+	if (tocRoots.length && !document.documentElement.dataset.wgtTocDone) {
+		document.documentElement.dataset.wgtTocDone = "1";
+		const article = document.querySelector("[data-wgt-article]") ?? document.querySelector("main") ?? document.body;
+		const headings = Array.from(article.querySelectorAll<HTMLElement>("h2, h3"))
+			.filter((h) => !h.closest("[data-wgt-toc]") && h.textContent?.trim());
+		const used = new Set<string>();
+		const slugify = (text: string) =>
+			text
+				.toLowerCase()
+				.replace(/[^a-z0-9\s-]/g, "")
+				.trim()
+				.replace(/[\s_-]+/g, "-") || "section";
+		for (const toc of tocRoots) {
+			const list = toc.querySelector("ol");
+			if (!list) continue;
+			if (!headings.length) {
+				toc.hidden = true;
+				continue;
+			}
+			for (const heading of headings) {
+				if (!heading.id) {
+					let base = slugify(heading.textContent ?? "");
+					let id = base;
+					for (let n = 2; used.has(id) || document.getElementById(id); n++) id = `${base}-${n}`;
+					heading.id = id;
+				}
+				used.add(heading.id);
+				const li = document.createElement("li");
+				if (heading.tagName === "H3") li.className = "wgt-toc-sub";
+				const a = document.createElement("a");
+				a.href = `#${heading.id}`;
+				a.textContent = heading.textContent;
+				li.appendChild(a);
+				list.appendChild(li);
+			}
+		}
+	}
+</script>
+
+<style>
+	.wgt-toc {
+		margin-block: var(--spacing-xl, 2rem);
+		padding: var(--spacing-lg, 1.5rem);
+		border: 1px solid var(--color-border, #e2e0d8);
+		border-radius: var(--radius, 10px);
+		background: color-mix(in srgb, var(--color-surface, #fff) 70%, transparent);
+	}
+
+	.wgt-toc-title {
+		font-size: var(--font-size-xs, 0.75rem);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-muted, #666);
+		margin: 0 0 var(--spacing-sm, 0.75rem);
+	}
+
+	.wgt-toc-list {
+		margin: 0;
+		padding-left: 1.25rem;
+		display: grid;
+		gap: var(--spacing-xs, 0.5rem);
+		font-size: var(--font-size-sm, 0.875rem);
+	}
+
+	.wgt-toc-list :global(a) {
+		color: var(--color-text, inherit);
+		text-decoration: none;
+	}
+
+	.wgt-toc-list :global(a:hover) {
+		color: var(--color-brand-strong, #3730a3);
+		text-decoration: underline;
+	}
+
+	.wgt-toc-list :global(.wgt-toc-sub) {
+		margin-left: var(--spacing-md, 1rem);
+		list-style: circle;
+	}
+</style>

@@ -3,7 +3,7 @@ import { getEmDashCollection, type CollectionFilter } from "emdash";
 import type { PageContentBlock } from "../../emdash-env";
 import { parseYouTubeId } from "./youtube";
 
-type HubCollection = "tutorials" | "videos" | "resources" | "services";
+type HubCollection = "tutorials" | "videos" | "resources" | "services" | "posts";
 type HubBlock = Extract<PageContentBlock, { _type: `site_${HubCollection}` }>;
 type Context = Pick<APIContext, "locals" | "cache">;
 type Entries<T extends HubCollection> = Awaited<ReturnType<typeof getEmDashCollection<T>>>["entries"];
@@ -65,6 +65,7 @@ export async function preloadHubBlocks(context: Context, blocks: PageContentBloc
 	await Promise.all(blocks.map((block) => {
 		switch (block._type) {
 			case "site_tutorials": return getHubEntries(context, "tutorials", block);
+			case "site_posts": return getHubEntries(context, "posts", block);
 			case "site_videos": return getHubEntries(context, "videos", block);
 			case "site_resources": return getHubEntries(context, "resources", block);
 			case "site_services": return getHubEntries(context, "services", block);

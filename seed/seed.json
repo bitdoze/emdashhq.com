@@ -3151,6 +3151,19 @@
 							]
 						},
 						{
+							"_type": "widget_image",
+							"_version": 1,
+							"_key": "fig010",
+							"caption": "The plugin settings screen: the Turnstile site key and secret key sit next to the built-in rate limit.",
+							"wide": true,
+							"image": {
+								"$media": {
+									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GYMPV36G88YVZ3Z818CRNA.png",
+									"alt": "The contact forms plugin settings page showing the Turnstile key fields"
+								}
+							}
+						},
+						{
 							"_type": "widget_prose",
 							"_version": 1,
 							"_key": "u0013",
@@ -3219,6 +3232,19 @@
 									]
 								}
 							]
+						},
+						{
+							"_type": "widget_image",
+							"_version": 1,
+							"_key": "fig011",
+							"caption": "Submissions that pass land in the inbox with an email status for each one. Blocked posts never get a row.",
+							"wide": true,
+							"image": {
+								"$media": {
+									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GYMQR2ZFNXTGFCS3MKASEH.png",
+									"alt": "The submissions inbox listing stored form entries with status and email columns"
+								}
+							}
 						},
 						{
 							"_type": "widget_notice",
@@ -3307,6 +3333,19 @@
 									"body": "Same places as before: the admin inbox under Plugins → Contact forms, and an email through the site's configured provider."
 								}
 							]
+						},
+						{
+							"_type": "widget_image",
+							"_version": 1,
+							"_key": "fig012",
+							"caption": "The live form on this site: in managed mode the widget renders nothing until Cloudflare decides a visitor needs a challenge.",
+							"wide": true,
+							"image": {
+								"$media": {
+									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GXHQHE6FSB7WDWSCN65T8R.png",
+									"alt": "The public contact form rendered on the site"
+								}
+							}
 						},
 						{
 							"_type": "widget_button",

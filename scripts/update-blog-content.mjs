@@ -218,6 +218,7 @@ const POSTS = {
 				["Redeploy the site", "If your pages are cached, the cached HTML has no widget on it. Redeploy or purge the cache, otherwise visitors submit with no token and get bounced."],
 				["Test it", "Load the form page and look for the widget, then submit once yourself to confirm the happy path still works."],
 			]),
+			fig("cf-settings", "The plugin settings screen: the Turnstile site key and secret key sit next to the built-in rate limit."),
 			h2("Verify it from the outside"),
 			prose(p("A POST with no token should never reach the inbox. From a terminal:")),
 			code(
@@ -226,6 +227,7 @@ const POSTS = {
   -F "slug=contact" -F "name=Bot" -F "email=bot@example.com" -F "message=hi"`,
 			),
 			prose(p("You want a 303 redirect to ?cf_status=challenge. The submission is not stored and no email goes out. A real browser submit carries the cf-turnstile-response token and lands in the inbox instead.")),
+			fig("cf-subs", "Submissions that pass land in the inbox with an email status for each one. Blocked posts never get a row."),
 			notice("warning", "The cache trap we actually hit", "Keys were saved, but the page showed no widget. The deploy had warmed a widget-less copy of the contact page into the Workers cache and kept serving it. A redeploy fixed it. If the widget does not appear after saving, suspect the cache before the keys."),
 			h2("Worth knowing"),
 			facts(null, [
@@ -239,6 +241,7 @@ const POSTS = {
 				["Does it work without JavaScript?", "No. The widget needs JavaScript in the browser. That is the point: bots posting the raw endpoint get challenged regardless."],
 				["Where do real submissions go?", "Same places as before: the admin inbox under Plugins → Contact forms, and an email through the site's configured provider."],
 			]),
+			fig("cf-form", "The live form on this site: in managed mode the widget renders nothing until Cloudflare decides a visitor needs a challenge."),
 			button("Turnstile documentation", "https://developers.cloudflare.com/turnstile/", "arrow-up-right", "outline", { new_tab: true }),
 			checklist("Done means", [
 				"The widget renders on the form page",
@@ -444,6 +447,9 @@ const INLINE = {
 	"widgets-catalog": { file: "plugins/emdashhq-widgets/images/screenshot-catalog.png", alt: "The Content Widgets catalog in the EmDash admin" },
 	"widgets-editor": { file: "plugins/emdashhq-widgets/images/screenshot-editor.png", alt: "A widget block picked from the EmDash post editor" },
 	"blog-pipeline": { file: "uploads/article-images/blog-pipeline.jpg", alt: "The blog pipeline: posts collection, one route, the rendered article" },
+	"cf-settings": { file: "plugins/emdashhq-contact-forms/images/screenshot-settings.png", alt: "The contact forms plugin settings page showing the Turnstile key fields" },
+	"cf-subs": { file: "plugins/emdashhq-contact-forms/images/screenshot-submissions.png", alt: "The submissions inbox listing stored form entries with status and email columns" },
+	"cf-form": { file: "plugins/emdashhq-contact-forms/images/screenshot-public-form.png", alt: "The public contact form rendered on the site" },
 };
 
 // ------------------------------------------------------------------ apply ---

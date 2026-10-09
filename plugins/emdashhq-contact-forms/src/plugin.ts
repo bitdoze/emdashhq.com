@@ -1,14 +1,23 @@
 import type { SandboxedPlugin } from "emdash/plugin";
 
 import { handleAdminInteraction } from "./admin";
-import { handleExportRoute, handleFormRoute, handleSubmitRoute } from "./public";
+import { handleCapacityRoute, handleExportRoute, handleFormRoute, handleSubmitRoute } from "./public";
+import { recoverCapacity } from "./capacity";
 import { readSettings } from "./types";
 
 const plugin: SandboxedPlugin = {
 	routes: {
+		capacity: {
+			public: true,
+			methods: ["GET"],
+			request: { body: "none" },
+			response: "raw",
+			handler: handleCapacityRoute,
+		},
 		// Public: the site's contact form block fetches the form definition with this.
 		form: {
 			public: true,
+			methods: ["GET"],
 			request: { body: "none" },
 			handler: handleFormRoute,
 		},
@@ -16,7 +25,7 @@ const plugin: SandboxedPlugin = {
 		submit: {
 			public: true,
 			methods: ["POST"],
-			request: { body: "form-data", maxBytes: 64 * 1024 },
+			request: { body: "form-data", maxBytes: 64 * 1024, headers: ["accept"] },
 			response: "raw",
 			handler: handleSubmitRoute,
 		},
@@ -43,6 +52,15 @@ const plugin: SandboxedPlugin = {
 		},
 		cron: async (event, ctx) => {
 			if (event.name !== "prune") return;
+			let cursor: string | undefined;
+			do {
+				const page = await ctx.storage.capacity.query({ limit: 100, cursor });
+				for (const item of page.items) {
+					try { await recoverCapacity(ctx, item.id); }
+					catch (error) { ctx.log.error("Capacity recovery failed", { formId: item.id, error: String(error) }); }
+				}
+				cursor = page.hasMore ? page.cursor : undefined;
+			} while (cursor);
 			const settings = await readSettings(ctx);
 			if (settings.retentionDays <= 0) return;
 			const cutoff = new Date(Date.now() - settings.retentionDays * 864e5).toISOString();

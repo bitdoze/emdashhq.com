@@ -13,6 +13,7 @@ import type { PluginContext, SandboxedRouteContext } from "emdash/plugin";
 import { sendSubmissionEmail } from "./public";
 import { readSettings } from "./types";
 import { slugify, ulid } from "./util";
+import { capacitySettingsSchema, readCapacity } from "./capacity";
 import {
 	FIELD_TYPES,
 	isFieldType,
@@ -209,6 +210,7 @@ function readMetaValues(values: Record<string, unknown>, existing?: FormRecord):
 	const now = new Date().toISOString();
 	const name = str(values.name);
 	return {
+		...capacitySettingsSchema.parse(existing ?? {}),
 		name,
 		slug: str(values.slug) || slugify(name),
 		description: str(values.description) || undefined,
@@ -261,6 +263,19 @@ async function viewFormEdit(
 			fields: formMetaFields(form),
 			submit: { label: "Save settings", actionId: `form_save:${formId}` },
 		}),
+		blocks.divider(),
+		blocks.section("Capacity & Limits"),
+		blocks.context("Capacity counts accepted submissions, including archived or deleted entries. Leave the maximum blank for unlimited submissions; 0 closes the form."),
+		blocks.form({
+			fields: [
+				elements.numberInput("maxSubmissions", "Maximum submissions", { min: 0, max: Number.MAX_SAFE_INTEGER, initialValue: form.maxSubmissions ?? undefined }),
+				elements.toggle("showSpotsRemaining", "Show spots remaining", { initialValue: form.showSpotsRemaining ?? false }),
+				elements.textInput("spotsRemainingLabel", "Spots remaining label", { placeholder: "{remaining} spots remaining", initialValue: form.spotsRemainingLabel ?? undefined }),
+				elements.textInput("closedMessage", "Message when capacity is reached", { multiline: true, initialValue: form.closedMessage ?? undefined }),
+			],
+			submit: { label: "Save capacity & limits", actionId: `capacity_save:${formId}` },
+		}),
+		blocks.context(`Spots remaining: ${(await readCapacity(ctx, formId, form)).remaining ?? "Unlimited"}`),
 		blocks.divider(),
 		blocks.section("Fields", {
 			accessory: elements.button("add_field", "Add field", {
@@ -1011,6 +1026,20 @@ async function handleFormSubmit(ctx: PluginContext, input: FormSubmit): Promise<
 	const values = input.values ?? {};
 
 	switch (actionId) {
+		case "capacity_save": {
+			const form = await ctx.storage.forms.get(arg) as FormRecord | null;
+			if (!form) return viewForms(ctx, fail("Form not found"));
+			const rawMax = values.maxSubmissions;
+			const parsed = capacitySettingsSchema.safeParse({
+				maxSubmissions: rawMax === "" || rawMax == null ? null : typeof rawMax === "string" ? Number(rawMax) : rawMax,
+				spotsRemainingLabel: values.spotsRemainingLabel === undefined ? null : values.spotsRemainingLabel,
+				closedMessage: values.closedMessage === undefined ? null : values.closedMessage,
+				showSpotsRemaining: values.showSpotsRemaining ?? false,
+			});
+			if (!parsed.success) return viewFormEdit(ctx, arg, fail("Maximum submissions must be a nonnegative whole number. Labels must be at most 500 characters and closed messages at most 2000 characters."));
+			await ctx.storage.forms.put(arg, { ...form, ...parsed.data, updatedAt: new Date().toISOString() });
+			return viewFormEdit(ctx, arg, ok("Capacity & limits saved"));
+		}
 		case "form_create": {
 			const form = readMetaValues(values);
 			if (!form.name) return viewFormNew(fail("Name is required"));

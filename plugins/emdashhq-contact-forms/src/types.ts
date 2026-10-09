@@ -1,4 +1,5 @@
 import type { PluginContext } from "emdash/plugin";
+import type { CapacitySettings, CapacityStatus } from "./capacity";
 
 /** Normalized request metadata sent to sandboxed routes (declared `unknown` upstream). */
 export interface RouteRequestMeta {
@@ -22,7 +23,7 @@ export interface FormFieldDef {
 	help?: string;
 }
 
-export interface FormRecord {
+export interface FormRecord extends CapacitySettings {
 	name: string;
 	slug: string;
 	description?: string;
@@ -80,6 +81,11 @@ export interface EmailLogRecord {
 
 /** Public shape returned by the `form` route. Recipient addresses stay server-side. */
 export interface PublicForm {
+	maxSubmissions: number | null;
+	spotsRemainingLabel: string | null;
+	closedMessage: string | null;
+	showSpotsRemaining: boolean;
+	capacity: CapacityStatus;
 	slug: string;
 	name: string;
 	description?: string;

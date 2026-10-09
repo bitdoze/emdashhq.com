@@ -23,6 +23,8 @@ is already configured — Cloudflare Email Sending or any SMTP provider via
   settings).
 - **Retention** — optional automatic pruning of old submissions and log
   entries via a scheduled cron task.
+- **Capacity**: cap signups per form, show remaining spots, and close the form
+  automatically when its last spot is accepted.
 
 ## Install
 
@@ -88,7 +90,7 @@ install). `network:request` is restricted to `challenges.cloudflare.com` via
 ## Wire the page block
 
 EmDash block types live in the site seed — a plugin cannot inject one — so two
-files ship in this package's `site/` directory for you to copy:
+files plus a browser helper ship in this package's `site/` directory:
 
 1. **`site/block-type.json`** — paste this object into `blockTypes` in
    `seed/seed.json`, and add `"contact_form"` to your page field's
@@ -104,9 +106,9 @@ files ship in this package's `site/` directory for you to copy:
    The component is self-contained (no site imports) and reads the usual CSS
    custom properties with fallbacks. Restyle the `.cf-*` classes to taste.
 
-   If your site already has a styled version, keep it — only the two
-   constants matter: it calls the plugin's public `form` route for the
-   definition and posts to the `submit` route.
+3. **`site/capacity-client.ts`**: copy next to `ContactForm.astro`. The renderer
+   imports it for live capacity and submission handling. Keep both files in
+   sync when updating; preserve your theme styles if you use a custom renderer.
 
 Reseed so the block type reaches the database, then restart the dev server so
 `emdash-env.d.ts` picks up the generated block type:
@@ -163,7 +165,8 @@ Turnstile verification is skipped (a warning is logged if keys are set).
 | Route | Access | Purpose |
 | --- | --- | --- |
 | `GET /_emdash/api/plugins/emdashhq-contact-forms/form?slug=<slug>` | public | Public form definition (no email addresses exposed). |
-| `POST /_emdash/api/plugins/emdashhq-contact-forms/submit` | public | Form-data submission; answers `303` back to the referring page with `cf`, `cf_status`, `cf_fields` params. |
+| `GET /_emdash/api/plugins/emdashhq-contact-forms/capacity?slug=<slug>` | public | Uncached capacity metadata only. |
+| `POST /_emdash/api/plugins/emdashhq-contact-forms/submit` | public | Form-data submission; native success/validation uses `303`. With `Accept: application/json`, returns JSON. Capacity rejection always uses `409`. |
 | `GET /_emdash/api/plugins/emdashhq-contact-forms/export?form=<slug>&status=<s>` | admin | CSV export, for API-token use. |
 | `POST /_emdash/api/plugins/emdashhq-contact-forms/admin` | admin | Block Kit interactions for the admin pages and widget. |
 
@@ -173,10 +176,53 @@ verification missing or rejected), `error`.
 
 ## Storage
 
-Three plugin collections: `forms` (definitions), `submissions` (entries with a
+Four plugin collections: `forms` (definitions), `submissions` (entries with a
 snapshot of field labels so old submissions still render after edits),
-`email_log` (delivery attempts). All are queryable in the admin UI and pruned
-by the retention setting.
+`email_log` (delivery attempts), and `capacity` (lifetime acceptance ledger).
+Retention prunes submissions and email logs, while preserving capacity counts.
+
+## Capacity & Limits
+
+After creating a form, open its **Capacity & Limits** section. A blank maximum
+means unlimited; a nonnegative whole number caps accepted submissions, and `0`
+closes the form immediately. The optional counter label supports `{remaining}`.
+Set a custom closed message and turn **Show spots remaining** on to display the
+badge. Increasing the maximum reopens a full form; lowering it below the current
+count leaves the form closed. A new form starts with an independent count.
+
+The browser checks capacity immediately, every 15 seconds while visible, and
+on window focus. It updates on successful submission and locks on a conflict.
+This is polling, so another visitor's signup can take up to 15 seconds to appear;
+the submit endpoint always enforces capacity atomically. Cached page HTML cannot
+override that check. Disabling the badge still enforces capacity.
+
+The public endpoint returns exactly `remaining`, `isClosed`, `totalAllowed`, and
+`closedMessage`. Unlimited forms use `null` for the two numbers. Unknown and
+disabled forms return `404`. A full form rejects a POST with HTTP `409` and
+`{ "error": "capacity_reached", "message": "<closed message>" }`, including
+native posts without JavaScript. JSON success includes the confirmed capacity;
+validation errors include field keys, and storage contention returns `503`.
+Submissions are never automatically retried after an uncertain network outcome.
+
+Acceptance uses sandboxed `ctx.storage.compareAndSet`: the counter increment and
+the complete submission are committed together in one ledger record. The inbox
+is an idempotent projection, recovered on the next submission or hourly cron if
+interrupted. After recovery, the ledger keeps only the count. No raw SQL or host
+CMS tables are accessed. Email follows acceptance; a failed recovery/delivery
+may require the admin to resend the notification. Email failure never frees a spot.
+
+Counts include all accepted submissions, regardless of read/archive/email status.
+Deleting an inbox entry or applying retention does **not** reopen a signup spot.
+For existing forms, the initial count includes retained submissions; previously
+deleted submissions cannot be reconstructed. Existing forms default to unlimited
+with the badge off. Avoid running older plugin versions alongside this version,
+since those writers do not participate in the ledger protocol.
+
+Version 1.2 requires EmDash 1.2 or later, matching sandbox adapters, and applied
+core database migrations for conditional writes. The new public route and
+storage declaration change the install trust contract; review the plugin update
+in the admin. Site owners must copy the updated renderer and browser helper to
+enable live tracking. No block schema changes are needed.
 
 ## Development
 

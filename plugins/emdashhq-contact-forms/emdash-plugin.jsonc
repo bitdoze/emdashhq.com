@@ -21,6 +21,7 @@
 	"capabilities": ["email:send", "network:request"],
 	"allowedHosts": ["challenges.cloudflare.com"],
 	"storage": {
+		"capacity": { "indexes": [] },
 		"forms": {
 			"indexes": ["slug", "enabled", "createdAt"],
 			"uniqueIndexes": ["slug"]
@@ -94,7 +95,7 @@
 	},
 
 	"release": {
-		"requires": { "env:emdash": ">=1.0.0" },
+		"requires": { "env:emdash": ">=1.2.0" },
 		"artifacts": {
 			"icon": { "file": "./images/icon.png" },
 			"banner": { "file": "./images/banner.png" },

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { capacitySettingsSchema } from "../src/capacity";
 
 import {
 	createPluginRuntimeTestHost,
@@ -266,5 +267,121 @@ describe("export route", () => {
 		expect(new Map(res.headers).get("content-type")).toContain("text/csv");
 		const csv = new TextDecoder().decode(Uint8Array.from(res.body.value));
 		expect(csv).toContain("email_status");
+	});
+});
+
+describe("capacity", () => {
+	async function setup(maxSubmissions: number | null = 2) {
+		runtimeHost = await createPluginRuntimeTestHost();
+		await runtimeHost.actions.plugin.activate();
+		await runtimeHost.fixtures.plugin.storage("forms", "form_1", {
+			...FORM, maxSubmissions, spotsRemainingLabel: "Only {remaining} left", showSpotsRemaining: true,
+			closedMessage: "Camp is full. Join us next year!",
+		});
+		return runtimeHost;
+	}
+	function entries() {
+		return Object.entries({ cf_slug: "contact", name: "Ada", email: "ada@example.com", message: "Signup", cf_ts: String(Date.now() - 10000) })
+			.map(([name, value]) => ({ kind: "text", name, value }));
+	}
+	function json(res: unknown) {
+		return JSON.parse((res as { body: { value: string } }).body.value);
+	}
+	async function status() {
+		const res = await runtimeHost!.transport.invokeRoute("capacity", { slug: "contact" });
+		expect(new Map((res as { headers: [string, string][] }).headers).get("cache-control")).toBe("no-store");
+		return json(res);
+	}
+	async function submit() {
+		return runtimeHost!.transport.invokeRoute("submit", { entries: entries() }, { ...REQUEST, headers: { accept: "application/json" } });
+	}
+
+	it("accepts under capacity and increases the confirmed count", async () => {
+		await setup();
+		expect(await status()).toMatchObject({ remaining: 2, isClosed: false, totalAllowed: 2 });
+		expect(json(await submit())).toMatchObject({ success: true, capacity: { remaining: 1 } });
+		expect(await runtimeHost!.inspect.storage.list("submissions")).toHaveLength(1);
+		expect(await status()).toMatchObject({ remaining: 1, isClosed: false });
+	});
+	it("accepts the last spot and closes at the exact limit", async () => {
+		await setup(1);
+		expect(json(await submit())).toMatchObject({ success: true, capacity: { remaining: 0, isClosed: true } });
+		expect(await status()).toMatchObject({ remaining: 0, isClosed: true });
+	});
+	it("rejects over capacity with HTTP 409 and the custom message, without writes or email", async () => {
+		await setup(1);
+		await submit();
+		const before = await runtimeHost!.inspect.storage.list("email_log");
+		const res = await submit();
+		expect(res).toMatchObject({ status: 409 });
+		expect(json(res)).toEqual({ error: "capacity_reached", message: "Camp is full. Join us next year!" });
+		expect(await runtimeHost!.inspect.storage.list("submissions")).toHaveLength(1);
+		expect(await runtimeHost!.inspect.storage.list("email_log")).toHaveLength(before.length);
+	});
+	it("also returns 409 for a native browser post", async () => {
+		await setup(0);
+		const res = await runtimeHost!.transport.invokeRoute("submit", { entries: entries() }, REQUEST);
+		expect(res).toMatchObject({ status: 409 });
+		expect(await runtimeHost!.inspect.storage.list("submissions")).toHaveLength(0);
+	});
+	it("tracks unlimited submissions with nullable metadata", async () => {
+		await setup(null);
+		for (let i = 0; i < 3; i++) expect(json(await submit()).success).toBe(true);
+		expect(await status()).toMatchObject({ remaining: null, totalAllowed: null, isClosed: false });
+		expect(await runtimeHost!.inspect.storage.list("submissions")).toHaveLength(3);
+		expect((await runtimeHost!.inspect.storage.list("capacity"))[0].data).toEqual({ count: 3 });
+	});
+	it("does not oversubscribe when concurrent requests compete for the last spot", async () => {
+		await setup(1);
+		const results = await Promise.all(Array.from({ length: 12 }, submit));
+		expect(results.filter(result => json(result).success)).toHaveLength(1);
+		expect(results.filter(result => (result as { status: number }).status === 409)).toHaveLength(11);
+		expect(await runtimeHost!.inspect.storage.list("submissions")).toHaveLength(1);
+		expect(await status()).toMatchObject({ remaining: 0, isClosed: true });
+	});
+	it("counts legacy entries and keeps capacity consumed after inbox deletion", async () => {
+		await setup(2);
+		await runtimeHost!.fixtures.plugin.storage("submissions", "old", { formId: "form_1", createdAt: "2025-01-01T00:00:00.000Z" });
+		expect(await status()).toMatchObject({ remaining: 1 });
+		await runtimeHost!.transport.invokeRoute("admin", { type: "block_action", action_id: "del_sub", value: "old" });
+		expect(await status()).toMatchObject({ remaining: 1 });
+		await submit();
+		expect(await status()).toMatchObject({ remaining: 0 });
+	});
+	it("does not consume capacity for invalid or honeypot submissions", async () => {
+		await setup(1);
+		await runtimeHost!.transport.invokeRoute("submit", { entries: entries().filter(e => e.name !== "email") }, REQUEST);
+		await runtimeHost!.transport.invokeRoute("submit", { entries: [...entries(), { kind: "text", name: "cf_hp", value: "spam" }] }, REQUEST);
+		expect(await status()).toMatchObject({ remaining: 1 });
+	});
+	it("returns only capacity metadata and rejects unknown forms", async () => {
+		await setup();
+		expect(Object.keys(await status()).sort()).toEqual(["closedMessage", "isClosed", "remaining", "totalAllowed"]);
+		expect(await runtimeHost!.transport.invokeRoute("capacity", { slug: "unknown" })).toMatchObject({ status: 404 });
+	});
+	it("recovers a durably accepted entry on cron without freeing its spot", async () => {
+		await setup(1);
+		const submission = { formId: "form_1", data: { email: "private@example.com" }, createdAt: "2025-01-01T00:00:00.000Z" };
+		await runtimeHost!.fixtures.plugin.storage("capacity", "form_1", { count: 1, pending: { id: "interrupted", submission } });
+		await runtimeHost!.transport.invokeHook("cron", { name: "prune" });
+		expect((await runtimeHost!.inspect.storage.list("submissions"))[0].data).toEqual(submission);
+		expect((await runtimeHost!.inspect.storage.list("capacity"))[0].data).toEqual({ count: 1 });
+		expect(await status()).toMatchObject({ remaining: 0, isClosed: true });
+	});
+	it("validates capacity settings and preserves them through ordinary form saves", async () => {
+		host = await seedForm();
+		const [{ id }] = await host.storage("forms").list();
+		const save = (maxSubmissions: unknown) => host!.invokeRoute("admin", { type: "form_submit", action_id: `capacity_save:${id}`, values: { maxSubmissions, showSpotsRemaining: true, closedMessage: "Full" } });
+		await save("3");
+		await host.invokeRoute("admin", { type: "form_submit", action_id: `form_save:${id}`, values: { name: FORM.name, slug: FORM.slug } });
+		expect((await host.storage("forms").list())[0].data).toMatchObject({ maxSubmissions: 3, showSpotsRemaining: true, closedMessage: "Full" });
+		const invalid = await save(1.5) as { toast: { type: string } };
+		expect(invalid.toast.type).toBe("error");
+		expect((await host.storage("forms").list())[0].data).toMatchObject({ maxSubmissions: 3 });
+		await save("");
+		expect((await host.storage("forms").list())[0].data).toMatchObject({ maxSubmissions: null });
+	});
+	it.each([-1, 1.5, Infinity, Number.MAX_SAFE_INTEGER + 1, "4"])("rejects invalid stored capacity %s", value => {
+		expect(capacitySettingsSchema.safeParse({ maxSubmissions: value }).success).toBe(false);
 	});
 });

@@ -8,9 +8,9 @@ const escapeXml = (s: string) =>
 const RFC822 = (d: Date) => d.toUTCString();
 
 /*
- * The hub's owned feed: one item per published tutorial, video and
- * resource, newest first. Links point at the item's real destination
- * (bitdoze.com, YouTube, npm, GitHub) because that's what a hub is for.
+ * The hub's owned feed: one item per published post, tutorial, video and
+ * resource, newest first. Blog posts link to /blog/<slug>/; hub entries
+ * point at their real destinations (bitdoze.com, YouTube, npm, GitHub).
  */
 export const GET: APIRoute = async ({ site, url, cache }) => {
 	const base = (site?.toString() ?? url.origin).replace(/\/$/, "");
@@ -22,6 +22,7 @@ export const GET: APIRoute = async ({ site, url, cache }) => {
 	const channelDesc = settings?.tagline || "Tutorials, videos, themes and plugins for EmDash CMS";
 
 	const collections = [
+		{ slug: "posts" as const, linkField: "", tag: "Post" },
 		{ slug: "tutorials" as const, linkField: "url", tag: "Tutorial" },
 		{ slug: "videos" as const, linkField: "youtube_url", tag: "Video" },
 		{ slug: "resources" as const, linkField: "url", tag: "Resource" },
@@ -39,11 +40,15 @@ export const GET: APIRoute = async ({ site, url, cache }) => {
 		for (const entry of result.entries) {
 			// entry.data carries the system dates as createdAt/publishedAt.
 			const data = entry.data as unknown as Record<string, string | undefined>;
-			const link = sanitizeHref(data[linkField]) || `${base}/${slug}/`;
+			// Posts are own content: the entry routes at /blog/<slug>/.
+			const link =
+				slug === "posts"
+					? `/blog/${entry.id}/`
+					: sanitizeHref(data[linkField]) || `${base}/${slug}/`;
 			items.push({
 				title: data.title || entry.id,
 				link: /^https?:\/\//i.test(link) ? link : `${base}${link.startsWith("/") ? "" : "/"}${link}`,
-				desc: data.summary || "",
+				desc: data.summary || data.excerpt || "",
 				date: new Date(data.publishedAt ?? data.createdAt ?? 0),
 				tag,
 			});

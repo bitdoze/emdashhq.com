@@ -2736,6 +2736,12 @@
 									"url": "https://github.com/bitdoze"
 								}
 							]
+						},
+						{
+							"_type": "contact_form",
+							"_version": 1,
+							"_key": "contact-form-main",
+							"form": "contact"
 						}
 					]
 				},
@@ -2828,11 +2834,18 @@
 				"slug": "emdash-marketing-template",
 				"status": "published",
 				"data": {
-					"title": "Marketing template (Cloudflare)",
+					"title": "Emdash Biolink Theme",
 					"kind": "theme",
 					"price_type": "free",
-					"summary": "The official EmDash landing-page template: hero, features, testimonials, pricing and FAQ blocks on Cloudflare D1 and R2.",
-					"url": "https://github.com/emdash-cms/templates/tree/main/marketing-cloudflare",
+					"summary": "A link-in-bio theme for EmDash: avatar, bio, a stacked link list and social icons, all editable from the admin.",
+					"url": "https://github.com/bitdoze/emdash-biolink-theme",
+					"demo_url": "https://emdash-biolink.bitdoze1.workers.dev/",
+					"image": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GXJH39EPFQB4T7FV0JBPZZ.jpg",
+							"alt": "Biolink theme link-in-bio page preview"
+						}
+					},
 					"cta_label": "View on GitHub",
 					"license": "MIT",
 					"publisher": "EmDash",
@@ -2849,6 +2862,12 @@
 					"price_type": "free",
 					"summary": "Sends magic-link sign-in, invite and notification emails through a Cloudflare send_email binding.",
 					"url": "https://www.npmjs.com/package/@emdash-cms/cloudflare",
+					"image": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GWETDS2N5PZN1Q95XZD6KE.jpg",
+							"alt": "Send email from EmDash on Cloudflare"
+						}
+					},
 					"cta_label": "View on npm",
 					"latest_version": "1.2.0",
 					"license": "MIT",
@@ -2864,17 +2883,24 @@
 				"slug": "emdash-cloudflare-ai-search",
 				"status": "published",
 				"data": {
-					"title": "Cloudflare AI Search",
+					"title": "EmdashHQ contact forms",
 					"kind": "plugin",
 					"price_type": "free",
-					"summary": "Indexes your published content in Cloudflare AI Search and adds a search box to your site.",
-					"url": "https://www.npmjs.com/package/@emdash-cms/cloudflare",
-					"cta_label": "View on npm",
-					"latest_version": "1.2.0",
+					"summary": "A contact form plugin for EmDash CMS. Build forms in the admin, drop them into pages with a block, store every submission in the site database, and deliver notification email through whichever email provider is already configured — Cloudflare Email Sending or any SMTP provider via emdash-smtp. The plugin never talks to an email service itself; it calls ctx.email.send(), so it works with both options and any future provider.",
+					"url": "https://plugins.emdashcms.com/plugins/@bitdoze.com/emdashhq-contact-forms",
+					"demo_url": "https://github.com/bitdoze/emdashhq.com/tree/main/plugins/emdashhq-contact-forms",
+					"image": {
+						"$media": {
+							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GXHQHE6FSB7WDWSCN65T8R.png",
+							"alt": "Contact form with Turnstile check"
+						}
+					},
+					"cta_label": "View plugin",
+					"latest_version": "1.1.1",
 					"license": "MIT",
-					"package": "@emdash-cms/cloudflare",
-					"publisher": "EmDash",
-					"updated": "2026-10-06T22:11:33Z",
+					"package": "@bitdoze.com/emdashhq-contact-forms",
+					"publisher": "@bitdoze.com",
+					"changelog": "1.1.1 — Turnstile spam protection, submissions inbox fixes\n1.0.0 — first registry release",
 					"featured": false
 				}
 			},

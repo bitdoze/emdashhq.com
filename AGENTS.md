@@ -81,7 +81,7 @@ Twelve page block types, mapped to `src/components/blocks/*.astro` in `src/compo
 | `marketing_features`, `marketing_faq`, `marketing_pricing`, `marketing_testimonials` | Kept from the template. Testimonials and pricing are not seeded. |
 | `site_tutorials` | Cards from `tutorials`. Options: limit (0 = all), featured only, topic filter, section link. |
 | `site_videos` | Cards from `videos` with a click-to-load YouTube player (`VideoFacade.astro`). Optional large first video. |
-| `site_resources` | Cards from `resources`. Options: kind (all, theme, plugin), price (all, free, paid), free/paid filter. |
+| `site_resources` | Catalog ledger rows from `resources` — thumbnail, badges + summary + changelog in the middle, mono spec rail (version, license/publisher/updated, package, CTA + demo) on the right. Options: kind (all, theme, plugin), price (all, free, paid), free/paid filter. |
 | `site_services` | Cards from `services`, sorted by `sort_order`. |
 | `site_cta` | Banner with one or two buttons, `gradient` or `plain`. |
 | `site_contact` | Contact method cards (email, YouTube, GitHub) in the shared `.card-grid` with `.hub-card`. |

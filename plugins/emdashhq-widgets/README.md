@@ -2,6 +2,8 @@
 
 Article widgets — notices, accordions, tabs, checklists, product boxes, embeds, quotes, tables of contents and more — as `blocks`-field block types for [EmDash](https://emdashcms.com) sites. Modeled on the widget set used by [bitdoze.com](https://bitdoze.com) tutorials.
 
+**Live demo:** [emdashhq.com/blog/widget-gallery](https://emdashhq.com/blog/widget-gallery/?utm_source=github&utm_medium=readme&utm_campaign=emdashhq-widgets) — all nineteen widgets rendering in one article.
+
 ## Widgets
 
 | Block type | What it renders |

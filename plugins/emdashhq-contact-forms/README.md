@@ -7,6 +7,8 @@ is already configured — Cloudflare Email Sending or any SMTP provider via
 `emdash-smtp`. The plugin never talks to an email service itself; it calls
 `ctx.email.send()`, so it works with both options and any future provider.
 
+**Live demo:** [emdashhq.com/contact](https://emdashhq.com/contact/?utm_source=github&utm_medium=readme&utm_campaign=emdashhq-contact-forms) — a working form rendered by this plugin on a production site.
+
 ## What you get
 
 - **Forms** admin page — create and edit forms, manage fields (text, email,

@@ -1,6 +1,6 @@
 # Content Widgets
 
-**Live demo:** [emdashhq.com/blog/widget-gallery](https://emdashhq.com/blog/widget-gallery/) — all nineteen widgets rendering in one article.
+**Live demo:** [emdashhq.com/blog/widget-gallery](https://emdashhq.com/blog/widget-gallery/?utm_source=emdash_registry&utm_medium=plugin_listing&utm_campaign=emdashhq-widgets) — all nineteen widgets rendering in one article.
 
 A set of article widgets for EmDash sites: callouts, accordions, tabs, checklists, buttons, YouTube and iframe embeds, product/review boxes, pull quotes, facts tables, an automatic table of contents, series navigation and a live "latest posts" list.
 

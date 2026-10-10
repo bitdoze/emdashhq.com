@@ -1,5 +1,7 @@
 Build a contact form in the admin, drop it on any page with a block, and read every submission in the built-in inbox. Notification email goes through the provider your site already uses — the plugin never talks to an email service itself.
 
+**Live demo:** [emdashhq.com/contact](https://emdashhq.com/contact/?utm_source=emdash_registry&utm_medium=plugin_listing&utm_campaign=emdashhq-contact-forms) — a working form rendered by this plugin on a production EmDash site.
+
 ## What you get
 
 - **Forms** — create and edit forms, manage fields (text, email, tel, url, number, textarea, select, checkbox), reorder them, enable or disable a form without deleting it.

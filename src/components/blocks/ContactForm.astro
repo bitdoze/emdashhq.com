@@ -15,7 +15,18 @@ interface PublicFormField {
 	options?: string[];
 	help?: string;
 }
+interface CapacityStatus {
+	remaining: number | null;
+	isClosed: boolean;
+	totalAllowed: number | null;
+	closedMessage: string;
+}
 interface PublicForm {
+	maxSubmissions: number | null;
+	spotsRemainingLabel: string | null;
+	closedMessage: string | null;
+	showSpotsRemaining: boolean;
+	capacity: CapacityStatus;
 	slug: string;
 	name: string;
 	description?: string;
@@ -51,6 +62,11 @@ const status = forThisForm ? params.get("cf_status") : null;
 const invalidFields = new Set((forThisForm ? params.get("cf_fields") : null)?.split(",") ?? []);
 
 const submitUrl = `/_emdash/api/plugins/${PLUGIN_ID}/submit`;
+const capacityUrl = `/_emdash/api/plugins/${PLUGIN_ID}/capacity?slug=${encodeURIComponent(slug || "")}`;
+const closed = form?.capacity?.isClosed ?? false;
+const remaining = form?.capacity?.remaining ?? null;
+const closedMessage = form?.capacity?.closedMessage || "This form has reached capacity and is no longer accepting submissions.";
+const spotsLabel = form?.spotsRemainingLabel || "{remaining} spots remaining";
 const inputId = (key: string) => `cf-${slug}-${key}`;
 ---
 
@@ -64,7 +80,11 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 						subheadline={subheadline ?? form.description}
 						meta="Write to me"
 					/>
-					<form class="cf-form" method="post" action={submitUrl} novalidate={false}>
+					<form class="cf-form" method="post" action={submitUrl}
+						data-capacity-url={capacityUrl} data-remaining={remaining ?? ""}
+						data-spots-label={spotsLabel} data-show-spots={String(form.showSpotsRemaining)}
+						data-closed-message={closedMessage}
+						data-success-message={form.successMessage || "Thanks, your submission was received."}>
 						<input type="hidden" name="cf_slug" value={form.slug} />
 						<input type="hidden" name="cf_page" value={Astro.url.pathname} />
 						<input type="hidden" name="cf_ts" value={Date.now()} />
@@ -106,7 +126,12 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 							</p>
 						)}
 
-						<div class="cf-fields">
+						<p class="cf-capacity" role="status" aria-live="polite" hidden={!form.showSpotsRemaining || remaining === null}>
+							{remaining === null ? "" : spotsLabel.replaceAll("{remaining}", String(remaining))}
+						</p>
+						<p class="cf-note cf-capacity-closed" role="status" hidden={!closed}>{closedMessage}</p>
+						<p class="cf-note cf-feedback" role="status" tabindex="-1" hidden></p>
+						<fieldset class="cf-fields" disabled={closed} aria-label={form.name}>
 							{form.fields.map((field) => {
 								const invalid = invalidFields.has(field.key);
 								return (
@@ -170,13 +195,13 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 									</p>
 								);
 							})}
-						</div>
+						</fieldset>
 
 						{form.turnstileSiteKey && (
-							<div class="cf-turnstile" data-sitekey={form.turnstileSiteKey}></div>
+							<div class="cf-turnstile" data-sitekey={form.turnstileSiteKey} hidden={closed}></div>
 						)}
 
-						<button type="submit" class="cf-submit">
+						<button type="submit" class="cf-submit" hidden={closed} disabled={closed}>
 							{form.submitLabel || "Send"}
 						</button>
 					</form>
@@ -210,7 +235,34 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 	)
 }
 
+<script>
+	import { initializeCapacityForms } from "./capacity-client";
+	let cleanup: (() => void) | undefined;
+	function initialize() { cleanup?.(); cleanup = initializeCapacityForms(); }
+	initialize();
+	document.addEventListener("astro:page-load", initialize);
+	document.addEventListener("astro:before-swap", () => cleanup?.());
+	window.addEventListener("pagehide", () => cleanup?.());
+	window.addEventListener("pageshow", event => { if (event.persisted) initialize(); });
+</script>
+
 <style>
+	.cf-fields { border: 0; padding: 0; min-inline-size: 0; }
+	.cf-capacity {
+		display: inline-block;
+		font: inherit;
+		font-variant-numeric: tabular-nums;
+		color: var(--color-text, inherit);
+		background: var(--color-surface, transparent);
+		border: 1px solid var(--color-border, currentColor);
+		border-radius: var(--radius-full, 999px);
+		padding: var(--spacing-xs, 0.25rem) var(--spacing-md, 0.75rem);
+		overflow-wrap: anywhere;
+	}
+	.cf-form [hidden] { display: none !important; }
+	.cf-fields:disabled { opacity: 0.65; }
+	.cf-submit:disabled { cursor: wait; opacity: 0.65; }
+	.cf-capacity-closed, .cf-feedback { overflow-wrap: anywhere; }
 	.cf-form {
 		max-width: 36rem;
 	}

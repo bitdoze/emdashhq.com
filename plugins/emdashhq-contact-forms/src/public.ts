@@ -3,6 +3,8 @@ import type { PluginContext, PluginFormData, SandboxedRouteContext } from "emdas
 
 import { readSettings } from "./types";
 import { ulid } from "./util";
+import { acceptSubmission, capacitySettingsSchema, readCapacity } from "./capacity";
+import type { CapacityStatus } from "./capacity";
 import {
 	firstEmailValue,
 	isFieldType,
@@ -31,8 +33,10 @@ const MAX_FIELDS = 50;
 // Humans need a moment to read a form; instant posts are bots.
 const MIN_FILL_MS = 1500;
 
-function publicForm(form: FormRecord): PublicForm {
+function publicForm(form: FormRecord, capacity: CapacityStatus): PublicForm {
 	return {
+		...capacitySettingsSchema.parse(form),
+		capacity,
 		slug: form.slug,
 		name: form.name,
 		description: form.description,
@@ -60,12 +64,29 @@ export async function handleFormRoute(
 	if (!slug) return { form: null };
 	const found = await findFormBySlug(ctx, slug);
 	if (!found || !found.data.enabled) return { form: null };
-	const form = publicForm(found.data);
+	const form = publicForm(found.data, await readCapacity(ctx, found.id, found.data));
 	const settings = await readSettings(ctx);
 	if (settings.turnstileSiteKey && settings.turnstileSecretKey) {
 		form.turnstileSiteKey = settings.turnstileSiteKey;
 	}
 	return { form };
+}
+
+function jsonResponse(status: number, data: unknown) {
+	return pluginResponse({
+		status,
+		headers: [["content-type", "application/json; charset=utf-8"], ["cache-control", "no-store"]],
+		body: { kind: "text", value: JSON.stringify(data) },
+	});
+}
+
+/** Only public capacity metadata; never expose the ledger or submission fields. */
+export async function handleCapacityRoute(routeCtx: SandboxedRouteContext, ctx: PluginContext): Promise<unknown> {
+	const input = (routeCtx.input ?? {}) as Record<string, unknown>;
+	const slug = typeof input.slug === "string" ? input.slug.trim() : "";
+	const found = slug ? await findFormBySlug(ctx, slug) : null;
+	if (!found || !found.data.enabled) return jsonResponse(404, { error: "form_unavailable" });
+	return jsonResponse(200, await readCapacity(ctx, found.id, found.data));
 }
 
 function formValues(input: PluginFormData): Record<string, string> {
@@ -128,6 +149,17 @@ function redirectTarget(routeCtx: SandboxedRouteContext, fallback?: string): URL
 }
 
 function redirect303(routeCtx: SandboxedRouteContext, status: string, formSlug: string, fields?: string[]) {
+	if (routeCtx.request.headers.accept?.includes("application/json")) {
+		const messages: Record<string, string> = {
+			invalid: "Some fields need attention. Check the highlighted fields and try again.",
+			rate_limited: "Too many attempts. Please wait a while and try again.",
+			challenge: "The spam check failed. Please try again.",
+			error: "This form is not accepting submissions right now.",
+		};
+		const success = status === "sent" || status === "saved";
+		return jsonResponse(success ? 200 : status === "rate_limited" ? 429 : 422,
+			{ success, status, message: messages[status], fields });
+	}
 	const url = redirectTarget(routeCtx);
 	url.searchParams.set("cf", formSlug);
 	url.searchParams.set("cf_status", status);
@@ -361,51 +393,72 @@ export async function handleSubmitRoute(
 		emailAttempts: 0,
 		createdAt: new Date().toISOString(),
 	};
-	await ctx.storage.submissions.put(submissionId, submission);
+	let accepted;
+	try {
+		accepted = await acceptSubmission(ctx, found.id, form, submissionId, submission);
+	} catch (error) {
+		ctx.log.error("Capacity acceptance failed", { formId: found.id, error: String(error) });
+		return jsonResponse(503, { error: "capacity_unavailable", message: "We could not confirm your submission. Please check with the organizer before trying again." });
+	}
+	if (!accepted.accepted) {
+		return jsonResponse(409, { error: "capacity_reached", message: accepted.capacity.closedMessage });
+	}
 	debug("submission stored", { submissionId, slug });
+	const successResponse = () => routeCtx.request.headers.accept?.includes("application/json")
+		? jsonResponse(200, { success: true, status: "saved", message: form.successMessage || "Thanks, your submission was received.", capacity: accepted.capacity })
+		: redirect303(routeCtx, "saved", slug);
+	if (!accepted.projected) return successResponse();
 
-	const sent = await sendSubmissionEmail(ctx, form, submissionId, submission, settings);
-	submission.emailStatus = sent.status;
-	submission.emailAttempts = 1;
-	submission.emailError = sent.error;
+	// Delivery is secondary to durable acceptance; failures must not invite a
+	// duplicate signup. The inbox and email log support an administrator resend.
+	try {
+		const sent = await sendSubmissionEmail(ctx, form, submissionId, submission, settings);
+		submission.emailStatus = sent.status;
+		submission.emailAttempts = 1;
+		submission.emailError = sent.error;
 
-	// Optional auto-reply to the visitor's email field.
-	if (form.sendConfirmation && ctx.email) {
-		const visitorEmail = firstEmailValue(form, submission.data);
-		if (visitorEmail) {
-			const message =
-				form.confirmationMessage?.trim() ||
-				`Thanks for reaching out to ${ctx.site.name}. We received your message and will reply soon.`;
-			const started = Date.now();
-			let status: EmailLogRecord["status"] = "sent";
-			let error: string | undefined;
-			try {
-				await ctx.email.send({
+		// Optional auto-reply to the visitor's email field.
+		if (form.sendConfirmation && ctx.email) {
+			const visitorEmail = firstEmailValue(form, submission.data);
+			if (visitorEmail) {
+				const message =
+					form.confirmationMessage?.trim() ||
+					`Thanks for reaching out to ${ctx.site.name}. We received your message and will reply soon.`;
+				const started = Date.now();
+				let status: EmailLogRecord["status"] = "sent";
+				let error: string | undefined;
+				try {
+					await ctx.email.send({
+						to: visitorEmail,
+						subject: `${form.name} — message received`,
+						text: message,
+					});
+				} catch (err) {
+					status = "failed";
+					error = err instanceof Error ? err.message : String(err);
+				}
+				await ctx.storage.email_log.put(ulid(), {
+					submissionId,
+					formId: submission.formId,
+					formSlug: form.slug,
+					kind: "confirmation",
 					to: visitorEmail,
 					subject: `${form.name} — message received`,
-					text: message,
-				});
-			} catch (err) {
-				status = "failed";
-				error = err instanceof Error ? err.message : String(err);
+					status,
+					error,
+					durationMs: Date.now() - started,
+					createdAt: new Date().toISOString(),
+				} satisfies EmailLogRecord);
 			}
-			await ctx.storage.email_log.put(ulid(), {
-				submissionId,
-				formId: submission.formId,
-				formSlug: form.slug,
-				kind: "confirmation",
-				to: visitorEmail,
-				subject: `${form.name} — message received`,
-				status,
-				error,
-				durationMs: Date.now() - started,
-				createdAt: new Date().toISOString(),
-			} satisfies EmailLogRecord);
 		}
-	}
 
-	await ctx.storage.submissions.put(submissionId, submission);
-	return redirect303(routeCtx, sent.status === "sent" ? "sent" : "saved", slug);
+		await ctx.storage.submissions.put(submissionId, submission);
+		if (routeCtx.request.headers.accept?.includes("application/json")) return successResponse();
+		return redirect303(routeCtx, sent.status === "sent" ? "sent" : "saved", slug);
+	} catch (error) {
+		ctx.log.error("Accepted submission notification failed", { submissionId, error: String(error) });
+		return successResponse();
+	}
 }
 
 function csvCell(value: unknown): string {

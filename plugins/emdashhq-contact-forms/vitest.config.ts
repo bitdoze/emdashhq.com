@@ -3,4 +3,5 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
 	plugins: [emdashPluginTest()],
+	test: { include: ["tests/plugin.test.ts"] },
 });

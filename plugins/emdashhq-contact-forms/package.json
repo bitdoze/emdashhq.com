@@ -1,6 +1,6 @@
 {
 	"name": "emdashhq-contact-forms",
-	"version": "1.1.1",
+	"version": "1.2.0",
 	"description": "Contact form builder for EmDash CMS: forms as page blocks, submissions stored in the database, delivery through the site's active email provider.",
 	"type": "module",
 	"main": "dist/index.mjs",
@@ -35,17 +35,19 @@
 		"bundle": "emdash-plugin bundle",
 		"login": "emdash-plugin login",
 		"publish": "emdash-plugin publish",
-		"test": "emdash-plugin validate && vitest run"
+		"test": "emdash-plugin validate && vitest run && vitest run --config vitest.browser.config.ts"
 	},
 	"peerDependencies": {
-		"emdash": ">=1.0.0"
+		"emdash": ">=1.2.0"
 	},
 	"devDependencies": {
 		"@emdash-cms/blocks": "*",
 		"@emdash-cms/plugin-cli": "0.13.2",
-		"@emdash-cms/plugin-test": "^0.2.7",
-		"emdash": ">=1.0.0",
+		"@emdash-cms/plugin-test": "^0.2.8",
+		"emdash": "^1.2.0",
+		"happy-dom": "^20.14.6",
 		"typescript": "^5.9.0",
-		"vitest": "^4.1.0"
+		"vitest": "^4.1.0",
+		"zod": "^4.6.5"
 	}
 }

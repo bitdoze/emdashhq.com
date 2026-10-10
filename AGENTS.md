@@ -79,7 +79,7 @@ Twelve page block types, mapped to `src/components/blocks/*.astro` in `src/compo
 | --- | --- |
 |`marketing_hero`|Headline, optional eyebrow (renders as the title-block SET token), two CTAs, image, and an optional `specs` repeater (icon select + label) for the architecture-highlights strip under the CTAs. With no image it shows the system-diagram panel; centered heroes get a compact diagram strip.|
 | `marketing_features`, `marketing_faq`, `marketing_pricing`, `marketing_testimonials` | Kept from the template. Testimonials and pricing are not seeded. |
-| `site_tutorials` | Cards from `tutorials`. Options: limit (0 = all), featured only, topic filter, section link. |
+| `site_tutorials` | Magazine-index rows from `tutorials` — chapter numeral, badges, serif title with a dotted leader running to the host meta. No cover image. Options: limit (0 = all), featured only, topic filter, section link. |
 | `site_videos` | Cards from `videos` with a click-to-load YouTube player (`VideoFacade.astro`). Optional large first video. |
 | `site_resources` | Catalog ledger rows from `resources` — thumbnail, badges + summary + changelog in the middle, mono spec rail (version, license/publisher/updated, package, CTA + demo) on the right. Options: kind (all, theme, plugin), price (all, free, paid), free/paid filter. |
 | `site_services` | Cards from `services`, sorted by `sort_order`. |

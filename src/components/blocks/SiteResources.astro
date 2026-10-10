@@ -130,7 +130,7 @@ const KIND_ICON = { plugin: "ph:plug", theme: "ph:palette" } as const;
 		grid-template-columns: 168px minmax(0, 1fr) 200px;
 		gap: var(--spacing-xl);
 		align-items: center;
-		padding: var(--spacing-lg) var(--spacing-sm);
+		padding: var(--spacing-lg) var(--spacing-lg);
 		border-bottom: var(--line-hair) solid var(--color-border);
 		transition: background var(--transition-fast);
 	}
@@ -296,6 +296,10 @@ const KIND_ICON = { plugin: "ph:plug", theme: "ph:palette" } as const;
 	.res-demo {
 		position: relative;
 		z-index: 1;
+		display: inline-flex;
+		align-items: center;
+		gap: 2px;
+		white-space: nowrap;
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
 		font-weight: 600;

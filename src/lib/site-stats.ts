@@ -17,17 +17,23 @@ export interface SiteStat {
 	suffix: string;
 	source: "api" | "count" | "manual";
 	updatedAt: string | null;
+	/** Date of the baseline the delta is measured against. */
+	prevAt: string | null;
 	weekDelta: number | null;
 }
 
 const TTL_MS = 24 * 60 * 60 * 1000;
 const WEEK_MS = 7 * TTL_MS;
+/** Each external source gets its own deadline; a hung endpoint can't stall the refresh. */
+const FETCH_TIMEOUT_MS = 8_000;
+/** A never-refreshed read waits this long, then renders with what it has. */
+const FIRST_RENDER_MS = 3_000;
 const NPM_DOWNLOADS_URL = "https://api.npmjs.org/downloads/point/last-month/emdash";
 const PLUGIN_REGISTRY_URL = "https://plugins.emdashcms.com/";
 const BUILTWITH_URL = "https://trends.builtwith.com/cms/EmDash-CMS";
 
-const DEFAULT_STATS: Array<Omit<SiteStat, "updatedAt" | "weekDelta">> = [
-	{ key: "npm_downloads", label: "npm installs · last 30 days", value: 0, suffix: "", source: "api" },
+const DEFAULT_STATS: Array<Omit<SiteStat, "updatedAt" | "prevAt" | "weekDelta">> = [
+	{ key: "npm_downloads", label: "npm downloads · last 30 days", value: 0, suffix: "", source: "api" },
 	{ key: "plugins", label: "plugins in the registry", value: 0, suffix: "", source: "api" },
 	{ key: "sites", label: "sites on EmDash", value: 566, suffix: "+", source: "manual" },
 ];
@@ -83,7 +89,10 @@ async function ensureTable(db: D1Like) {
 }
 
 async function countRegistryPlugins(): Promise<number | null> {
-	const res = await fetch(PLUGIN_REGISTRY_URL, { headers: { Accept: "text/html" } });
+	const res = await fetch(PLUGIN_REGISTRY_URL, {
+		headers: { Accept: "text/html" },
+		signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+	});
 	if (!res.ok) return null;
 	const html = await res.text();
 	const n = new Set(html.match(/href="\/plugins\/@[^"]+"/g) ?? []).size;
@@ -91,7 +100,10 @@ async function countRegistryPlugins(): Promise<number | null> {
 }
 
 async function fetchNpmDownloads(): Promise<number | null> {
-	const res = await fetch(NPM_DOWNLOADS_URL, { headers: { Accept: "application/json" } });
+	const res = await fetch(NPM_DOWNLOADS_URL, {
+		headers: { Accept: "application/json" },
+		signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+	});
 	if (!res.ok) return null;
 	const body = (await res.json()) as { downloads?: number };
 	return typeof body.downloads === "number" && body.downloads > 0 ? body.downloads : null;
@@ -109,6 +121,7 @@ async function countBuiltWithSites(): Promise<number | null> {
 			"User-Agent":
 				"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
 		},
+		signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
 	});
 	if (!res.ok) return null;
 	const html = await res.text();
@@ -153,26 +166,16 @@ export async function refreshSiteStats(db: D1Like): Promise<void> {
 
 	for (const s of DEFAULT_STATS) writes.push(...rotate(s.key));
 
-	try {
-		const downloads = await fetchNpmDownloads();
-		if (downloads !== null) writes.push(set("npm_downloads", downloads));
-	} catch {
-		// Keep the last good value; a failed fetch must never blank the counters.
-	}
-
-	try {
-		const plugins = await countRegistryPlugins();
-		if (plugins !== null) writes.push(set("plugins", plugins));
-	} catch {
-		// Same — registry unreachable this run.
-	}
-
-	try {
-		const sites = await countBuiltWithSites();
-		if (sites !== null) writes.push(set("sites", sites));
-	} catch {
-		// Bot check or outage — the manual figure stands.
-	}
+	// Independent sources resolve concurrently, each under its own deadline.
+	// A failed fetch keeps the last good value — it must never blank a counter.
+	const [downloads, plugins, sites] = await Promise.all([
+		fetchNpmDownloads().catch(() => null),
+		countRegistryPlugins().catch(() => null),
+		countBuiltWithSites().catch(() => null),
+	]);
+	if (downloads !== null) writes.push(set("npm_downloads", downloads));
+	if (plugins !== null) writes.push(set("plugins", plugins));
+	if (sites !== null) writes.push(set("sites", sites));
 
 	if (writes.length) await db.batch(writes);
 }
@@ -198,11 +201,19 @@ export async function getSiteStats(db: D1Like, waitUntil?: (p: Promise<unknown>)
 
 	if (stale) {
 		const job = refreshSiteStats(db).catch(() => {});
-		// Never-refreshed rows are zero — fill them inline so the first
-		// render shows real numbers; later refreshes can run in the
-		// background because the previous values are still good enough.
-		if (waitUntil && tracked.every((r) => r.updated_at)) waitUntil(job);
-		else await job;
+		// Rows with values just need a background refresh — hand the job to the
+		// platform when it exists and render what we have. Never-refreshed rows
+		// are zero, so wait briefly for real numbers, bounded so an unreachable
+		// source can't hold the first render hostage; with waitUntil the job
+		// still finishes in the background for the next request.
+		if (waitUntil) {
+			waitUntil(job);
+			if (!tracked.every((r) => r.updated_at)) {
+				await Promise.race([job, new Promise((r) => setTimeout(r, FIRST_RENDER_MS))]);
+			}
+		} else {
+			await Promise.race([job, new Promise((r) => setTimeout(r, FIRST_RENDER_MS))]);
+		}
 		({ results } = await db
 			.prepare("SELECT key, label, value, suffix, source, updated_at, prev_value, prev_at FROM site_stats")
 			.all());
@@ -217,6 +228,7 @@ export async function getSiteStats(db: D1Like, waitUntil?: (p: Promise<unknown>)
 			suffix: r.suffix,
 			source: r.source,
 			updatedAt: r.updated_at,
+			prevAt: r.prev_at,
 			weekDelta: r.prev_value !== null ? r.value - r.prev_value : null,
 		}))
 		.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));

@@ -603,8 +603,12 @@ const isLoggedIn = !!Astro.locals.user;
 
 			.nav-toggle {
 				display: none;
+				align-items: center;
+				justify-content: center;
 				margin-left: auto;
 				padding: var(--spacing-sm);
+				min-width: 44px;
+				min-height: 44px;
 				font-size: 1.5rem;
 				line-height: 0;
 				color: var(--color-text);
@@ -906,8 +910,16 @@ const isLoggedIn = !!Astro.locals.user;
 					text-align: center;
 				}
 
+				/* 44px touch targets on phone screens. */
+				.theme-btn {
+					display: inline-flex;
+					align-items: center;
+					min-height: 44px;
+				}
+
 				.theme-switcher {
 					order: -1;
+					justify-content: center;
 				}
 
 				h1 {
@@ -924,7 +936,7 @@ const isLoggedIn = !!Astro.locals.user;
 				}
 
 				.nav-toggle {
-					display: block;
+					display: inline-flex;
 				}
 
 				.nav-panel {

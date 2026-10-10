@@ -56,10 +56,18 @@ async function callRoute(
 	return res.success ? res.data : null;
 }
 
-type Context = Pick<APIContext, "locals" | "url">;
+type Context = Pick<APIContext, "locals" | "url" | "cache">;
+
+/**
+ * Pages rendering widgets depend on the plugin's settings. Tag every caller
+ * so an admin settings save can purge the affected HTML — the site middleware
+ * watches the plugin's settings endpoint.
+ */
+const WIDGETS_TAG = "emdashhq-widgets";
 
 /** Shared widget settings, fetched once per request through the plugin route. */
 export function getWidgetConfig(context: Context): Promise<WidgetConfig> {
+	if (context.cache?.enabled) context.cache.set({ tags: [WIDGETS_TAG] });
 	return once(context.locals, "config", async () => {
 		const data = (await callRoute(
 			context.locals,
@@ -81,6 +89,14 @@ export function getWidgetPosts(
 	if (options.limit) params.set("limit", String(options.limit));
 	if (options.exclude) params.set("exclude", options.exclude);
 	return once(context.locals, `posts:${params}`, async () => {
+		// The collection the plugin will resolve: the explicit option or the
+		// postsCollection setting fallback. Tag it — publishing an entry in a
+		// collection purges pages whose widgets list it.
+		const config = await getWidgetConfig(context);
+		const collection = (options.collection ?? "").trim() || config.postsCollection;
+		if (context.cache?.enabled && /^[a-z0-9][a-z0-9_-]*$/i.test(collection)) {
+			context.cache.set({ tags: [collection] });
+		}
 		const data = (await callRoute(
 			context.locals,
 			context.url.origin,

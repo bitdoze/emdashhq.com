@@ -76,6 +76,16 @@
 				"label": "Turnstile secret key",
 				"description": "Cloudflare Turnstile secret key, stored encrypted. Set both keys to enable; clear them to disable."
 			},
+			"turnstileOutagePolicy": {
+				"type": "select",
+				"label": "When siteverify cannot be reached",
+				"description": "Turnstile outage policy. \"Accept\" stores the submission anyway so a Cloudflare outage never takes the form down; \"reject\" shows the visitor a retryable error. Completed verifications that fail are always rejected either way.",
+				"options": [
+					{ "value": "accept", "label": "Accept the submission" },
+					{ "value": "reject", "label": "Ask the visitor to retry" }
+				],
+				"default": "accept"
+			},
 			"retentionDays": {
 				"type": "number",
 				"label": "Keep submissions for (days)",

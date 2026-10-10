@@ -1,8 +1,34 @@
 import { defineMiddleware } from "astro:middleware";
 import type { PageFragmentContribution } from "emdash";
 
+// Public pages register these tags for the plugin-owned data they render so a
+// completed admin write can purge the affected HTML.
 const SCRIPTS_TAG = "site-scripts";
-const SETTINGS_PATH = "/_emdash/api/admin/plugins/emdashhq-site-scripts/settings";
+const CONTACT_FORMS_TAG = "contact-forms";
+const WIDGETS_TAG = "emdashhq-widgets";
+
+const PLUGIN_SETTINGS = "/_emdash/api/admin/plugins";
+const CONTACT_FORMS_ADMIN = "/_emdash/api/plugins/emdashhq-contact-forms/admin";
+
+/**
+ * Block Kit posts reads and writes to the same private plugin route. Only
+ * interactions that change a form's definition (slug, fields, enabled state)
+ * alter what public pages render — submission/log actions do not. An
+ * unparseable body is treated as a write.
+ */
+function formDefWrite(body: unknown): boolean {
+	if (!body || typeof body !== "object") return true;
+	const b = body as { type?: string; action_id?: string; value?: unknown };
+	const action = typeof b.action_id === "string" ? b.action_id.split(":")[0] : "";
+	if (b.type === "form_submit") return ["form_create", "form_save", "field_save"].includes(action);
+	if (b.type === "block_action") {
+		if (action === "delete_form") return true;
+		const cmd = typeof b.value === "string" ? b.value.split(":")[0] : "";
+		if (action === "form_menu") return cmd === "toggle";
+		if (action === "field_menu") return ["del", "up", "down"].includes(cmd);
+	}
+	return false;
+}
 
 export const onRequest = defineMiddleware(async (context, next) => {
 	const publicPage = !context.url.pathname.startsWith("/_emdash/");
@@ -25,27 +51,46 @@ export const onRequest = defineMiddleware(async (context, next) => {
 			return result;
 		};
 	}
+
+	// Tags to purge when the request turns out to be a successful admin write.
+	// The contact-forms admin route multiplexes Block Kit reads and writes over
+	// one POST endpoint, so the small JSON body decides — clone it before the
+	// handler consumes it.
+	const path = context.url.pathname.replace(/\/$/, "");
+	const tags: string[] = [];
+	if (context.request.method === "PUT") {
+		if (path === `${PLUGIN_SETTINGS}/emdashhq-site-scripts/settings`) tags.push(SCRIPTS_TAG);
+		if (path === `${PLUGIN_SETTINGS}/emdashhq-contact-forms/settings`) tags.push(CONTACT_FORMS_TAG);
+		if (path === `${PLUGIN_SETTINGS}/emdashhq-widgets/settings`) tags.push(WIDGETS_TAG);
+	} else if (context.request.method === "POST" && path === CONTACT_FORMS_ADMIN) {
+		const body = await context.request
+			.clone()
+			.json()
+			.catch(() => null);
+		if (formDefWrite(body)) tags.push(CONTACT_FORMS_TAG);
+	}
+
 	const response = await next();
-	if (context.request.method === "PUT" && context.url.pathname.replace(/\/$/, "") === SETTINGS_PATH && response.ok) {
+	// Only purge after the CMS authenticates and successfully saves the write.
+	if (tags.length && response.ok) {
 		try {
-			// Only purge after the CMS authenticates and successfully saves settings.
 			if (import.meta.env.PROD) {
 				// Installed Workers module typings omit the newer cache export.
 				const { cache } = await import("cloudflare:workers") as unknown as {
 					cache: { purge(options: { tags: string[] }): Promise<{ success: boolean; errors: unknown[] }> };
 				};
-				const result = await cache.purge({ tags: [SCRIPTS_TAG] });
+				const result = await cache.purge({ tags });
 				// The installed Astro provider discards this platform result. Check it
 				// here so a rejected/rate-limited purge is not reported as success.
-				if (!result.success) throw new Error("Cloudflare rejected the Site Scripts purge", { cause: result.errors });
+				if (!result.success) throw new Error("Cloudflare rejected the cache purge", { cause: result.errors });
 			} else {
-				await context.cache.invalidate({ tags: [SCRIPTS_TAG] });
+				await context.cache.invalidate({ tags });
 			}
 		} catch (error) {
-			console.error("Site Scripts settings saved, but public cache purge failed", error);
+			console.error("Admin write saved, but public cache purge failed", error);
 			return Response.json({ success: false, error: {
 				code: "CACHE_PURGE_FAILED",
-				message: "Settings saved, but the public cache could not be refreshed. Retry saving to refresh it.",
+				message: "Saved, but the public cache could not be refreshed. Retry saving to refresh it.",
 			} }, {
 				status: 503, headers: { "Cache-Control": "private, no-store" },
 			});

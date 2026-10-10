@@ -32,3 +32,15 @@ export function slugify(value: string): string {
 		.replace(/^-+|-+$/g, "")
 		.slice(0, 80);
 }
+
+/**
+ * Escape a value for CSV output and neutralize spreadsheet formula injection:
+ * a cell whose first non-space character is = + - or @ evaluates as a formula
+ * in common spreadsheet apps. A leading apostrophe neutralizes the cell and
+ * stays invisible in Excel and Google Sheets.
+ */
+export function csvCell(value: unknown): string {
+	let s = value == null ? "" : String(value);
+	if (/^\s*[=+\-@]/.test(s)) s = `'${s}`;
+	return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}

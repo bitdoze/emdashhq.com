@@ -2,7 +2,7 @@ import { pluginResponse } from "emdash/plugin";
 import type { PluginContext, PluginFormData, SandboxedRouteContext } from "emdash/plugin";
 
 import { readSettings } from "./types";
-import { ulid } from "./util";
+import { csvCell, ulid } from "./util";
 import {
 	firstEmailValue,
 	isFieldType,
@@ -14,6 +14,10 @@ import {
 	type FormRecord,
 	type PluginSettings,
 	type PublicForm,
+	type RecoveryRecord,
+	IDEM_PREFIX,
+	RATE_PREFIX,
+	RECOVERY_PREFIX,
 	type RouteRequestMeta,
 	type SubmissionRecord,
 } from "./types";
@@ -68,16 +72,53 @@ export async function handleFormRoute(
 	return { form };
 }
 
-function formValues(input: PluginFormData): Record<string, string> {
-	const values: Record<string, string> = {};
-	for (const entry of input.entries) {
+/**
+ * Submit inputs whose name starts with cf_ or cf- carry routing and anti-spam
+ * data (cf_slug, cf_page, cf_ts, cf_hp, cf-turnstile-response). Field keys may
+ * not use the prefix — the admin rejects it — but a legacy or hand-rolled
+ * definition could still ship one, so the split stays defensive here.
+ */
+const PROTOCOL_INPUT = /^cf[-_]/;
+
+const CHECKBOX_CHECKED = new Set(["on", "true", "yes", "1"]);
+const CHECKBOX_UNCHECKED = new Set(["off", "false", "no", "0", ""]);
+
+/** Checked state for a checkbox submission, or null for an unexpected value. */
+function checkboxState(raw: string): "on" | "off" | null {
+	const v = raw.trim().toLowerCase();
+	if (CHECKBOX_CHECKED.has(v)) return "on";
+	if (CHECKBOX_UNCHECKED.has(v)) return "off";
+	return null;
+}
+
+function formValues(input: PluginFormData): {
+	protocol: Record<string, string>;
+	fields: Record<string, string>;
+} {
+	const protocol: Record<string, string> = {};
+	const fields: Record<string, string> = {};
+	// A JSON-encoded post instead of form-data arrives without entries.
+	for (const entry of input.entries ?? []) {
 		if (entry.kind !== "text") continue;
-		values[entry.name] = entry.value;
+		if (PROTOCOL_INPUT.test(entry.name)) {
+			// The renderer writes its hidden inputs first; an injected duplicate
+			// must not override the site's own routing/anti-spam values.
+			protocol[entry.name] ??= entry.value;
+		} else {
+			fields[entry.name] = entry.value;
+		}
 	}
-	return values;
+	return { protocol, fields };
 }
 
 function validateField(field: FormFieldDef, raw: string): string | null {
+	if (field.type === "checkbox") {
+		// A browser always posts "on" or omits the input; the renderer submits
+		// "off" explicitly so required checkboxes can be checked server-side.
+		const state = checkboxState(raw);
+		if (state === null) return `${field.key} has an unexpected value`;
+		return field.required && state === "off" ? `${field.key} is required` : null;
+	}
 	const value = raw.trim();
 	if (!value) return field.required ? `${field.key} is required` : null;
 	switch (field.type) {
@@ -100,8 +141,6 @@ function validateField(field: FormFieldDef, raw: string): string | null {
 			break;
 		case "select":
 			if (field.options?.length && !field.options.includes(value)) return `${field.key} is not a listed option`;
-			break;
-		case "checkbox":
 			break;
 		default:
 			break;
@@ -127,15 +166,138 @@ function redirectTarget(routeCtx: SandboxedRouteContext, fallback?: string): URL
 	return new URL("/", origin);
 }
 
-function redirect303(routeCtx: SandboxedRouteContext, status: string, formSlug: string, fields?: string[]) {
+function redirect303(
+	routeCtx: SandboxedRouteContext,
+	status: string,
+	formSlug: string,
+	fields?: string[],
+	recoveryId?: string,
+) {
 	const url = redirectTarget(routeCtx);
 	url.searchParams.set("cf", formSlug);
 	url.searchParams.set("cf_status", status);
 	if (fields?.length) url.searchParams.set("cf_fields", fields.join(","));
+	if (recoveryId) url.searchParams.set("cf_rid", recoveryId);
 	return pluginResponse({
 		status: 303,
 		headers: [["location", url.pathname + url.search + url.hash]],
 	});
+}
+
+/** cf_page and the referer are visitor-controlled; keep only same-origin URLs. */
+function safePageUrl(raw: string | undefined, referer: string | null, origin: string): string | undefined {
+	for (const candidate of [raw, referer]) {
+		if (!candidate) continue;
+		try {
+			const url = new URL(candidate, origin);
+			if (url.origin === origin) return url.pathname + url.search;
+		} catch {
+			// try the next candidate
+		}
+	}
+	return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Transient KV state: recovery records, rate-limit buckets, idempotency claims
+// (prefixes and lifetimes live in types.ts; the hourly prune cron uses them).
+
+/**
+ * Keep the visitor's draft server-side so a rejection never erases a message.
+ * The renderer fetches the record through the public `recovery` route, which
+ * deletes it on read.
+ */
+async function storeRecovery(
+	ctx: PluginContext,
+	formSlug: string,
+	values: Record<string, string>,
+	errors: Record<string, string>,
+): Promise<string | undefined> {
+	try {
+		const id = ulid();
+		await ctx.kv.set(RECOVERY_PREFIX + id, {
+			formSlug,
+			values,
+			errors,
+			createdAt: new Date().toISOString(),
+		} satisfies RecoveryRecord);
+		return id;
+	} catch (error) {
+		ctx.log.warn(`Could not store a form recovery record: ${error instanceof Error ? error.message : error}`);
+		return undefined;
+	}
+}
+
+/**
+ * Atomic per-IP attempt budget, consumed before verification work so failed
+ * attempts count too. KV compare-and-set makes the increment atomic across
+ * Worker instances; persistent contention fails closed (a limiter rejecting
+ * under contention is the safe direction). KV failures are logged and
+ * tolerated so the form stays available when storage hiccups.
+ */
+async function consumeAttemptBudget(ctx: PluginContext, ip: string, limit: number): Promise<boolean> {
+	const bucket = Math.floor(Date.now() / 3600e3);
+	const key = `${RATE_PREFIX}${ip}:${bucket}`;
+	for (let i = 0; i < 6; i++) {
+		const current = await ctx.kv.getVersioned<{ count: number }>(key);
+		const count = current?.value?.count ?? 0;
+		if (count >= limit) return false;
+		const result = await ctx.kv.compareAndSet(key, current?.revision ?? null, { count: count + 1 });
+		if (result.applied) return true;
+	}
+	return false;
+}
+
+/**
+ * Content-addressed idempotency claim: the same visitor re-posting identical
+ * data (retry after an ambiguous response) must not duplicate the stored
+ * submission or re-send the notification. `compareAndSet` with a null
+ * expected revision creates only when absent.
+ */
+async function claimIdempotency(
+	ctx: PluginContext,
+	slug: string,
+	ip: string | null,
+	userAgent: string | null,
+	data: Record<string, string>,
+): Promise<"claimed" | "duplicate" | "unavailable"> {
+	try {
+		const canon = Object.keys(data)
+			.sort()
+			.map((k) => `${k}=${data[k]}`)
+			.join("&");
+		const digest = await crypto.subtle.digest(
+			"SHA-256",
+			new TextEncoder().encode(`${slug}\n${ip ?? ""}\n${userAgent ?? ""}\n${canon}`),
+		);
+		const hex = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+		const claim = await ctx.kv.compareAndSet(IDEM_PREFIX + hex, null, {
+			createdAt: new Date().toISOString(),
+		});
+		return claim.applied ? "claimed" : "duplicate";
+	} catch (error) {
+		ctx.log.warn(`Idempotency check failed; storing without it: ${error instanceof Error ? error.message : error}`);
+		return "unavailable";
+	}
+}
+
+/**
+ * One-time read of a recovery record; the site's Contact form block calls
+ * this in-process to refill fields after a rejected submit. The record is
+ * deleted on read so drafts cannot be replayed or enumerated.
+ */
+export async function handleRecoveryRoute(
+	routeCtx: SandboxedRouteContext,
+	ctx: PluginContext,
+): Promise<{ recovery: RecoveryRecord | null }> {
+	const input = (routeCtx.input ?? {}) as Record<string, string | string[]>;
+	const raw = input.id ?? "";
+	const id = (Array.isArray(raw) ? raw[0] : raw).trim();
+	if (!/^[0-9A-HJKMNP-TV-Z]{26}$/i.test(id)) return { recovery: null };
+	const key = RECOVERY_PREFIX + id;
+	const record = (await ctx.kv.get<RecoveryRecord>(key)) ?? null;
+	if (record) await ctx.kv.delete(key).catch(() => {});
+	return { recovery: record };
 }
 
 function notificationBodies(
@@ -218,47 +380,54 @@ export async function sendSubmissionEmail(
 }
 
 const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const TURNSTILE_TIMEOUT_MS = 10_000;
 
 /**
- * Verify a Turnstile token against Cloudflare siteverify. A completed check
- * decides (false rejects); an unreachable verifier or missing http access
- * accepts, so a Turnstile outage never takes the form down.
+ * A completed check decides the outcome; anything that prevents the check
+ * from completing (missing http access, timeout, transport or HTTP error) is
+ * "unavailable", and the configured outage policy decides accept vs reject.
+ * Timeouts make the unavailability observable instead of hanging the POST.
  */
+type TurnstileOutcome = "verified" | "rejected" | "unavailable";
+
 async function verifyTurnstile(
 	ctx: PluginContext,
 	secret: string,
 	token: string,
 	ip: string | null,
-): Promise<boolean> {
+): Promise<TurnstileOutcome> {
 	if (!ctx.http) {
-		ctx.log.warn("Turnstile is configured but the plugin has no HTTP access; accepting submission");
-		return true;
+		ctx.log.warn("Turnstile is configured but the plugin has no HTTP access");
+		return "unavailable";
 	}
 	try {
-		const res = await ctx.http.fetch(TURNSTILE_VERIFY_URL, {
-			method: "POST",
-			headers: { "content-type": "application/x-www-form-urlencoded" },
-			body: new URLSearchParams({
-				secret,
-				response: token,
-				...(ip ? { remoteip: ip } : {}),
-			}).toString(),
-		});
+		const res = await Promise.race([
+			ctx.http.fetch(TURNSTILE_VERIFY_URL, {
+				method: "POST",
+				headers: { "content-type": "application/x-www-form-urlencoded" },
+				body: new URLSearchParams({
+					secret,
+					response: token,
+					...(ip ? { remoteip: ip } : {}),
+				}).toString(),
+			}),
+			new Promise<never>((_, reject) =>
+				setTimeout(() => reject(new Error("siteverify timed out")), TURNSTILE_TIMEOUT_MS),
+			),
+		]);
 		if (!res.ok) {
-			ctx.log.warn(`Turnstile siteverify answered HTTP ${res.status}; accepting submission`);
-			return true;
+			ctx.log.warn(`Turnstile siteverify answered HTTP ${res.status}`);
+			return "unavailable";
 		}
 		const result = (await res.json()) as { success?: boolean; "error-codes"?: string[] };
 		if (result.success !== true) {
 			ctx.log.info("Turnstile verification rejected a submission", { codes: result["error-codes"] });
-			return false;
+			return "rejected";
 		}
-		return true;
+		return "verified";
 	} catch (error) {
-		ctx.log.warn(
-			`Turnstile siteverify failed: ${error instanceof Error ? error.message : String(error)}; accepting submission`,
-		);
-		return true;
+		ctx.log.warn(`Turnstile siteverify failed: ${error instanceof Error ? error.message : String(error)}`);
+		return "unavailable";
 	}
 }
 
@@ -268,15 +437,16 @@ export async function handleSubmitRoute(
 ): Promise<unknown> {
 	const input = routeCtx.input as PluginFormData;
 	const meta = requestMeta(routeCtx);
-	const values = formValues(input);
-	const slug = (values.cf_slug ?? "").trim();
+	const origin = new URL(routeCtx.request.url).origin;
+	const { protocol, fields: fieldValues } = formValues(input);
+	const slug = (protocol.cf_slug ?? "").trim();
 	const settings = await readSettings(ctx);
 	const debug = (msg: string, data?: unknown) => {
 		if (settings.extraDebug) ctx.log.debug(msg, data);
 	};
 
 	// Honeypot: invisible to humans, bots fill it. Pretend success.
-	if ((values.cf_hp ?? "").trim()) {
+	if ((protocol.cf_hp ?? "").trim()) {
 		debug("honeypot tripped", { slug, ip: meta.ip });
 		return redirect303(routeCtx, "sent", slug || "form");
 	}
@@ -289,62 +459,110 @@ export async function handleSubmitRoute(
 	const form = found.data;
 
 	// Time trap: posts faster than MIN_FILL_MS are bots. Pretend success.
-	const postedAt = Number(values.cf_ts ?? 0);
+	const postedAt = Number(protocol.cf_ts ?? 0);
 	if (postedAt > 0 && Date.now() - postedAt < MIN_FILL_MS) {
 		debug("submitted too fast", { slug, ip: meta.ip });
 		return redirect303(routeCtx, "sent", slug);
 	}
 
-	// Turnstile: when both keys are configured the widget's token must verify.
-	if (settings.turnstileSiteKey && settings.turnstileSecretKey) {
-		const token = (values["cf-turnstile-response"] ?? "").trim();
-		const passed = token
-			? await verifyTurnstile(ctx, settings.turnstileSecretKey, token, meta.ip)
-			: false;
-		if (!passed) {
-			debug("turnstile verification failed", { slug, ip: meta.ip });
-			return redirect303(routeCtx, "challenge", slug);
-		}
+	// A field key on the cf_ protocol namespace can collide with the hidden
+	// routing inputs — a stored definition that old (or written by hand) gets
+	// an explicit error instead of silently corrupting submissions.
+	if (form.fields.some((f) => PROTOCOL_INPUT.test(f.key))) {
+		ctx.log.error(`Form "${slug}" uses reserved cf_* field keys; refusing submissions`, { slug });
+		return redirect303(routeCtx, "error", slug);
 	}
 
-	// Rate limit: bounded count of recent submissions from this IP.
+	// Draft of the declared fields as submitted — the recovery record keeps it
+	// across the redirect so a rejection never erases what the visitor typed.
+	const draft: Record<string, string> = {};
+	for (const field of form.fields) {
+		if (!field.key || !isFieldType(field.type)) continue;
+		const raw = fieldValues[field.key] ?? (field.type === "checkbox" ? "off" : "");
+		draft[field.key] = field.type === "checkbox" ? (checkboxState(raw) ?? "off") : raw.trim();
+	}
+	const rejectRecoverable = async (
+		status: string,
+		errors?: Record<string, string>,
+		fields?: string[],
+	) => {
+		const rid = await storeRecovery(ctx, slug, draft, errors ?? {});
+		return redirect303(routeCtx, status, slug, fields, rid);
+	};
+
+	// Attempt budget: a bounded per-IP hourly count consumed before the
+	// expensive verification path, so failed attempts cost budget too.
 	const ip = meta.ip;
 	const limit = settings.rateLimitPerHour;
 	if (ip && limit > 0) {
-		const cutoff = new Date(Date.now() - 3600e3).toISOString();
-		const recent = await ctx.storage.submissions.count({ ip, createdAt: { gte: cutoff } });
-		if (recent >= limit) {
-			ctx.log.warn(`Contact form rate limit hit: ${ip} (${recent}/${limit}/h)`, { slug });
-			return redirect303(routeCtx, "rate_limited", slug);
+		try {
+			const allowed = await consumeAttemptBudget(ctx, ip, limit);
+			if (!allowed) {
+				ctx.log.warn(`Contact form attempt budget exhausted: ${ip} (${limit}/h)`, { slug });
+				return rejectRecoverable("rate_limited");
+			}
+		} catch (error) {
+			ctx.log.warn(
+				`Rate-limit check failed; allowing the attempt: ${error instanceof Error ? error.message : error}`,
+				{ slug },
+			);
+		}
+	}
+
+	// Turnstile: when both keys are configured the widget's token must verify.
+	// The outage policy only governs unavailable verifiers; a completed check
+	// that returns failure always rejects.
+	if (settings.turnstileSiteKey && settings.turnstileSecretKey) {
+		const token = (protocol["cf-turnstile-response"] ?? "").trim();
+		const outcome = token
+			? await verifyTurnstile(ctx, settings.turnstileSecretKey, token, ip)
+			: "rejected";
+		if (outcome === "rejected") {
+			debug("turnstile verification failed", { slug, ip: meta.ip });
+			return rejectRecoverable("challenge");
+		}
+		if (outcome === "unavailable") {
+			if (settings.turnstileOutagePolicy === "reject") {
+				ctx.log.warn("Turnstile unavailable; rejecting per outage policy", { slug });
+				return rejectRecoverable("unavailable");
+			}
+			ctx.log.warn("Turnstile unavailable; accepting per outage policy", { slug });
 		}
 	}
 
 	// Validate against the form's field definitions.
 	const data: Record<string, string> = {};
-	const errors: string[] = [];
+	const errors: Record<string, string> = {};
 	const fieldKeys = new Set(form.fields.map((f) => f.key));
-	const extraKeys = Object.keys(values).filter(
-		(k) => !k.startsWith("cf_") && !fieldKeys.has(k),
-	);
+	const extraKeys = Object.keys(fieldValues).filter((k) => !fieldKeys.has(k));
 	if (form.fields.length === 0 || extraKeys.length + form.fields.length > MAX_FIELDS) {
 		return redirect303(routeCtx, "error", slug);
 	}
 	for (const field of form.fields) {
 		if (!field.key || !isFieldType(field.type)) continue;
-		const raw = values[field.key] ?? (field.type === "checkbox" ? "off" : "");
+		const raw = fieldValues[field.key] ?? (field.type === "checkbox" ? "off" : "");
 		const error = validateField(field, raw);
 		if (error) {
-			errors.push(field.key);
+			errors[field.key] = error;
 			continue;
 		}
-		data[field.key] = field.type === "checkbox" ? (raw === "on" || raw === "true" ? "on" : "off") : raw.trim();
+		data[field.key] = field.type === "checkbox" ? (checkboxState(raw) ?? "off") : raw.trim();
 	}
-	if (errors.length) {
-		debug("validation failed", { slug, errors });
-		return redirect303(routeCtx, "invalid", slug, errors);
+	if (Object.keys(errors).length) {
+		debug("validation failed", { slug, errors: Object.keys(errors) });
+		return rejectRecoverable("invalid", errors, Object.keys(errors));
 	}
 
-	// Store first — the submission is never lost even if the email fails.
+	// Idempotency: a retried post of identical content stores and emails once.
+	const claim = await claimIdempotency(ctx, slug, ip, meta.userAgent, data);
+	if (claim === "duplicate") {
+		ctx.log.info("Duplicate submission suppressed", { slug });
+		return redirect303(routeCtx, "saved", slug);
+	}
+
+	// Durable storage is the acceptance boundary: once the row is written the
+	// submission is safe, and every failure past this point degrades to
+	// bookkeeping — the visitor still gets "saved".
 	const submissionId = ulid();
 	const submission: SubmissionRecord = {
 		formId: found.id,
@@ -352,7 +570,7 @@ export async function handleSubmitRoute(
 		formName: form.name,
 		data,
 		fieldLabels: Object.fromEntries(form.fields.map((f) => [f.key, f.label])),
-		pageUrl: values.cf_page || meta.referer || undefined,
+		pageUrl: safePageUrl(protocol.cf_page, meta.referer, origin),
 		ip,
 		userAgent: meta.userAgent,
 		country: meta.geo?.country ?? null,
@@ -364,53 +582,68 @@ export async function handleSubmitRoute(
 	await ctx.storage.submissions.put(submissionId, submission);
 	debug("submission stored", { submissionId, slug });
 
-	const sent = await sendSubmissionEmail(ctx, form, submissionId, submission, settings);
-	submission.emailStatus = sent.status;
-	submission.emailAttempts = 1;
-	submission.emailError = sent.error;
+	try {
+		const sent = await sendSubmissionEmail(ctx, form, submissionId, submission, settings);
+		submission.emailStatus = sent.status;
+		submission.emailAttempts = 1;
+		submission.emailError = sent.error;
 
-	// Optional auto-reply to the visitor's email field.
-	if (form.sendConfirmation && ctx.email) {
-		const visitorEmail = firstEmailValue(form, submission.data);
-		if (visitorEmail) {
-			const message =
-				form.confirmationMessage?.trim() ||
-				`Thanks for reaching out to ${ctx.site.name}. We received your message and will reply soon.`;
-			const started = Date.now();
-			let status: EmailLogRecord["status"] = "sent";
-			let error: string | undefined;
-			try {
-				await ctx.email.send({
+		// Optional auto-reply to the visitor's email field.
+		if (form.sendConfirmation && ctx.email) {
+			const visitorEmail = firstEmailValue(form, submission.data);
+			if (visitorEmail) {
+				const message =
+					form.confirmationMessage?.trim() ||
+					`Thanks for reaching out to ${ctx.site.name}. We received your message and will reply soon.`;
+				const started = Date.now();
+				let status: EmailLogRecord["status"] = "sent";
+				let error: string | undefined;
+				try {
+					await ctx.email.send({
+						to: visitorEmail,
+						subject: `${form.name} — message received`,
+						text: message,
+					});
+				} catch (err) {
+					status = "failed";
+					error = err instanceof Error ? err.message : String(err);
+				}
+				await ctx.storage.email_log.put(ulid(), {
+					submissionId,
+					formId: submission.formId,
+					formSlug: form.slug,
+					kind: "confirmation",
 					to: visitorEmail,
 					subject: `${form.name} — message received`,
-					text: message,
-				});
-			} catch (err) {
-				status = "failed";
-				error = err instanceof Error ? err.message : String(err);
+					status,
+					error,
+					durationMs: Date.now() - started,
+					createdAt: new Date().toISOString(),
+				} satisfies EmailLogRecord);
 			}
-			await ctx.storage.email_log.put(ulid(), {
-				submissionId,
-				formId: submission.formId,
-				formSlug: form.slug,
-				kind: "confirmation",
-				to: visitorEmail,
-				subject: `${form.name} — message received`,
-				status,
-				error,
-				durationMs: Date.now() - started,
-				createdAt: new Date().toISOString(),
-			} satisfies EmailLogRecord);
 		}
+
+		await ctx.storage.submissions.put(submissionId, submission);
+		return redirect303(routeCtx, sent.status === "sent" ? "sent" : "saved", slug);
+	} catch (error) {
+		// The row is already durable — bookkeeping or delivery failures never
+		// become visitor-facing errors, and the idempotency claim suppresses
+		// the duplicate a retry would otherwise create.
+		ctx.log.error(
+			`Contact form post-storage work failed for ${submissionId}: ${error instanceof Error ? error.message : String(error)}`,
+			{ slug },
+		);
+		try {
+			if (submission.emailStatus === "pending") {
+				submission.emailStatus = "failed";
+				submission.emailError = "post-store processing failed";
+			}
+			await ctx.storage.submissions.put(submissionId, submission);
+		} catch {
+			// Nothing else to persist; the submission itself is already safe.
+		}
+		return redirect303(routeCtx, "saved", slug);
 	}
-
-	await ctx.storage.submissions.put(submissionId, submission);
-	return redirect303(routeCtx, sent.status === "sent" ? "sent" : "saved", slug);
-}
-
-function csvCell(value: unknown): string {
-	const s = value == null ? "" : String(value);
-	return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
 export async function handleExportRoute(

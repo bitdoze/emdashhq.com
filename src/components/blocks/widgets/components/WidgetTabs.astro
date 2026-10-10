@@ -1,8 +1,10 @@
 ---
 /**
  * widget_tabs — tabbed panels, one tab per OS or package manager. Without
- * JavaScript all panels render stacked. Copy into your site's components and
- * register it for the `widget_tabs` block type (see README).
+ * JavaScript the labels render as in-page jump links and every panel stays
+ * visible; the script upgrades the markup to a proper tablist/tab/tabpanel
+ * widget with arrow-key, Home and End navigation. Copy into your site's
+ * components and register it for the `widget_tabs` block type (see README).
  */
 
 type TabItem = { label: string; body: string };
@@ -26,32 +28,18 @@ function paragraphs(text: string): string[] {
 ---
 
 <div class="wgt-tabs" data-wgt-tabs>
-	<div class="wgt-tabs-list" role="tablist" aria-label="Content tabs">
+	<div class="wgt-tabs-list">
 		{
 			items.map((item, i) => (
-				<button
-					type="button"
-					role="tab"
-					id={`${id}-tab-${i}`}
-					aria-controls={`${id}-panel-${i}`}
-					aria-selected={i === 0 ? "true" : "false"}
-					tabindex={i === 0 ? 0 : -1}
-					class="wgt-tab"
-				>
+				<a href={`#${id}-panel-${i}`} id={`${id}-tab-${i}`} class="wgt-tab">
 					{item.label}
-				</button>
+				</a>
 			))
 		}
 	</div>
 	{
 		items.map((item, i) => (
-			<div
-				role="tabpanel"
-				id={`${id}-panel-${i}`}
-				aria-labelledby={`${id}-tab-${i}`}
-				class="wgt-tab-panel"
-				hidden={i !== 0}
-			>
+			<div id={`${id}-panel-${i}`} class="wgt-tab-panel">
 				{paragraphs(item.body).map((paragraph) => <p>{paragraph}</p>)}
 			</div>
 		))
@@ -62,22 +50,53 @@ function paragraphs(text: string): string[] {
 	for (const root of document.querySelectorAll<HTMLElement>("[data-wgt-tabs]")) {
 		if (root.dataset.enhanced) continue;
 		root.dataset.enhanced = "1";
-		const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
-		const panels = Array.from(root.querySelectorAll<HTMLElement>('[role="tabpanel"]'));
+		const list = root.querySelector<HTMLElement>(".wgt-tabs-list");
+		const tabs = Array.from(root.querySelectorAll<HTMLAnchorElement>("a.wgt-tab"));
+		const panels = Array.from(root.querySelectorAll<HTMLElement>(".wgt-tab-panel"));
+		if (list) {
+			list.setAttribute("role", "tablist");
+			list.setAttribute("aria-label", "Content tabs");
+		}
+		panels.forEach((panel, i) => {
+			const tab = tabs[i];
+			if (!tab) return;
+			tab.setAttribute("role", "tab");
+			tab.setAttribute("aria-controls", panel.id);
+			panel.setAttribute("role", "tabpanel");
+			panel.setAttribute("aria-labelledby", tab.id);
+		});
 		function select(index: number) {
 			tabs.forEach((tab, i) => {
 				tab.setAttribute("aria-selected", String(i === index));
 				tab.tabIndex = i === index ? 0 : -1;
 			});
-			panels.forEach((panel, i) => (panel.hidden = i !== index));
+			panels.forEach((panel, i) => {
+				panel.hidden = i !== index;
+				// A panel with no focusable content gets a tab stop so keyboard
+				// users can read past the tablist (APG tabs pattern).
+				if (i === index && !panel.querySelector("a, button, input, select, textarea, iframe, [tabindex]")) {
+					panel.tabIndex = 0;
+				} else {
+					panel.removeAttribute("tabindex");
+				}
+			});
 		}
+		select(0);
 		tabs.forEach((tab, i) => {
-			tab.addEventListener("click", () => select(i));
-			tab.addEventListener("keydown", (event) => {
-				const delta = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
-				if (!delta) return;
+			tab.addEventListener("click", (event) => {
 				event.preventDefault();
-				const next = (i + delta + tabs.length) % tabs.length;
+				select(i);
+				tab.focus();
+			});
+			tab.addEventListener("keydown", (event) => {
+				let next = -1;
+				if (event.key === "ArrowRight") next = (i + 1) % tabs.length;
+				else if (event.key === "ArrowLeft") next = (i - 1 + tabs.length) % tabs.length;
+				else if (event.key === "Home") next = 0;
+				else if (event.key === "End") next = tabs.length - 1;
+				else if (event.key === " ") next = i;
+				if (next < 0) return;
+				event.preventDefault();
 				select(next);
 				tabs[next].focus();
 			});
@@ -103,11 +122,13 @@ function paragraphs(text: string): string[] {
 	}
 
 	.wgt-tab {
+		display: inline-block;
 		padding: var(--spacing-sm, 0.75rem) var(--spacing-lg, 1.5rem);
 		font: inherit;
 		font-size: var(--font-size-sm, 0.875rem);
 		font-weight: 600;
 		color: var(--color-muted, #555);
+		text-decoration: none;
 		background: transparent;
 		border: none;
 		border-bottom: 2px solid transparent;

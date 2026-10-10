@@ -90,6 +90,31 @@ export interface PublicForm {
 	turnstileSiteKey?: string;
 }
 
+/**
+ * One-time recovery record for a rejected submission. Stored under
+ * `state:recovery:<ulid>` in plugin KV and deleted on first read, so a
+ * validation error never erases what the visitor typed.
+ */
+export interface RecoveryRecord {
+	formSlug: string;
+	/** Raw values for the declared fields, normalized for re-render. */
+	values: Record<string, string>;
+	/** Per-field error messages keyed by field key. */
+	errors: Record<string, string>;
+	createdAt: string;
+}
+
+/**
+ * Transient KV key prefixes and lifetimes — recovery drafts, per-IP attempt
+ * budgets, idempotency claims. The hourly `prune` cron deletes expired keys
+ * regardless of the retention setting.
+ */
+export const RECOVERY_PREFIX = "state:recovery:";
+export const RECOVERY_TTL_MS = 3600e3;
+export const RATE_PREFIX = "state:rate:";
+export const IDEM_PREFIX = "state:idem:";
+export const IDEM_TTL_MS = 24 * 3600e3;
+
 export interface PluginSettings {
 	defaultNotifyEmail: string;
 	defaultSubject: string;
@@ -97,6 +122,12 @@ export interface PluginSettings {
 	rateLimitPerHour: number;
 	turnstileSiteKey: string;
 	turnstileSecretKey: string;
+	/**
+	 * What to do when siteverify is unreachable or errors. "accept" stores the
+	 * submission anyway (availability first); "reject" shows a retryable error.
+	 * Verified rejections are always refused regardless of this setting.
+	 */
+	turnstileOutagePolicy: "accept" | "reject";
 	retentionDays: number;
 	extraDebug: boolean;
 }
@@ -108,6 +139,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	rateLimitPerHour: 20,
 	turnstileSiteKey: "",
 	turnstileSecretKey: "",
+	turnstileOutagePolicy: "accept",
 	retentionDays: 0,
 	extraDebug: false,
 };
@@ -157,6 +189,7 @@ export async function readSettings(ctx: PluginContext): Promise<PluginSettings> 
 			typeof raw.get("turnstileSiteKey") === "string" ? (raw.get("turnstileSiteKey") as string).trim() : "",
 		turnstileSecretKey:
 			typeof raw.get("turnstileSecretKey") === "string" ? (raw.get("turnstileSecretKey") as string).trim() : "",
+		turnstileOutagePolicy: raw.get("turnstileOutagePolicy") === "reject" ? "reject" : "accept",
 		retentionDays:
 			typeof raw.get("retentionDays") === "number" && raw.get("retentionDays") !== null
 				? Math.max(0, Math.min(3650, raw.get("retentionDays") as number))

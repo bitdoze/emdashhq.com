@@ -2,8 +2,14 @@
 // before visitors arrive. The cache key includes the Worker version, so each
 // deploy starts empty and the first visit to a page pays a cold render.
 //
-// Usage: node scripts/warm-cache.mjs [origin]
+// The script fails (exit 1) when a sitemap cannot be read, a page never turns
+// a cached status after every pass, a page answers an uncacheable status
+// (BYPASS/DYNAMIC), or a page does not return 2xx — a partial warm is not a
+// warm cache.
+//
+// Usage: node scripts/warm-cache.mjs [origin] [--settle=ms]
 // Without an origin, the custom domain comes from the built Wrangler config.
+// `--selftest` runs the warm logic against a local fixture server.
 
 import { readFile } from "node:fs/promises";
 
@@ -13,11 +19,11 @@ const MAX_PASSES = 3;
 // Lets a just-uploaded version finish rolling out before the first pass.
 const SETTLE_MS = 5000;
 const PASS_GAP_MS = 2000;
+const REQUEST_TIMEOUT_MS = 20_000;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function siteOrigin() {
-	const arg = process.argv[2];
+async function siteOrigin(arg) {
 	if (arg) return { origin: new URL(arg).origin };
 	try {
 		const config = JSON.parse(
@@ -35,15 +41,18 @@ async function siteOrigin() {
 
 async function sitemapPaths(origin) {
 	const paths = new Set(["/"]);
+	const failures = [];
 	const queue = [`${origin}/sitemap.xml`];
 	const seen = new Set();
 	while (queue.length > 0) {
 		const sitemap = queue.shift();
 		if (seen.has(sitemap)) continue;
 		seen.add(sitemap);
-		const response = await fetch(sitemap).catch((error) => ({ ok: false, status: error.message }));
+		const response = await fetch(sitemap, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) }).catch(
+			(error) => ({ ok: false, status: error.message }),
+		);
 		if (!response.ok) {
-			console.warn(`Skipping ${sitemap}: ${response.status}`);
+			failures.push(`${sitemap} (${response.status})`);
 			continue;
 		}
 		const xml = await response.text();
@@ -55,7 +64,7 @@ async function sitemapPaths(origin) {
 			else paths.add(`${url.pathname}${url.search}`);
 		}
 	}
-	return [...paths];
+	return { paths: [...paths], failures };
 }
 
 async function warm(url) {
@@ -63,7 +72,11 @@ async function warm(url) {
 	try {
 		// Follow redirects so canonical targets (e.g. trailing-slash blog URLs
 		// the sitemap emits slashless) get warmed too.
-		const response = await fetch(url, { headers: { Accept: "text/html" }, redirect: "follow" });
+		const response = await fetch(url, {
+			headers: { Accept: "text/html" },
+			redirect: "follow",
+			signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+		});
 		await response.arrayBuffer();
 		return {
 			status: response.status,
@@ -75,15 +88,10 @@ async function warm(url) {
 	}
 }
 
-async function main() {
-	const { origin, error } = await siteOrigin();
-	if (error) {
-		console.error(error);
-		return 1;
-	}
-
-	await sleep(SETTLE_MS);
-	const paths = await sitemapPaths(origin);
+async function run(origin, { settle = SETTLE_MS } = {}) {
+	await sleep(settle);
+	const { paths, failures } = await sitemapPaths(origin);
+	for (const failure of failures) console.error(`Sitemap unavailable: ${failure}`);
 	console.log(`Warming ${paths.length} pages on ${origin}`);
 
 	const failed = new Map();
@@ -114,15 +122,112 @@ async function main() {
 	}
 
 	const cold = pending.filter((path) => !failed.has(path));
-	if (uncacheable.size > 0) console.warn(`Not cacheable: ${[...uncacheable].join(", ")}`);
-	if (cold.length > 0) console.warn(`Not cached yet after ${MAX_PASSES} passes: ${cold.join(", ")}`);
+	let code = 0;
+	if (failures.length > 0) {
+		console.error(`Could not read ${failures.length} sitemap(s); the warm may be incomplete.`);
+		code = 1;
+	}
+	if (uncacheable.size > 0) {
+		console.error(`Unexpected uncacheable pages (BYPASS/DYNAMIC): ${[...uncacheable].join(", ")}`);
+		code = 1;
+	}
+	if (cold.length > 0) {
+		console.error(`Still cold after ${MAX_PASSES} passes: ${cold.join(", ")}`);
+		code = 1;
+	}
 	if (failed.size > 0) {
 		const list = [...failed].map(([path, status]) => `${path} (${status})`).join(", ");
 		console.error(`The Worker is deployed, but these pages did not return 2xx: ${list}`);
+		code = 1;
+	}
+	if (code === 0) console.log("Cache warm.");
+	return code;
+}
+
+// Exercises run() against a local fixture — no deploy needed to check the
+// failure modes.
+async function selftest() {
+	const { createServer } = await import("node:http");
+	const { once } = await import("node:events");
+
+	const serve = async (handler) => {
+		const server = createServer(handler);
+		server.listen(0, "127.0.0.1");
+		await once(server, "listening");
+		return { server, origin: `http://127.0.0.1:${server.address().port}` };
+	};
+
+	const withSitemap = (paths, pageHandler) => (req, res) => {
+		if (req.url === "/sitemap.xml") {
+			const locs = paths.map((p) => `<url><loc>http://x${p}</loc></url>`).join("");
+			res.setHeader("content-type", "application/xml");
+			res.end(`<?xml version="1.0"?><urlset>${locs}</urlset>`);
+			return;
+		}
+		pageHandler(req, res);
+	};
+
+	let failures = 0;
+	const check = async (name, expected, handler) => {
+		const { server, origin } = await serve(handler);
+		const code = await run(origin, { settle: 0 });
+		const okResult = code === expected;
+		if (!okResult) failures++;
+		console.log(`${okResult ? "PASS" : "FAIL"} selftest:${name} (exit ${code}, expected ${expected})`);
+		server.close();
+	};
+
+	// Healthy: a MISS that warms to HIT on the second pass.
+	const healthy = (() => {
+		let missHits = 0;
+		return withSitemap(["/", "/about"], (req, res) => {
+			res.setHeader("content-type", "text/html");
+			if (req.url === "/") res.setHeader("cf-cache-status", missHits++ === 0 ? "MISS" : "HIT");
+			else res.setHeader("cf-cache-status", "HIT");
+			res.end("ok");
+		});
+	})();
+	await check("healthy", 0, healthy);
+
+	// Broken: one page never caches and one answers BYPASS.
+	await check(
+		"cold-and-bypass",
+		1,
+		withSitemap(["/", "/always-miss", "/bypassed"], (req, res) => {
+			res.setHeader("content-type", "text/html");
+			if (req.url === "/always-miss") res.setHeader("cf-cache-status", "MISS");
+			else if (req.url === "/bypassed") res.setHeader("cf-cache-status", "BYPASS");
+			else res.setHeader("cf-cache-status", "HIT");
+			res.end("ok");
+		}),
+	);
+
+	// No sitemap at all.
+	await check("missing-sitemap", 1, (req, res) => {
+		if (req.url === "/sitemap.xml") {
+			res.statusCode = 404;
+			res.end("not found");
+			return;
+		}
+		res.setHeader("content-type", "text/html");
+		res.setHeader("cf-cache-status", "HIT");
+		res.end("ok");
+	});
+
+	return failures;
+}
+
+async function main() {
+	const args = process.argv.slice(2);
+	if (args.includes("--selftest")) return await selftest();
+	const settleArg = args.find((a) => a.startsWith("--settle="));
+	const settle = settleArg ? Number(settleArg.split("=")[1]) : SETTLE_MS;
+	const { origin, error } = await siteOrigin(args.find((a) => !a.startsWith("--")));
+	if (error) {
+		console.error(error);
 		return 1;
 	}
-	console.log("Cache warm.");
-	return 0;
+	return await run(origin, { settle });
 }
 
 process.exitCode = await main();

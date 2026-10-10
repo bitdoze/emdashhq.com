@@ -12,7 +12,7 @@ import type { PluginContext, SandboxedRouteContext } from "emdash/plugin";
 
 import { sendSubmissionEmail } from "./public";
 import { readSettings } from "./types";
-import { slugify, ulid } from "./util";
+import { csvCell, slugify, ulid } from "./util";
 import {
 	FIELD_TYPES,
 	isFieldType,
@@ -269,6 +269,20 @@ async function viewFormEdit(
 			}),
 		}),
 	];
+
+	// Definitions stored before the cf_ prefix was reserved may still carry a
+	// colliding key; submissions on those forms are refused until renamed.
+	const reserved = form.fields.filter((f) => f.key.startsWith("cf_")).map((f) => f.key);
+	if (reserved.length) {
+		out.push(
+			blocks.banner({
+				variant: "error",
+				title: `Reserved field ${reserved.length === 1 ? "key" : "keys"}: ${reserved.join(", ")}`,
+				description:
+					'Keys starting with "cf_" collide with the form\'s hidden submit inputs. Visitors get an error until the field is renamed.',
+			}),
+		);
+	}
 
 	if (form.fields.length === 0) {
 		out.push(
@@ -718,10 +732,6 @@ async function viewCsv(ctx: PluginContext, opts: { formId?: string; status?: str
 	if (opts.formId) where.formId = opts.formId;
 	if (opts.status && (SUBMISSION_STATUSES as readonly string[]).includes(opts.status))
 		where.status = opts.status;
-	const esc = (v: unknown) => {
-		const s = v == null ? "" : String(v);
-		return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-	};
 	const lines = ["id,created_at,form,status,email_status,page,data"];
 	let cursor: string | undefined;
 	let rows = 0;
@@ -736,7 +746,7 @@ async function viewCsv(ctx: PluginContext, opts: { formId?: string; status?: str
 			const s = item.data as SubmissionRecord;
 			lines.push(
 				[item.id, s.createdAt, s.formSlug, s.status, s.emailStatus, s.pageUrl ?? "", JSON.stringify(s.data)]
-					.map(esc)
+					.map(csvCell)
 					.join(","),
 			);
 			if (++rows >= 500) break;
@@ -823,7 +833,7 @@ function viewHelp(): BlockResponse {
 			step("4", "Activate an email provider in Settings > Email and send a test email. Without one, submissions are stored but not emailed."),
 			blocks.section("Anti-spam"),
 			blocks.context(
-				"Every rendered form carries a hidden honeypot field and a timestamp trap; both pretend success to bots. A per-IP hourly limit (Settings) caps floods. For a hard check, set Turnstile keys in Settings — every form then renders a Cloudflare Turnstile widget and submissions are verified against siteverify.",
+				"Every rendered form carries a hidden honeypot field and a timestamp trap; both pretend success to bots. A per-IP hourly attempt budget (Settings) is consumed before verification, so failed attempts count too. For a hard check, set Turnstile keys in Settings — every form then renders a Cloudflare Turnstile widget and submissions are verified against siteverify. If siteverify cannot be reached, the outage policy in Settings chooses between storing the submission anyway (default) or asking the visitor to retry; a completed verification that fails always rejects.",
 			),
 			blocks.actions([elements.link("Back to forms", { kind: "plugin-page", path: "/forms" })]),
 		],
@@ -1094,6 +1104,8 @@ function validateFieldInput(
 	if (!field.label) return "Label is required";
 	if (!KEY_PATTERN.test(field.key))
 		return "Key must start with a letter and use only lowercase letters, numbers and underscores";
+	if (field.key.startsWith("cf_"))
+		return 'Keys starting with "cf_" are reserved — they carry the form\'s hidden submit data';
 	if (field.type === "select" && !field.options?.length)
 		return "Select fields need at least one option";
 	const clash = form.fields.findIndex(

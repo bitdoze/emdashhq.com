@@ -45,10 +45,49 @@ if (emdash?.handlePublicPluginApiRoute && slug) {
 	}
 }
 
+// The rendered page depends on this form's definition; the middleware purges
+// the tag when the plugin's forms or settings change.
+if (Astro.cache.enabled) Astro.cache.set({ tags: ["contact-forms"] });
+
 const params = Astro.url.searchParams;
-const forThisForm = params.get("cf") === slug;
+const forThisForm = Boolean(slug) && params.get("cf") === slug;
 const status = forThisForm ? params.get("cf_status") : null;
 const invalidFields = new Set((forThisForm ? params.get("cf_fields") : null)?.split(",") ?? []);
+
+// A submission result personalizes this response — opt out of the shared page
+// cache so another visitor never sees it.
+if (forThisForm) Astro.cache.set(false);
+
+interface FormRecovery {
+	formSlug: string;
+	values: Record<string, string>;
+	errors: Record<string, string>;
+}
+
+// The submit route stores rejected drafts server-side and passes a one-time
+// id in cf_rid; the record is deleted on read.
+let recovery: FormRecovery | null = null;
+const rid = forThisForm ? params.get("cf_rid") : null;
+if (rid && emdash?.handlePublicPluginApiRoute) {
+	try {
+		const res = await emdash.handlePublicPluginApiRoute(
+			PLUGIN_ID,
+			"GET",
+			"recovery",
+			new Request(
+				`${Astro.url.origin}/_emdash/api/plugins/${PLUGIN_ID}/recovery?id=${encodeURIComponent(rid)}`,
+			),
+		);
+		if (res.success && res.data && typeof res.data === "object") {
+			const rec = (res.data as { recovery?: FormRecovery }).recovery ?? null;
+			if (rec && rec.formSlug === slug) recovery = rec;
+		}
+	} catch {
+		// A failed recovery read just loses the draft — the form still renders.
+	}
+}
+const fieldValues = recovery?.values ?? {};
+const fieldErrors = recovery?.errors ?? {};
 
 const submitUrl = `/_emdash/api/plugins/${PLUGIN_ID}/submit`;
 const inputId = (key: string) => `cf-${slug}-${key}`;
@@ -100,6 +139,11 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 								The spam check failed — please try again.
 							</p>
 						)}
+						{status === "unavailable" && (
+							<p class="cf-note cf-err" role="alert">
+								The spam check is temporarily unavailable — please try again in a moment.
+							</p>
+						)}
 						{status === "error" && (
 							<p class="cf-note cf-err" role="alert">
 								This form is not accepting submissions right now.
@@ -109,6 +153,15 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 						<div class="cf-fields">
 							{form.fields.map((field) => {
 								const invalid = invalidFields.has(field.key);
+								const error = fieldErrors[field.key];
+								const submitted = fieldValues[field.key];
+								const describedBy =
+									[
+										error ? `${inputId(field.key)}-err` : null,
+										field.help ? `${inputId(field.key)}-help` : null,
+									]
+										.filter(Boolean)
+										.join(" ") || undefined;
 								return (
 									<p class:list={["cf-field", { "cf-field-bad": invalid }]}>
 										<label for={inputId(field.key)}>
@@ -123,17 +176,19 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 												required={field.required}
 												placeholder={field.placeholder}
 												aria-invalid={invalid || undefined}
-											/>
+												aria-describedby={describedBy}
+											>{submitted ?? ""}</textarea>
 										) : field.type === "select" ? (
 											<select
 												id={inputId(field.key)}
 												name={field.key}
 												required={field.required}
 												aria-invalid={invalid || undefined}
+												aria-describedby={describedBy}
 											>
 												<option value="">Choose…</option>
 												{(field.options ?? []).map((option) => (
-													<option value={option}>{option}</option>
+													<option value={option} selected={submitted === option}>{option}</option>
 												))}
 											</select>
 										) : field.type === "checkbox" ? (
@@ -143,7 +198,9 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 													id={inputId(field.key)}
 													name={field.key}
 													required={field.required}
+													checked={submitted === "on"}
 													aria-invalid={invalid || undefined}
+													aria-describedby={describedBy}
 												/>
 											</span>
 										) : (
@@ -163,10 +220,15 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 												name={field.key}
 												required={field.required}
 												placeholder={field.placeholder}
+												value={submitted}
 												aria-invalid={invalid || undefined}
+												aria-describedby={describedBy}
 											/>
 										)}
-										{field.help && <span class="cf-help">{field.help}</span>}
+										{error && (
+											<span class="cf-error" id={`${inputId(field.key)}-err`}>{error}</span>
+										)}
+										{field.help && <span class="cf-help" id={`${inputId(field.key)}-help`}>{field.help}</span>}
 									</p>
 								);
 							})}
@@ -202,10 +264,14 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 </section>
 
 {
-	/* The 303 reload lands at the page top; bring the status note into view. */
+	/* The 303 reload lands at the page top; focus the first invalid field so
+	 * keyboard and screen-reader users land on the problem, else scroll the
+	 * status note into view. */
 	status && (
 		<script>
-			document.querySelector(".cf-note")?.scrollIntoView({ block: "center" });
+			const bad = document.querySelector(".cf-form [aria-invalid='true']");
+			if (bad instanceof HTMLElement) bad.focus();
+			else document.querySelector(".cf-note")?.scrollIntoView({ block: "center" });
 		</script>
 	)
 }
@@ -288,6 +354,12 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 		color: var(--color-muted);
 	}
 
+	.cf-error {
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		color: var(--color-danger);
+	}
+
 	.cf-field-bad input:not([type="checkbox"]),
 	.cf-field-bad textarea,
 	.cf-field-bad select {
@@ -332,6 +404,10 @@ const inputId = (key: string) => `cf-${slug}-${key}`;
 	}
 
 	.cf-submit {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44px; /* 44px touch target */
 		font-family: var(--font-mono);
 		font-size: var(--font-size-sm);
 		font-weight: 600;

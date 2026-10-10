@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /*
- * Builds the "start here" section on the home page, right after the hero:
- * numbered steps plus a guide card for every step. Simple on purpose -
- * no duplicated CTAs. GET-modify-PUT; replaces the section in place when
- * it already exists (anchored by the steps title, consuming the
- * contiguous widget_* run).
+ * Builds the "start here" roadmap on the home page, right after the
+ * hero: five numbered steps, one line each, nothing else. The deeper
+ * guides already live in the tutorials/plugins sections below.
+ * GET-modify-PUT; replaces the section in place when it already exists
+ * (anchored by the steps title, consuming the contiguous widget_* run).
  *
  * Prod: node scripts/add-home-steps.mjs --url https://emdashhq.com --token <token>
  */
@@ -44,8 +44,6 @@ const ok = (r) => r.status >= 200 && r.status < 300;
 const uid = () => `s${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 
 const TITLE = "New to EmDash? Zero to deployed in an afternoon";
-const CARDS_TITLE = "A guide for every step";
-const UTM = "?utm_source=emdashhq&utm_medium=start_section&utm_campaign=getting-started";
 
 const SECTION = [
 	{
@@ -56,40 +54,24 @@ const SECTION = [
 		items: [
 			{
 				title: "Scaffold the site",
-				body: "Run npm create emdash@latest, pick the template closest to your target, then npm run dev. You get a working CMS on SQLite and the admin at /_emdash/admin - no accounts, no cloud signup, ten minutes.",
+				body: "npm create emdash@latest, then npm run dev. Admin at /_emdash/admin, no accounts needed.",
 			},
 			{
 				title: "Make it yours",
-				body: "Edit the collections in seed.json and the theme tokens, then write your first entry in the admin. The content model and the look are files you own, not settings in a database.",
+				body: "Edit seed.json and the theme tokens, write your first entry.",
 			},
 			{
 				title: "Pick the host",
-				body: "Cloudflare Workers is the managed route: free tier, then $5 a month once you want sandboxed registry plugins. Docker on a cheap VPS is the boring-reliable alternative, Coolify if you want a panel.",
+				body: "Cloudflare Workers free tier, or Docker on any VPS.",
 			},
 			{
 				title: "Deploy",
-				body: "npm run deploy builds the site, checks production migrations, uploads the Worker and warms the page cache. First run takes about as long as making coffee.",
+				body: "npm run deploy - build, migration check, upload, cache warm in one command.",
 			},
 			{
 				title: "Extend when ready",
-				body: "Admin, Plugins, Registry - search, install, approve. Contact Forms and Content Widgets, both free and both running on this site, are the two most sites install first.",
+				body: "Admin, Plugins, Registry. Contact Forms and Content Widgets are free and a good first install.",
 			},
-		],
-	},
-	{
-		_type: "widget_cards",
-		_version: 1,
-		_key: uid(),
-		title: CARDS_TITLE,
-		items: [
-			{ icon: "book", title: "Your first EmDash site", url: `https://www.bitdoze.com/emdash-cms-tutorial/${UTM}`, description: "Steps 1 and 2: scaffold, the admin, and the files you will actually edit" },
-			{ icon: "star", title: "Build a custom theme", url: `https://www.bitdoze.com/emdash-custom-theme/${UTM}`, description: "Step 2 deeper: tokens, blocks and seed schema on a real site" },
-			{ icon: "rocket", title: "Deploy on Cloudflare Workers", url: `https://www.bitdoze.com/deploy-emdash-cloudflare-workers/${UTM}`, description: "Step 3's managed path: D1, R2 and the free tier, end to end" },
-			{ icon: "rocket", title: "Self-host with Docker", url: `https://www.bitdoze.com/deploy-emdash-docker/${UTM}`, description: "Step 3's other path: a compose stack on a VPS, with sizing benchmarks" },
-			{ icon: "play", title: "Watch the deploy on YouTube", url: "https://www.youtube.com/watch?v=EbVsG5feCH8", description: "The free-tier Cloudflare deploy, filmed start to finish" },
-			{ icon: "arrow-right", title: "Migrate from WordPress", url: "/blog/wordpress-to-emdash-migration/", description: "Already on WP? The route from export to DNS, plugin by plugin" },
-			{ icon: "mail", title: "Contact forms end to end", url: "/blog/emdash-contact-forms/", description: "Step 5's first plugin: forms, inbox, email, anti-spam" },
-			{ icon: "star", title: "Writing with Content Widgets", url: "/blog/writing-with-emdash-widgets/", description: "Step 5's second plugin: the blocks this section is built from" },
 		],
 	},
 ];

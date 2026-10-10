@@ -1,5 +1,5 @@
 ---
-import { extractPlainText, getEmDashEntry, getSeoMeta } from "emdash";
+import { getEmDashEntry, getSeoMeta } from "emdash";
 import { Image } from "emdash/ui";
 import WidgetBlocks from "../../components/blocks/widgets/WidgetBlocks.astro";
 import Base from "../../layouts/Base.astro";
@@ -29,14 +29,29 @@ Astro.response.headers.set("X-Site-Data-Ms", (performance.now() - started).toFix
 
 if (!post) return Astro.rewrite("/404");
 
-// Reading time from the prose blocks — ~200 words a minute.
+// Reading time from every textual field in the body — ~200 words a minute.
+// Steps, checklists, quotes and facts read like prose, so only machine-ish
+// values (urls, icons, keys, colors, filenames) stay out of the count.
+const READING_KEYS = new Set([
+	"text", "title", "heading", "caption", "quote", "attribution", "role",
+	"label", "value", "description", "name", "body",
+]);
+const collectText = (node: unknown, out: string[]): void => {
+	if (Array.isArray(node)) {
+		for (const item of node) collectText(item, out);
+		return;
+	}
+	if (node && typeof node === "object") {
+		for (const [k, v] of Object.entries(node)) {
+			if (typeof v === "string" && READING_KEYS.has(k)) out.push(v);
+			else collectText(v, out);
+		}
+	}
+};
 const body = post.data.body ?? [];
-const words = body
-	.filter((block) => block._type === "widget_prose")
-	.map((block) => extractPlainText(block.body))
-	.join(" ")
-	.split(/\s+/)
-	.filter(Boolean).length;
+const chunks: string[] = [];
+collectText(body, chunks);
+const words = chunks.join(" ").split(/\s+/).filter(Boolean).length;
 const minutes = Math.max(1, Math.round(words / 200));
 
 const seo = getSeoMeta(post, {

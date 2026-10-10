@@ -562,7 +562,7 @@ if (!post) return Astro.rewrite("/404");`,
 				p("Four things worth stealing. The early 301s normalize the URL before any data work happens. The entry read runs in parallel with the site chrome read - one round trip, not two. A failed query sets no cache and returns a deliberately uncached 503 rather than a poisoned 500. And a missing post rewrites to the 404 page instead of rendering an empty shell."),
 			),
 			prose(
-				p("The reading time on the post header is also computed, not stored: the route filters body blocks down to widget_prose, runs extractPlainText over their Portable Text, and divides the word count by 200. Every article's minutes stay honest automatically."),
+				p("The reading time on the post header is also computed, not stored: the route walks every block's text fields - prose, steps, checklists, quotes, facts - and divides the word count by 200. Every article's minutes stay honest automatically."),
 			),
 			h2("What the head gets"),
 			prose(p("getSeoMeta resolves the SEO tab on each post - meta title, description, og image - and falls back to the title and excerpt when the fields are empty. Canonical and robots come along for free, and the cover doubles as og:image. Fill the SEO tab once and every surface agrees.")),

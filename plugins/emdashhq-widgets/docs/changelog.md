@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4
+
+- Tabs without JavaScript: labels degrade to in-page anchors and every panel stays visible. With JS they upgrade to real tabs with arrow keys, Home/End and roving tabindex.
+- Docs: gallery demo link carries UTM parameters.
+
 ## 1.0.3
 
 - Product box: fixed the image-less layout squeezing content into a narrow column; media column now only renders when a picture is set

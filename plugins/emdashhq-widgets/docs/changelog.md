@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3
+
+- Product box: fixed the image-less layout squeezing content into a narrow column; media column now only renders when a picture is set
+- Product box restyle: mono disclosure line, price chip, check/cross markers on pros and cons, button styled like the site buttons
+- Site icon set gained an `x` icon for the cons column
+
 ## 1.0.2
 
 - Docs: description links to the live widget-gallery demo post

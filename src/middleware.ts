@@ -2,7 +2,7 @@ import { defineMiddleware } from "astro:middleware";
 import type { PageFragmentContribution } from "emdash";
 
 const SCRIPTS_TAG = "site-scripts";
-const SETTINGS_PATH = "/_emdash/api/admin/plugins/site-scripts/settings";
+const SETTINGS_PATH = "/_emdash/api/admin/plugins/emdashhq-site-scripts/settings";
 
 export const onRequest = defineMiddleware(async (context, next) => {
 	const publicPage = !context.url.pathname.startsWith("/_emdash/");

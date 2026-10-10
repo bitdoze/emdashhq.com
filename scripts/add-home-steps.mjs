@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 /*
- * Inserts the "start here" steps section on the home page: a widget_steps
- * block right after the hero plus two CTA buttons. GET-modify-PUT; skips if
- * the section is already present (matched by the steps title).
+ * Builds the "start here" section on the home page, right after the hero:
+ * numbered steps, a copy-paste quickstart, the deploy video, a guide card
+ * for every step, a cost note, and CTAs into both plugins and the catalog.
+ * GET-modify-PUT; replaces the section in place when it already exists
+ * (anchored by the steps title, consuming the contiguous widget_* run).
  *
  * Prod: node scripts/add-home-steps.mjs --url https://emdashhq.com --token <token>
  */
@@ -43,16 +45,28 @@ const uid = () => `s${Date.now().toString(36)}${Math.random().toString(36).slice
 
 const TITLE = "New to EmDash? Zero to deployed in an afternoon";
 const CARDS_TITLE = "A guide for every step";
+const REG_CF = "https://plugins.emdashcms.com/plugins/@bitdoze.com/emdashhq-contact-forms";
+const REG_WGT = "https://plugins.emdashcms.com/plugins/@bitdoze.com/emdashhq-widgets";
+const UTM = "?utm_source=emdashhq&utm_medium=start_section&utm_campaign=getting-started";
 
-const STEPS = {
-	_type: "widget_steps",
-	_version: 1,
+const ptBlock = (text, style = "normal") => ({
+	_type: "block",
 	_key: uid(),
-	title: TITLE,
-	items: [
+	style,
+	markDefs: [],
+	children: [{ _type: "span", _key: uid(), text, marks: [] }],
+});
+
+const SECTION = [
+	{
+		_type: "widget_steps",
+		_version: 1,
+		_key: uid(),
+		title: TITLE,
+		items: [
 			{
 				title: "Scaffold the site",
-				body: "Run npm create emdash@latest and pick the template closest to your target. You get a working CMS on SQLite and the admin at /_emdash/admin - no accounts, no cloud setup.",
+				body: "Run npm create emdash@latest, pick the template closest to your target, then npm run dev. You get a working CMS on SQLite and the admin at /_emdash/admin - no accounts, no cloud signup, ten minutes.",
 			},
 			{
 				title: "Make it yours",
@@ -60,41 +74,70 @@ const STEPS = {
 			},
 			{
 				title: "Pick the host",
-				body: "Cloudflare Workers for the managed route - free tier, or $5 a month when you want sandboxed registry plugins. A cheap VPS with Docker is the boring-reliable alternative.",
+				body: "Cloudflare Workers is the managed route: free tier, then $5 a month once you want sandboxed registry plugins. Docker on a cheap VPS is the boring-reliable alternative, Coolify if you want a panel.",
 			},
 			{
 				title: "Deploy",
-				body: "npm run deploy builds the site, checks production migrations, uploads the Worker and warms the page cache. The first deploy takes about as long as making coffee.",
+				body: "npm run deploy builds the site, checks production migrations, uploads the Worker and warms the page cache. First run takes about as long as making coffee.",
 			},
 			{
 				title: "Extend when ready",
-				body: "The registry's plugins cover the usual gaps. Contact Forms and Content Widgets - both free, both running on this site - are the two most sites install first.",
+				body: "Admin, Plugins, Registry - search, install, approve. Contact Forms and Content Widgets, both free and both running on this site, are the two most sites install first.",
 			},
 		],
-};
-
-const CARDS = {
-	_type: "widget_cards",
-	_version: 1,
-	_key: uid(),
-	title: CARDS_TITLE,
-	items: [
-		{ icon: "book", title: "Your first EmDash site", url: "https://www.bitdoze.com/emdash-cms-tutorial/", description: "Steps 1 and 2: npm create, the admin, and the pieces you will actually edit" },
-		{ icon: "star", title: "Build a custom theme", url: "https://www.bitdoze.com/emdash-custom-theme/", description: "Step 2 deeper: tokens, blocks and seed schema on a real site" },
-		{ icon: "rocket", title: "Deploy with Docker", url: "https://www.bitdoze.com/deploy-emdash-docker/", description: "Step 3's other path: self-host on a VPS, with benchmarks to size it" },
-		{ icon: "book", title: "Migrate from WordPress", url: "/blog/wordpress-to-emdash-migration/", description: "If you are moving an existing site: the full route from export to DNS" },
-		{ icon: "mail", title: "Contact forms end to end", url: "/blog/emdash-contact-forms/", description: "Step 5's first plugin: forms, inbox, email and anti-spam" },
-		{ icon: "play", title: "Writing with Content Widgets", url: "/blog/writing-with-emdash-widgets/", description: "Step 5's second plugin: the article blocks this section is built from" },
-	],
-};
-
-const BUTTONS = [
+	},
+	{
+		_type: "widget_prose",
+		_version: 1,
+		_key: uid(),
+		body: [ptBlock("The copy-paste version", "h3")],
+	},
+	{
+		_type: "widget_code",
+		_version: 1,
+		_key: uid(),
+		language: "bash",
+		filename: "quickstart.sh",
+		code: "npm create emdash@latest my-site\ncd my-site\nnpm run dev      # admin at http://localhost:4321/_emdash/admin\nnpm run deploy   # build -> migrate check -> upload -> cache warm",
+	},
+	{
+		_type: "widget_youtube",
+		_version: 1,
+		_key: uid(),
+		url: "https://www.youtube.com/watch?v=EbVsG5feCH8",
+		title: "Deploy EmDash on Cloudflare Workers for FREE (Step-by-Step)",
+		caption: "Prefer to watch? The free-tier deploy, filmed start to finish.",
+	},
+	{
+		_type: "widget_cards",
+		_version: 1,
+		_key: uid(),
+		title: CARDS_TITLE,
+		items: [
+			{ icon: "book", title: "Your first EmDash site", url: `https://www.bitdoze.com/emdash-cms-tutorial/${UTM}`, description: "Steps 1 and 2: scaffold, the admin, and the files you will actually edit" },
+			{ icon: "star", title: "Build a custom theme", url: `https://www.bitdoze.com/emdash-custom-theme/${UTM}`, description: "Step 2 deeper: tokens, blocks and seed schema on a real site" },
+			{ icon: "rocket", title: "Deploy on Cloudflare Workers", url: `https://www.bitdoze.com/deploy-emdash-cloudflare-workers/${UTM}`, description: "Step 3's managed path: D1, R2 and the free tier, end to end" },
+			{ icon: "rocket", title: "Self-host with Docker", url: `https://www.bitdoze.com/deploy-emdash-docker/${UTM}`, description: "Step 3's other path: a compose stack on a VPS, with sizing benchmarks" },
+			{ icon: "play", title: "Watch the deploy on YouTube", url: "https://www.youtube.com/watch?v=EbVsG5feCH8", description: "The free-tier Cloudflare deploy, filmed start to finish" },
+			{ icon: "arrow-right", title: "Migrate from WordPress", url: "/blog/wordpress-to-emdash-migration/", description: "Already on WP? The route from export to DNS, plugin by plugin" },
+			{ icon: "mail", title: "Contact forms end to end", url: "/blog/emdash-contact-forms/", description: "Step 5's first plugin: forms, inbox, email, anti-spam" },
+			{ icon: "star", title: "Writing with Content Widgets", url: "/blog/writing-with-emdash-widgets/", description: "Step 5's second plugin: the blocks this section is built from" },
+		],
+	},
+	{
+		_type: "widget_notice",
+		_version: 1,
+		_key: uid(),
+		kind: "info",
+		title: "What it costs",
+		body: [ptBlock("Everything here is free except one line item: Cloudflare's Workers Paid plan at $5 a month, and you need it only for sandboxed registry plugins. The CMS, the deploys and both plugins cost nothing.")],
+	},
 	{
 		_type: "widget_button",
 		_version: 1,
 		_key: uid(),
-		label: "Read the deploy tutorial",
-		url: "https://www.bitdoze.com/deploy-emdash-cloudflare-workers/",
+		label: "Start the tutorial",
+		url: `https://www.bitdoze.com/emdash-cms-tutorial/${UTM}`,
 		icon: "rocket",
 		variant: "solid",
 		new_tab: true,
@@ -103,12 +146,43 @@ const BUTTONS = [
 		_type: "widget_button",
 		_version: 1,
 		_key: uid(),
-		label: "Browse the plugins",
-		url: "/plugins/",
+		label: "Contact Forms plugin",
+		url: REG_CF,
+		icon: "mail",
+		variant: "outline",
+		new_tab: true,
+	},
+	{
+		_type: "widget_button",
+		_version: 1,
+		_key: uid(),
+		label: "Content Widgets plugin",
+		url: REG_WGT,
 		icon: "star",
+		variant: "outline",
+		new_tab: true,
+	},
+	{
+		_type: "widget_button",
+		_version: 1,
+		_key: uid(),
+		label: "Browse all plugins",
+		url: "/plugins/",
+		icon: "arrow-right",
 		variant: "outline",
 	},
 ];
+
+// Block types this script owns - used to find the section's extent.
+const OUR_TYPES = new Set([
+	"widget_steps",
+	"widget_prose",
+	"widget_code",
+	"widget_youtube",
+	"widget_cards",
+	"widget_notice",
+	"widget_button",
+]);
 
 const found = await api("GET", `/content/pages/home`);
 const item = found.json?.data?.item ?? found.json?.item;
@@ -119,21 +193,17 @@ if (!ok(found) || !item?.id) {
 const data = { ...(item.data ?? {}) };
 const content = [...(data.content ?? [])];
 
-const hasSteps = content.some((b) => b._type === "widget_steps" && b.title === TITLE);
-const hasCards = content.some((b) => b._type === "widget_cards" && b.title === CARDS_TITLE);
-
-if (!hasSteps) {
+const stepsAt = content.findIndex((b) => b._type === "widget_steps" && b.title === TITLE);
+let replaced = 0;
+if (stepsAt === -1) {
 	// Fresh install of the whole section, right after the hero (index 1).
-	content.splice(1, 0, STEPS, CARDS, ...BUTTONS);
-} else if (!hasCards) {
-	// Section exists without the guide cards: insert before our CTAs.
-	const ctaAt = content.findIndex(
-		(b, i) => b._type === "widget_button" && i > content.findIndex((s) => s._type === "widget_steps" && s.title === TITLE),
-	);
-	content.splice(ctaAt >= 0 ? ctaAt : 2, 0, CARDS);
+	content.splice(1, 0, ...SECTION);
 } else {
-	console.log("home: steps section already complete, skipping");
-	process.exit(0);
+	// Replace the contiguous widget run that starts at the steps block.
+	let end = stepsAt;
+	while (end < content.length && OUR_TYPES.has(content[end]._type)) end++;
+	replaced = end - stepsAt;
+	content.splice(stepsAt, replaced, ...SECTION);
 }
 
 data.content = content;
@@ -144,4 +214,4 @@ if (!ok(r)) {
 	process.exit(1);
 }
 const pub = await api("POST", `/content/pages/${item.id}/publish`, {});
-console.log(`home: updated, publish ${pub.status}`);
+console.log(`home: ${stepsAt === -1 ? "installed" : `replaced ${replaced} blocks`}, publish ${pub.status}`);

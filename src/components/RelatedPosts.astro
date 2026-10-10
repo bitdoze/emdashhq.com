@@ -1,0 +1,207 @@
+---
+import { Icon } from "astro-iconset/components";
+import { Image } from "emdash/ui";
+import { formatDate } from "../lib/format";
+
+type RelatedEntry = {
+	id: string;
+	data: {
+		title: string;
+		excerpt?: string | null;
+		cover?: { id: string; alt?: string } | null;
+		publishedAt?: Date | null;
+		topic?: string | null;
+	};
+};
+
+const TOPIC_LABELS: Record<string, string> = {
+	"getting-started": "Getting started",
+	themes: "Themes",
+	plugins: "Plugins",
+	deployment: "Deployment",
+	"content-modeling": "Content modeling",
+	migration: "Migration",
+	review: "Review",
+};
+
+type Props = { posts: RelatedEntry[]; topic?: string | null };
+const { posts, topic } = Astro.props;
+const kicker = topic && TOPIC_LABELS[topic] ? `More on ${TOPIC_LABELS[topic]}` : "Keep reading";
+---
+
+{posts.length > 0 && (
+<aside class="rel" aria-label="Related articles">
+	<div class="container post-container">
+		<header class="rel-head">
+			<span class="rel-kicker">{kicker}</span>
+			<a href="/blog/" class="rel-all">
+				All articles
+				<Icon name="ph:arrow-right" aria-hidden="true" />
+			</a>
+		</header>
+		<div class="rel-grid">
+			{posts.map((p) => (
+				<article class="hub-card rel-card">
+					{p.data.cover?.id && (
+						<div class="rel-media">
+							<Image image={p.data.cover} class="rel-shot" alt={p.data.cover.alt || ""} />
+						</div>
+					)}
+					<div class="rel-body">
+						{p.data.publishedAt && (
+							<time class="rel-date" datetime={p.data.publishedAt.toISOString()}>
+								{formatDate(p.data.publishedAt)}
+							</time>
+						)}
+						<h3 class="rel-title">
+							<a href={`/blog/${p.id}/`} class="card-link">{p.data.title}</a>
+						</h3>
+						{p.data.excerpt && <p class="rel-excerpt">{p.data.excerpt}</p>}
+						<span class="rel-read">
+							Read
+							<Icon name="ph:arrow-right" aria-hidden="true" />
+						</span>
+					</div>
+				</article>
+			))}
+		</div>
+	</div>
+</aside>
+)}
+
+<style>
+	/* A compact dispatches strip closing the article: mono kicker, three
+	 * small cover cards in the shared paper-card language. */
+	.rel {
+		margin-top: var(--spacing-4xl);
+	}
+
+	.post-container {
+		max-width: var(--max-width);
+	}
+
+	.rel-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--spacing-md);
+		padding-bottom: var(--spacing-md);
+		border-bottom: var(--line-ink) solid var(--color-text);
+		margin-bottom: var(--spacing-xl);
+	}
+
+	.rel-kicker {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.rel-kicker::before {
+		content: "// ";
+		color: var(--color-accent);
+	}
+
+	.rel-all {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-brand-strong);
+		text-decoration: none;
+	}
+
+	.rel-all:hover {
+		color: var(--color-accent-text);
+	}
+
+	.rel-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--spacing-lg);
+	}
+
+	.rel-card {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.rel-media {
+		border-bottom: 1px solid var(--color-border);
+		overflow: hidden;
+	}
+
+	.rel-media :global(.rel-shot) {
+		display: block;
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		object-fit: cover;
+		transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+	}
+
+	.rel-card:hover :global(.rel-shot) {
+		transform: scale(1.04);
+	}
+
+	.rel-body {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: var(--spacing-xs);
+		padding: var(--spacing-lg);
+	}
+
+	.rel-date {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		letter-spacing: 0.05em;
+	}
+
+	.rel-title {
+		font-family: var(--font-heading);
+		font-size: var(--font-size-lg);
+		line-height: 1.3;
+		text-wrap: pretty;
+	}
+
+	.rel-excerpt {
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.rel-read {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-top: auto;
+		padding-top: var(--spacing-sm);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-brand-strong);
+		transition: color var(--transition-fast);
+	}
+
+	.rel-card:hover .rel-read {
+		color: var(--color-accent-text);
+	}
+
+	@media (max-width: 860px) {
+		.rel-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

@@ -190,6 +190,7 @@ const quote = (text, attribution, role) => ({
 // ------------------------------------------------------------- the posts ----
 const POSTS = {
 	"contact-form-spam-turnstile": {
+		topic: "plugins",
 		title: "Stop contact form spam with Cloudflare Turnstile",
 		excerpt:
 			"The contact form on this site was feeding the inbox junk. Turnstile took it to zero: the real pipeline, the exact fields a bot must fake, verified curl tests, and the cache trap we hit.",
@@ -345,6 +346,7 @@ location: /?cf=contact&cf_status=sent`,
 	},
 
 	"emdash-widgets-plugin": {
+		topic: "plugins",
 		title: "Nineteen content widgets for EmDash posts and pages",
 		excerpt:
 			"Callouts, numbered steps, tabs, code blocks, video facades and more for the block editor. What ships in the plugin, how to install it, and where to see it working.",
@@ -496,6 +498,7 @@ const { value } = Astro.props;
 	},
 
 	"emdash-blog-section": {
+		topic: "content-modeling",
 		title: "How the blog on this site works",
 		excerpt:
 			"A posts collection, one Astro route and a hub block. The whole thing took an afternoon, including one redirect bug worth a warning.",
@@ -620,6 +623,7 @@ if (!post) return Astro.rewrite("/404");`,
 // For the gallery post we keep the body as-is; update cover/excerpt/seo only.
 const GALLERY = {
 	slug: "widget-gallery",
+		topic: "plugins",
 	title: "The widget gallery, every block in one post",
 	excerpt:
 		"All nineteen Content Widgets blocks in a single article, what each one looks like and when to reach for it.",
@@ -702,6 +706,7 @@ async function applyPost(slug, post, includeBody) {
 	const data = {
 		title: post.title,
 		excerpt: post.excerpt,
+		topic: post.topic,
 		...(media ? { cover: { id: media.id, alt: post.cover.alt } } : {}),
 		...(includeBody ? { body: resolveBody(post.body) } : {}),
 	};

@@ -638,6 +638,7 @@ export interface Post {
   cover?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } };
   body?: PostBodyBlock[];
   featured?: boolean;
+  topic?: "getting-started" | "themes" | "plugins" | "deployment" | "content-modeling" | "migration" | "review";
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;

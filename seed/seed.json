@@ -2236,6 +2236,23 @@
 					"label": "Featured",
 					"type": "boolean",
 					"defaultValue": false
+				},
+				{
+					"slug": "topic",
+					"label": "Topic",
+					"type": "select",
+					"validation": {
+						"options": [
+							"getting-started",
+							"themes",
+							"plugins",
+							"deployment",
+							"content-modeling",
+							"migration",
+							"review"
+						]
+					},
+					"defaultValue": "getting-started"
 				}
 			]
 		}
@@ -3878,7 +3895,8 @@
 							]
 						}
 					],
-					"featured": 1
+					"featured": 1,
+					"topic": "plugins"
 				}
 			},
 			{
@@ -4541,7 +4559,8 @@
 							]
 						}
 					],
-					"featured": 0
+					"featured": 0,
+					"topic": "plugins"
 				}
 			},
 			{
@@ -5256,7 +5275,8 @@
 							"new_tab": false
 						}
 					],
-					"featured": 0
+					"featured": 0,
+					"topic": "content-modeling"
 				}
 			},
 			{
@@ -5876,7 +5896,8 @@
 							]
 						}
 					],
-					"featured": 0
+					"featured": 0,
+					"topic": "plugins"
 				}
 			}
 		]

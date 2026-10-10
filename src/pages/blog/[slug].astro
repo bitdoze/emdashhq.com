@@ -1,6 +1,7 @@
 ---
-import { getEmDashEntry, getSeoMeta } from "emdash";
+import { getEmDashCollection, getEmDashEntry, getSeoMeta } from "emdash";
 import { Image } from "emdash/ui";
+import RelatedPosts from "../../components/RelatedPosts.astro";
 import WidgetBlocks from "../../components/blocks/widgets/WidgetBlocks.astro";
 import Base from "../../layouts/Base.astro";
 import { formatDate } from "../../lib/format";
@@ -58,6 +59,38 @@ const seo = getSeoMeta(post, {
 	siteUrl: Astro.url.origin,
 	path: `/blog/${post.id}/`,
 });
+
+// Related posts: same topic first, newest others fill the rest of the row.
+const topic = post.data.topic;
+let related: Awaited<ReturnType<typeof getEmDashCollection<"posts">>>["entries"] = [];
+try {
+	const same = await getEmDashCollection("posts", {
+		status: "published",
+		...(topic ? { where: { topic } } : {}),
+		orderBy: { published_at: "desc" },
+		limit: 4,
+	});
+	if (same.error) throw same.error;
+	if (Astro.cache.enabled) Astro.cache.set(same.cacheHint);
+	related = same.entries.filter((e) => e.id !== post.id).slice(0, 3);
+	if (related.length < 3) {
+		const rest = await getEmDashCollection("posts", {
+			status: "published",
+			orderBy: { published_at: "desc" },
+			limit: 4,
+		});
+		if (rest.error) throw rest.error;
+		if (Astro.cache.enabled) Astro.cache.set(rest.cacheHint);
+		const seen = new Set(related.map((e) => e.id));
+		for (const entry of rest.entries) {
+			if (entry.id === post.id || seen.has(entry.id)) continue;
+			related.push(entry);
+			if (related.length === 3) break;
+		}
+	}
+} catch (error) {
+	console.error("Unable to load related posts", { slug, error });
+}
 ---
 
 <Base
@@ -98,6 +131,7 @@ const seo = getSeoMeta(post, {
 			<WidgetBlocks value={body} />
 		</div>
 	</article>
+	<RelatedPosts posts={related} topic={topic} />
 </Base>
 
 <style>

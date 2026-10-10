@@ -136,7 +136,7 @@ try {
 
 <style>
 	.post {
-		padding-bottom: var(--spacing-5xl);
+		padding-bottom: var(--spacing-xl);
 	}
 
 	.post-container {
@@ -145,6 +145,12 @@ try {
 
 	.post-header {
 		padding: var(--spacing-4xl) 0 var(--spacing-2xl);
+	}
+
+	@media (max-width: 700px) {
+		.post-header {
+			padding: var(--spacing-2xl) 0 var(--spacing-xl);
+		}
 	}
 
 	.post-eyebrow {

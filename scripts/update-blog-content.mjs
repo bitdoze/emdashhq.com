@@ -82,7 +82,7 @@ async function uploadMedia(path, filename, alt) {
 // Fresh key prefix per rewrite so regenerated bodies never collide with stored
 // blocks (the API rejects a _key whose _type changed between revisions).
 let keyN = 0;
-const key = () => `w${String(keyN++).padStart(4, "0")}`;
+const key = () => `x${String(keyN++).padStart(4, "0")}`;
 const span = (text, marks = []) => ({ _type: "span", _key: key(), text, marks });
 const ptBlock = (children, style = "normal", markDefs = []) => ({
 	_type: "block",
@@ -92,7 +92,7 @@ const ptBlock = (children, style = "normal", markDefs = []) => ({
 	children,
 });
 const p = (text) => ptBlock([span(text)]);
-// Headings are Portable Text too — wrap them in a widget_prose so body only
+// Headings are Portable Text too - wrap them in a widget_prose so body only
 // ever contains widget_* blocks.
 // Inline figures carry a _img placeholder resolved to an uploaded media id in
 // the apply step, so bodies stay declarative across local/prod runs.
@@ -192,19 +192,19 @@ const POSTS = {
 	"contact-form-spam-turnstile": {
 		title: "Stop contact form spam with Cloudflare Turnstile",
 		excerpt:
-			"The contact form on this site was feeding the inbox junk. Turnstile took it to zero: here is the fifteen-minute setup, the page-cache trap we hit, and how to test it.",
+			"The contact form on this site was feeding the inbox junk. Turnstile took it to zero: the real pipeline, the exact fields a bot must fake, verified curl tests, and the cache trap we hit.",
 		cover: { file: "uploads/covers/cover-turnstile.jpg", alt: "A paper mailbox behind a small turnstile gate, letters held at the checkpoint" },
 		seo: {
 			title: "Stop contact form spam with Cloudflare Turnstile",
 			description:
-				"Set up Cloudflare Turnstile on the EmDash Contact Forms plugin: get the keys, enable the widget, dodge the page-cache trap, and verify bot posts get challenged.",
+				"Set up Cloudflare Turnstile on the EmDash Contact Forms plugin: the real eight-gate pipeline, the cf_status decoder, verified curl tests, and the page-cache trap.",
 		},
 		body: [
 			prose(
-				p("The contact form here started collecting junk submissions. The built-in filters (a honeypot field, a minimum fill time, a per-IP hourly limit) stopped some of it, but enough got through to make the inbox annoying."),
-				p("So the Contact Forms plugin got Cloudflare Turnstile. It runs a quiet browser check, hands the form a token, and the worker verifies that token before anything is stored or emailed. Most visitors never see a puzzle; the Managed mode here only escalates the submissions Cloudflare already suspects."),
+				p("The contact form on this site runs exactly the setup below. Before Turnstile it was collecting scripted submissions - the built-in filters caught some, but enough got through to make the inbox a chore. After adding it, junk posts stopped creating rows entirely: what lands in the inbox now is real people and nothing else."),
+				p("The short version: the Contact Forms plugin renders a Cloudflare Turnstile widget on the form, the browser hands back a token, and the submit route verifies that token with Cloudflare before it stores anything or sends mail. A POST without a valid token gets a 303 redirect to cf_status=challenge - no database row, no email. Everything below is the real pipeline from the plugin source, plus tests I ran against the live form."),
 			),
-			fig("turnstile-flow", "The submit pipeline: the honeypot, fill-time check and hourly limit run first, Turnstile verifies the token at the door, and only then does anything reach the inbox."),
+			fig("turnstile-flow", "The submit pipeline: the honeypot and fill-time traps run first and lie to the bot, Turnstile verifies the token at the door, and only then does anything reach the inbox."),
 			h2("What you need"),
 			checklist(null, [
 				"A Cloudflare account (the free plan covers Turnstile)",
@@ -214,49 +214,108 @@ const POSTS = {
 			]),
 			h2("How a submission is judged"),
 			prose(
-				p("Every POST to the submit route passes five gates, in this order. Knowing the order explains most confusing behavior later:"),
+				p("Every POST to the submit route passes these gates, in this order. The order matters: a request can only fail one gate, and which one tells you what the sender was."),
 			),
-			steps("Five gates", [
-				["Honeypot", "An invisible field that humans never fill. Bots that fill it get a fake success page and nothing is stored. They cannot tell they lost."],
-				["Minimum fill time", "A submit faster than 1.5 seconds is a bot. Same trick: it gets a fake success, so scrapers never learn which gate caught them."],
-				["Turnstile verify", "The widget's token goes to Cloudflare siteverify together with the visitor IP. A failed check returns cf_status=challenge."],
-				["Rate limit", "A per-IP hourly cap, 20 submissions by default. Tripping it returns cf_status=rate_limited."],
-				["Field validation", "Required fields, types and lengths are checked against the form definition. Only then is the row stored and the email sent."],
+			steps("The gates, in order", [
+				["Honeypot", "The cf_hp field is invisible to humans and bots fill it. Tripping it returns a fake cf_status=sent and stores nothing - the bot thinks it won."],
+				["Form lookup", "cf_slug must match an enabled form. No match means cf_status=error before anything else is checked."],
+				["Minimum fill time", "The hidden cf_ts field carries the page-load timestamp. A submit under 1.5 seconds old is a bot and gets another fake sent."],
+				["Turnstile verify", "When both keys are set, cf-turnstile-response goes to Cloudflare siteverify with the secret key and the visitor IP. Missing or rejected token: cf_status=challenge."],
+				["Rate limit", "Counts stored submissions from the same IP in the last hour against the configured cap, 20 by default. Over it: cf_status=rate_limited."],
+				["Field validation", "Each field is checked against the form definition. Failures return cf_status=invalid with the bad keys echoed in cf_fields."],
+				["Store", "The row is written first - before email - so a mail outage never loses a message. That is why a broken mail config shows status saved, not sent."],
+				["Email", "The notification goes through the site's configured provider, and the row records the attempt. If the form has send confirmation on, the visitor gets an auto-reply too."],
 			]),
-			notice("info", "It fails open on purpose", "If Cloudflare siteverify is unreachable or the plugin has no HTTP access, the submission is accepted rather than rejected. A Turnstile outage never takes the form down; the tradeoff is that a broken verifier quietly disables the spam check, so a sudden spam spike usually means the keys stopped working."),
+			notice("info", "Two gates lie on purpose", "The honeypot and fill-time traps return a success-shaped redirect instead of an error. A scraper watching responses cannot tell which gate caught it, so it never learns what to fix. You can watch this happen yourself in the curl tests below."),
+			h2("The two contracts"),
+			prose(
+				p("Everything the route needs is in the posted form data. These are the real field names - the prefix matters, and getting it wrong is the first trap:"),
+			),
+			facts("Posted fields", [
+				["cf_slug", "The form slug to submit to. Plain \"slug\" is ignored and returns error"],
+				["cf_hp", "Honeypot. Must be empty; the input is hidden and never filled by humans"],
+				["cf_ts", "Page-load timestamp in ms; posts younger than 1.5 s are bots"],
+				["cf-turnstile-response", "The token Cloudflare's widget writes into the form"],
+				["cf_page", "Optional URL the submit came from, stored on the row"],
+				["your fields", "Whatever the form defines - name, email, subject, message here"],
+			]),
+			prose(
+				p("The answer is never JSON. The route 303-redirects back to the referring page with cf_status in the query string, so a plain HTML form with no JavaScript still completes the loop - the browser just lands on a page that can read the status."),
+			),
 			h2("Set it up"),
 			steps("Five steps", [
 				["Create a Turnstile site", "In the Cloudflare dashboard, open Turnstile and choose Add site. Enter your real hostname and keep the Managed widget mode. Cloudflare shows the site key and secret key once; copy both."],
 				["Open the plugin settings", "Admin → Plugins → Contact forms → Settings. The two Turnstile fields only exist on 1.1.0 and newer."],
-				["Paste both keys and save", "The site key renders the widget; the secret key verifies tokens. Set only one and the plugin stays off; a half-configured pair is treated as unconfigured."],
-				["Redeploy the site", "If your pages are cached, the cached HTML has no widget on it. Redeploy or purge the cache, otherwise visitors submit with no token and get bounced."],
-				["Test it", "Load the form page and look for the widget, then submit once yourself to confirm the happy path still works."],
+				["Paste both keys and save", "The site key renders the widget; the secret key verifies tokens. Set only one and the gate stays off: a half-configured pair is treated as unconfigured, not half-on."],
+				["Redeploy or purge the cache", "If pages are cached, the cached HTML has no widget on it. Cached pages keep collecting challenge failures until the cache refreshes."],
+				["Test it", "Load the form page, confirm the widget, submit once yourself for the happy path, then run the curl below for the bot path."],
 			]),
 			fig("cf-settings", "The plugin settings screen: the Turnstile site key and secret key sit next to the built-in rate limit."),
-			h2("Verify it from the outside"),
-			prose(p("A POST with no token should never reach the inbox. From a terminal:")),
+			h2("Test it from the outside"),
+			prose(
+				p("These are real responses from this site's live endpoint, not a mock. A tokenless POST must be challenged:"),
+			),
 			code(
 				"bash",
-				`curl -i -X POST https://your-site.com/_emdash/api/plugins/emdashhq-contact-forms/submit \\
-  -F "slug=contact" -F "name=Bot" -F "email=bot@example.com" -F "message=hi"`,
+				`curl -i -X POST https://emdashhq.com/_emdash/api/plugins/emdashhq-contact-forms/submit \\
+  -F "cf_slug=contact" -F "name=Bot" -F "email=bot@example.com" \\
+  -F "subject=test" -F "message=hi"`,
 			),
-			prose(p("You want a 303 redirect to ?cf_status=challenge. The submission is not stored and no email goes out. A real browser submit carries the cf-turnstile-response token and lands in the inbox instead.")),
+			code(
+				"plaintext",
+				`HTTP/2 303
+location: /?cf=contact&cf_status=challenge`,
+				"what came back",
+			),
+			prose(
+				p("No row is written, no mail goes out. Now the trap I fell into writing this: my first test posted slug=contact instead of cf_slug=contact and got cf_status=error - the route read an empty slug and reported the form missing, which is honest but misleading when you typo the field name. If you see error instead of challenge, check the field names before the keys."),
+			),
+			code(
+				"bash",
+				`curl -si -X POST https://emdashhq.com/_emdash/api/plugins/emdashhq-contact-forms/submit \\
+  -F "cf_slug=contact" -F "name=Bot" -F "email=bot@example.com" \\
+  -F "subject=test" -F "message=hi" -F "cf_hp=spammy"`,
+			),
+			code(
+				"plaintext",
+				`HTTP/2 303
+location: /?cf=contact&cf_status=sent`,
+				"honeypot filled - fake success",
+			),
+			prose(
+				p("That sent is a lie in the good direction: the response says success, the database got nothing. The submissions inbox on this site held eight rows when I checked - all real, every one with an email status recorded."),
+			),
 			h2("What the status codes mean"),
 			facts(null, [
-				["sent", "Stored and emailed (or a fake success fed to the honeypot and time traps)"],
-				["saved", "Stored, but the notification email failed; check the email log"],
+				["sent", "Stored and emailed - or a fake success fed to the honeypot and time traps"],
+				["saved", "Stored, but the notification email failed; the row keeps the error"],
 				["challenge", "Turnstile token missing or rejected; nothing was stored"],
 				["rate_limited", "The hourly per-IP cap tripped"],
-				["invalid", "Fields failed validation; the bad fields echo back in cf_fields"],
-				["error", "Form slug not found or the form is disabled"],
+				["invalid", "Fields failed validation; the bad keys echo back in cf_fields"],
+				["error", "Form slug unknown or disabled - or too many posted fields"],
 			]),
 			fig("cf-subs", "Submissions that pass land in the inbox with an email status for each one. Blocked posts never get a row."),
+			h2("What a stored row contains"),
+			prose(
+				p("Each passing submission records more than the answers - enough to debug delivery problems later without a second system:"),
+			),
+			checklist(null, [
+				"The answers plus the field labels at submit time",
+				"IP, user agent and country (from the edge request)",
+				"The page URL the submit came from",
+				"emailStatus and emailAttempts, so a provider outage is visible, not silent",
+				"A new / read / flagged state you can triage in the inbox",
+			]),
+			h2("The fail-open trade-off, honestly"),
+			prose(
+				p("When Turnstile is configured but siteverify cannot be reached, the plugin accepts the submission. The reasoning: a Cloudflare outage should never take your contact form down with it. The cost: a silently broken verifier quietly turns the spam check off - you find out via a spam spike, not an error. If junk suddenly reappears, suspect the keys before the bots got smarter."),
+			),
 			notice("warning", "The cache trap we actually hit", "Keys were saved, but the page showed no widget. The deploy had warmed a widget-less copy of the contact page into the Workers cache and kept serving it. A redeploy fixed it. If the widget does not appear after saving, suspect the cache before the keys."),
 			h2("Tuning it afterwards"),
 			checklist("Worth adjusting", [
-				"Rate limit per IP per hour: 20 by default, accepts 1 to 1000",
+				"Rate limit per IP per hour: 20 by default, accepts 1 to 1000; the count is over stored rows, so challenged posts do not eat the budget",
 				"Keep submissions for (days): 0 keeps everything forever",
-				"Confirmation email: each form can auto-reply to the visitor's email field",
+				"Confirmation email: each form can auto-reply to the visitor's email field - the contact form here has it on",
 				"Extra debug: plugin settings has a switch that turns on verbose submit logs",
 				"Submissions export to CSV from the admin inbox when you need them out",
 			]),
@@ -268,16 +327,17 @@ const POSTS = {
 				["Mode used here", "Managed"],
 			]),
 			accordion("Common questions", [
-				["Does it stop all spam?", "It stops automated posts and most scripted junk. A determined human can still pass a challenge. If flagged submissions keep slipping through, the plugin can quarantine them: stored as spam, never emailed."],
-				["Does it work without JavaScript?", "No. The widget needs JavaScript in the browser. That is the point: bots posting the raw endpoint get challenged regardless."],
+				["Does it stop all spam?", "It stops automated posts and most scripted junk. A determined human can still pass a challenge. Flagged submissions can be quarantined in the inbox: stored as spam, never emailed."],
+				["Does it work without JavaScript?", "The widget needs JavaScript in the browser. That is the point: bots posting the raw endpoint get challenged regardless."],
 				["What if Cloudflare is down?", "Verification fails open: submissions are accepted so the form never goes offline with them. Watch for a spam spike as the telltale."],
-				["Where do real submissions go?", "Same places as before: the admin inbox under Plugins → Contact forms, and an email through the site's configured provider."],
+				["Where do real submissions go?", "The admin inbox under Plugins → Contact forms, plus an email through the site's configured provider."],
 			]),
 			fig("cf-form", "The live form on this site: in managed mode the widget renders nothing until Cloudflare decides a visitor needs a challenge."),
 			button("Turnstile documentation", "https://developers.cloudflare.com/turnstile/", "arrow-up-right", "outline", { new_tab: true }),
 			checklist("Done means", [
 				"The widget renders on the form page",
 				"A tokenless POST gets cf_status=challenge",
+				"A filled honeypot gets a fake sent and stores nothing",
 				"A real submit is stored and emailed",
 				"A quiet inbox for a week",
 			]),
@@ -296,48 +356,12 @@ const POSTS = {
 		},
 		body: [
 			prose(
-				p("Articles on this site needed more than paragraphs. Callouts for warnings, numbered steps for walkthroughs, code blocks for commands. The stock block editor ships a lean set on purpose, so I built the Content Widgets plugin: nineteen block types for the EmDash editor, usable in post bodies and on regular pages."),
-				p("Everything renders on the server. There is no client-side bundle to load, and every widget picks up the site's type scale and colors through CSS variables, so the blocks look like part of the theme rather than a bolt-on."),
+				p("Articles on this site needed more than paragraphs. Callouts for warnings, numbered steps for walkthroughs, code blocks for commands, a table of contents on long posts. The stock block editor ships a lean set on purpose, so I built the Content Widgets plugin: nineteen block types for the EmDash editor, usable in post bodies and on regular pages."),
+				p("The short version: install @bitdoze.com/emdashhq-widgets from the registry, allow the widget types on your blocks field, copy the renderers from the package's site/ folder into your project, and the editor's slash menu grows nineteen new entries. Everything renders on the server, picks up the site's type scale and colors through CSS variables, and ships no client-side bundle."),
 			),
 			fig("widgets-catalog", "The catalog page the plugin adds under Plugins → Content Widgets: every block with a preview, a one-line description and its type name."),
-			h2("Install it"),
-			tabs([
-				["From the registry", "Admin → Plugins → Browse → find Content Widgets → Install. The package is @bitdoze.com/emdashhq-widgets on plugins.emdashcms.com. This is the path for most sites: the registry handles versions and updates."],
-				["From source", "Clone the plugin into your site's plugins/ directory, register it under sandboxed: in astro.config.mjs, and add it to package.json as a file: dependency. Take this path when you want to edit the widgets themselves."],
-			]),
-			h2("Allow the block types"),
-			prose(p("New block types do not appear in the editor until a blocks field allows them. Open the collection, edit the blocks field, and tick the widget types under allowed types. In a seed file it looks like this:")),
-			code(
-				"json",
-				`{
-  "slug": "body",
-  "type": "blocks",
-  "validation": {
-    "allowedTypes": ["widget_prose", "widget_notice", "widget_steps", "widget_code"]
-  }
-}`,
-			),
-			notice("info", "About the site/ folder", "Sandboxed plugins cannot register Astro components into a site's render pipeline, so the package ships its renderers in site/. Copy site/components into your project and map them with defineBlockComponents(); the README walks through it in four steps."),
-			prose(
-				p("Two ways to render them. Spread the shipped component map into your existing block renderer, or drop the standalone WidgetBlocks component on a widget-only field like a post body:"),
-			),
-			code(
-				"typescript",
-				`import { widgetComponents } from "./widgets/widget-components";
-import WidgetBlocks from "./widgets/WidgetBlocks.astro";
-
-// path 1: merge into the page's block map
-const blockComponents = defineBlockComponents({
-  ...widgetComponents,
-});
-
-// path 2: a widget-only field, like a post body
-<WidgetBlocks value={post.data.body} />`,
-				"any Astro page",
-			),
-			fig("widgets-editor", "Once the types are allowed, they show up in the block picker alongside the regular blocks."),
-			h2("What each group is for"),
-			prose(p("Nineteen blocks is a lot of names. Grouped by job:")),
+			h2("What actually ships"),
+			prose(p("Nineteen blocks is a lot of names. Grouped by the job they do:")),
 			checklist("Writing and structure", [
 				"Prose: Portable Text paragraphs between the widgets",
 				"Notice: info, success, warning and danger callouts for gotchas",
@@ -356,15 +380,106 @@ const blockComponents = defineBlockComponents({
 				"Cards: small link grids for related reading",
 				"Quote: pull quotes with attribution",
 				"Facts: a label/value fact sheet for specs and pricing",
-				"Product: a review box with rating and pros/cons",
+				"Product: a review box with rating, pros/cons and an affiliate disclosure line",
 				"Table of contents: built from the post's own headings",
 				"Series: previous/next navigation for multi-part posts",
 				"Latest posts: a recent-articles list that skips the current post",
 			]),
+			h2("What the editor actually stores"),
+			prose(
+				p("This is a real notice block lifted from the demo post's stored body - the whole record, nothing trimmed:"),
+			),
+			code(
+				"json",
+				`{
+  "_type": "widget_notice",
+  "_version": 1,
+  "_key": "meywrdak",
+  "kind": "info",
+  "title": "Info notice",
+  "body": [
+    {
+      "_type": "block",
+      "style": "normal",
+      "children": [
+        { "_type": "span", "text": "A neutral note...", "marks": [] }
+      ]
+    }
+  ]
+}`,
+				"a stored widget block",
+			),
+			prose(
+				p("Three details matter. The _type is the contract between editor and renderer; _version versions the shape so a plugin update can migrate old blocks; and _key is immutable - the API rejects an update that reuses a key with a different type, which is worth knowing the first time you rewrite a body through the REST API. Rich text fields like body carry real Portable Text, so spans, marks and links survive intact."),
+			),
+			h2("Install it"),
+			tabs([
+				["From the registry", "Admin → Plugins → Browse → find Content Widgets → Install. The package is @bitdoze.com/emdashhq-widgets on plugins.emdashcms.com. This is the path for most sites: the registry handles versions and updates."],
+				["From source", "Clone the plugin into your site's plugins/ directory, register it under sandboxed: in astro.config.mjs, and add it to package.json as a file: dependency. Take this path when you want to edit the widgets themselves."],
+			]),
+			h2("Allow the block types"),
+			prose(p("New block types do not appear in the editor until a blocks field allows them. Open the collection, edit the blocks field, and tick the widget types under allowed types. In a seed file it looks like this:")),
+			code(
+				"json",
+				`{
+  "slug": "body",
+  "type": "blocks",
+  "validation": {
+    "allowedTypes": ["widget_prose", "widget_notice", "widget_steps", "widget_code"]
+  }
+}`,
+			),
+			h2("Wire the renderers"),
+			notice("info", "Why a site/ folder exists", "Sandboxed plugins run in a Worker isolate and cannot register Astro components into a site's render pipeline. So the package ships its renderers as plain Astro files in site/ - you copy them into your project and they become your components, free of the sandbox. It is the distribution format, not a workaround."),
+			prose(
+				p("Two ways to render them. Spread the shipped component map into your existing block renderer, or drop the standalone WidgetBlocks component on a widget-only field like a post body:"),
+			),
+			code(
+				"typescript",
+				`import { widgetComponents } from "./widgets/widget-components";
+import WidgetBlocks from "./widgets/WidgetBlocks.astro";
+
+// path 1: merge into the page's block map
+const blockComponents = defineBlockComponents({
+  ...widgetComponents,
+});
+
+// path 2: a widget-only field, like a post body
+<WidgetBlocks value={post.data.body} />`,
+				"any Astro page",
+			),
+			fig("widgets-editor", "Once the types are allowed, they show up in the block picker alongside the regular blocks."),
+			h2("Anatomy of one widget"),
+			prose(
+				p("Every renderer is the same small shape - props carry the stored block value, markup is plain HTML, and styling reads theme tokens instead of hardcoding colors. Skinned down to its skeleton, a widget looks like this:"),
+			),
+			code(
+				"html",
+				`---
+const { value } = Astro.props;
+---
+
+<aside class={\`wgt-notice wgt-notice-\${value.kind}\`}>
+  {value.title && <p class="wgt-notice-title">{value.title}</p>}
+  <PortableText value={value.body} />
+</aside>
+
+<style>
+  .wgt-notice {
+    border-left: 3px solid var(--color-brand);
+    background: var(--color-surface);
+    padding: var(--spacing-md);
+  }
+</style>`,
+				"site/components/WidgetNotice.astro, simplified",
+			),
+			prose(
+				p("The wgt- class prefix keeps widget CSS from colliding with the theme, and var() tokens mean the same file renders correctly in a cream-paper theme or an ink-dark one. Copy a component, change the fields, and you have a custom widget that stores Portable Text like the built-ins."),
+			),
 			h2("Pages get them too"),
 			prose(p("Nothing here is post-specific. The contact page's form block and this site's marketing pages use the same mechanism: any blocks field on any collection can allow the widget types, and the same WidgetBlocks component renders them. Write the field once, use the widgets everywhere.")),
 			h2("See it working"),
-			prose(p("Every block on the list is rendering in the demo post linked below, the same one you can open in this site's editor to inspect how it was put together.")),
+			prose(p("Every block on the list is rendering in the demo post linked below, the same one you can open in this site's editor to inspect how it was put together - including the affiliate product card, which got a layout fix and an affiliate-card restyle in 1.0.3.")),
 			cards(null, [
 				{ icon: "rocket", title: "Live demo post", url: "/blog/widget-gallery/", description: "All nineteen blocks in one article." },
 				{ icon: "download", title: "Registry listing", url: "https://plugins.emdashcms.com/plugins/@bitdoze.com/emdashhq-widgets", description: "Install button, changelog and screenshots." },
@@ -372,7 +487,7 @@ const blockComponents = defineBlockComponents({
 			]),
 			button("Open the widget gallery", "/blog/widget-gallery/", "book"),
 			facts(null, [
-				["Version", "1.0.2"],
+				["Version", "1.0.3"],
 				["License", "MIT"],
 				["Blocks", "19"],
 				["Price", "Free"],
@@ -392,8 +507,8 @@ const blockComponents = defineBlockComponents({
 		},
 		body: [
 			prose(
-				p("This site has a blog now. Not a separate app: a posts collection, one Astro route, and a block that lists articles on the /blog page. Here is the anatomy of it, so you can build the same thing, or take it apart to see how EmDash pieces fit together."),
-				p("It took an afternoon. Most of that went into deciding what a post is; the code is the easy part once the schema is honest."),
+				p("This site has a blog now. Not a separate app: a posts collection, one Astro route, and a block that lists articles on the /blog page. Here is the anatomy of it - real code, not pseudocode - so you can build the same thing, or take it apart to see how EmDash pieces fit together."),
+				p("The short version: entries in a posts collection become routable via a urlPattern, one dynamic route renders each slug, a hub block lists them on a page, and cache tags make publish invalidate exactly the pages that show the post. Everything below is the actual implementation on this site."),
 			),
 			facts(null, [
 				["Collection", "posts: title, excerpt, cover, body blocks"],
@@ -424,39 +539,67 @@ const blockComponents = defineBlockComponents({
 			prose(
 				p("Two fields carry the listing pages: excerpt is the card text and meta description fallback, cover is the card image and og:image. Skip them and every surface downstream looks unfinished."),
 			),
-			h2("The route"),
-			prose(p("One file renders every post. It looks the entry up by slug, rewrites to /404 when it is missing, and hands the body blocks to the widget renderer:")),
+			h2("The route, annotated"),
+			prose(p("One file renders every post. This is its real core - the redirects, the lookup, the cache tag, and the SEO resolution:")),
 			code(
 				"typescript",
-				`const { entry: post, error, cacheHint } =
-  await getEmDashEntry("posts", Astro.params.slug);
-if (!post) return Astro.rewrite("/404");
-if (Astro.cache.enabled) Astro.cache.set(cacheHint);
+				`const slug = Astro.params.slug;
+if (!slug) return Astro.redirect(\`/blog/\${Astro.url.search}\`, 301);
+// canonical form is slash-terminated; anything else 301s there
+if (!Astro.url.pathname.endsWith("/"))
+  return Astro.redirect(\`\${Astro.url.pathname}/\${Astro.url.search}\`, 301);
 
-const seo = getSeoMeta(post, {
-  siteUrl: Astro.url.origin,
-  path: \`/blog/\${post.id}/\`,
-});
-// <WidgetBlocks value={post.data.body} />`,
+const [result] = await Promise.all([
+  getEmDashEntry("posts", slug), getSiteChrome(Astro),
+]);
+if (result.error) { Astro.cache.set(false); return unavailableResponse(); }
+const post = result.entry;
+if (Astro.cache.enabled) Astro.cache.set(result.cacheHint);
+if (!post) return Astro.rewrite("/404");`,
 				"src/pages/blog/[slug].astro",
 			),
-			prose(p("getSeoMeta resolves the SEO tab on each post (meta title, description, og image) and falls back to the title and excerpt when the fields are empty. Canonical and robots come along for free.")),
-			prose(p("The cacheHint line matters more than it looks. Passing it to Astro.cache tags the response, so publishing a post invalidates exactly the cached pages that show it: the article itself, /blog, and the homepage section. Skip it and edits take a cache lifetime to appear.")),
+			prose(
+				p("Four things worth stealing. The early 301s normalize the URL before any data work happens. The entry read runs in parallel with the site chrome read - one round trip, not two. A failed query sets no cache and returns a deliberately uncached 503 rather than a poisoned 500. And a missing post rewrites to the 404 page instead of rendering an empty shell."),
+			),
+			prose(
+				p("The reading time on the post header is also computed, not stored: the route filters body blocks down to widget_prose, runs extractPlainText over their Portable Text, and divides the word count by 200. Every article's minutes stay honest automatically."),
+			),
+			h2("What the head gets"),
+			prose(p("getSeoMeta resolves the SEO tab on each post - meta title, description, og image - and falls back to the title and excerpt when the fields are empty. Canonical and robots come along for free, and the cover doubles as og:image. Fill the SEO tab once and every surface agrees.")),
+			h2("Why cacheHint matters"),
+			prose(
+				p("Passing the query's cacheHint to Astro.cache tags the response with the entries it read. Publishing a post then invalidates exactly the cached pages that show it: the article, /blog, and the homepage section. Skip the tag and edits wait out the cache lifetime. The same trick runs site-wide - the middleware tags public pages with site-scripts so changing analytics settings busts every page at once."),
+			),
 			h2("The hub page"),
 			prose(p("/blog itself is an ordinary page with a site_posts block on it. The block queries the posts collection, orders by published date, and renders the newest article as a lead card with the rest in a grid. The page is content, not code: editors can move it, rename it and add blocks around it without touching the repo.")),
 			prose(p("The same block with a limit of three is the \"Latest from the blog\" section on the homepage. One component, two placements, no duplicated markup.")),
-			h2("The feed"),
-			prose(p("rss.xml.ts joins the posts collection with tutorials, videos and resources into one feed, newest first. Posts link to their /blog/ URLs; the hub collections link out to their real destinations (bitdoze.com, YouTube, npm). One line of plumbing: each collection passes a linkField, and posts get the special case of an internal path.")),
+			h2("The feed, annotated"),
+			prose(p("rss.xml.ts builds one feed out of four collections. The whole trick is a small table - each collection declares which field holds its outbound link:")),
+			code(
+				"typescript",
+				`const collections = [
+  { slug: "posts",     linkField: "",            tag: "Post" },
+  { slug: "tutorials", linkField: "url",         tag: "Tutorial" },
+  { slug: "videos",    linkField: "youtube_url", tag: "Video" },
+  { slug: "resources", linkField: "url",         tag: "Resource" },
+];
+// posts are own content: link = \`/blog/\${entry.id}/\`
+// hub entries: link = sanitizeHref(data[linkField])`,
+				"src/pages/rss.xml.ts",
+			),
+			prose(p("Tutorials link out to bitdoze.com, videos to YouTube, resources to npm or the registry - and posts get the internal /blog/ path as the special case. Each collection read also passes its own cacheHint, so publishing anything refreshes the feed too.")),
 			h2("Drafts and publishing"),
-			prose(p("Saving a post writes a draft revision; the live page only changes when you hit publish. That is why a saved-but-unpublished edit can look lost on the site while being perfectly visible in the admin. The SEO tab sits on the same editor screen, so meta title and description are part of the publish checklist rather than an afterthought.")),
+			prose(p("Saving a post writes a draft revision; the live page only changes when you hit publish. That is why a saved-but-unpublished edit can look lost on the site while being perfectly visible in the admin - and why the REST API answers a PUT with a new revision id rather than a changed page. The SEO tab sits on the same editor screen, so meta title and description are part of the publish checklist rather than an afterthought.")),
 			divider("line"),
-			h2("One trap worth knowing"),
+			h2("Two traps worth knowing"),
 			notice("warning", "Leave trailingSlash alone", "Setting Astro's trailingSlash to \"always\" 404s every /_emdash/api/ route without a trailing slash; it briefly broke the contact form on this site. The sitemap emits slashless post URLs that 301 to the canonical form. That redirect is expected and harmless: do not try to fix it with trailingSlash."),
+			notice("info", "Block keys are immutable", "Rewriting a post body through the API fails if a reused _key changes _type between revisions. Fresh keys per rewrite - the content update script rotates a key prefix for exactly this reason."),
 			h2("Ship list"),
 			checklist("If you are building your own", [
 				"A posts collection with the fields above",
 				"urlPattern set to /blog/{slug}",
-				"A route that renders entry body blocks",
+				"A route that redirects non-canonical URLs, then renders body blocks",
+				"cacheHint passed to Astro.cache so publish busts the right pages",
 				"A hub page with a site_posts block",
 				"A Blog link in the primary menu",
 				"Posts folded into your RSS source list",

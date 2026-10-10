@@ -3004,7 +3004,7 @@
 				"status": "published",
 				"data": {
 					"title": "Stop contact form spam with Cloudflare Turnstile",
-					"excerpt": "The contact form on this site was feeding the inbox junk. Turnstile took it to zero: here is the fifteen-minute setup, the page-cache trap we hit, and how to test it.",
+					"excerpt": "The contact form on this site was feeding the inbox junk. Turnstile took it to zero: the real pipeline, the exact fields a bot must fake, verified curl tests, and the cache trap we hit.",
 					"cover": {
 						"$media": {
 							"url": "https://emdashhq.com/_emdash/api/media/file/01M4GPSS9MGYDMN1572WR97XHY.jpg",
@@ -3015,32 +3015,32 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0004",
+							"_key": "x0004",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0001",
+									"_key": "x0001",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0000",
-											"text": "The contact form here started collecting junk submissions. The built-in filters (a honeypot field, a minimum fill time, a per-IP hourly limit) stopped some of it, but enough got through to make the inbox annoying.",
+											"_key": "x0000",
+											"text": "The contact form on this site runs exactly the setup below. Before Turnstile it was collecting scripted submissions - the built-in filters caught some, but enough got through to make the inbox a chore. After adding it, junk posts stopped creating rows entirely: what lands in the inbox now is real people and nothing else.",
 											"marks": []
 										}
 									]
 								},
 								{
 									"_type": "block",
-									"_key": "w0003",
+									"_key": "x0003",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0002",
-											"text": "So the Contact Forms plugin got Cloudflare Turnstile. It runs a quiet browser check, hands the form a token, and the worker verifies that token before anything is stored or emailed. Most visitors never see a puzzle; the Managed mode here only escalates the submissions Cloudflare already suspects.",
+											"_key": "x0002",
+											"text": "The short version: the Contact Forms plugin renders a Cloudflare Turnstile widget on the form, the browser hands back a token, and the submit route verifies that token with Cloudflare before it stores anything or sends mail. A POST without a valid token gets a 303 redirect to cf_status=challenge - no database row, no email. Everything below is the real pipeline from the plugin source, plus tests I ran against the live form.",
 											"marks": []
 										}
 									]
@@ -3051,29 +3051,40 @@
 							"_type": "widget_image",
 							"_version": 1,
 							"_key": "fig000",
-							"caption": "The submit pipeline: the honeypot, fill-time check and hourly limit run first, Turnstile verifies the token at the door, and only then does anything reach the inbox.",
+							"caption": "The submit pipeline: the honeypot and fill-time traps run first and lie to the bot, Turnstile verifies the token at the door, and only then does anything reach the inbox.",
 							"wide": true,
 							"image": {
-								"$media": {
-									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GSAX8W6GJCA771TK1V1MJY.jpg",
-									"alt": "The submission pipeline: envelope, honey pot, clock and turnstile gate guarding the inbox"
+								"id": "01M4GSAXGYYB7CFT9ZANRMBYDB",
+								"alt": "The submission pipeline: envelope, honey pot, clock and turnstile gate guarding the inbox",
+								"provider": "local",
+								"width": 1376,
+								"height": 768,
+								"blurhash": "LGSPIR-;s:_2~qkCjaoe-:oLRjRj",
+								"dominantColor": "rgb(242,238,228)",
+								"filename": "inline-turnstile-flow.jpg",
+								"mimeType": "image/jpeg",
+								"meta": {
+									"storageKey": "01M4GSAX8W6GJCA771TK1V1MJY.jpg",
+									"caption": null,
+									"blurhash": "LGSPIR-;s:_2~qkCjaoe-:oLRjRj",
+									"dominantColor": "rgb(242,238,228)"
 								}
 							}
 						},
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0005",
+							"_key": "x0005",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0007",
+									"_key": "x0007",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0006",
+											"_key": "x0006",
 											"text": "What you need",
 											"marks": []
 										}
@@ -3084,7 +3095,7 @@
 						{
 							"_type": "widget_checklist",
 							"_version": 1,
-							"_key": "w0008",
+							"_key": "x0008",
 							"title": null,
 							"items": [
 								{
@@ -3104,17 +3115,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0009",
+							"_key": "x0009",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0011",
+									"_key": "x0011",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0010",
+											"_key": "x0010",
 											"text": "How a submission is judged",
 											"marks": []
 										}
@@ -3125,18 +3136,18 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0014",
+							"_key": "x0014",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0013",
+									"_key": "x0013",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0012",
-											"text": "Every POST to the submit route passes five gates, in this order. Knowing the order explains most confusing behavior later:",
+											"_key": "x0012",
+											"text": "Every POST to the submit route passes these gates, in this order. The order matters: a request can only fail one gate, and which one tells you what the sender was.",
 											"marks": []
 										}
 									]
@@ -3146,48 +3157,60 @@
 						{
 							"_type": "widget_steps",
 							"_version": 1,
-							"_key": "w0015",
-							"title": "Five gates",
+							"_key": "x0015",
+							"title": "The gates, in order",
 							"items": [
 								{
 									"title": "Honeypot",
-									"body": "An invisible field that humans never fill. Bots that fill it get a fake success page and nothing is stored. They cannot tell they lost."
+									"body": "The cf_hp field is invisible to humans and bots fill it. Tripping it returns a fake cf_status=sent and stores nothing - the bot thinks it won."
+								},
+								{
+									"title": "Form lookup",
+									"body": "cf_slug must match an enabled form. No match means cf_status=error before anything else is checked."
 								},
 								{
 									"title": "Minimum fill time",
-									"body": "A submit faster than 1.5 seconds is a bot. Same trick: it gets a fake success, so scrapers never learn which gate caught them."
+									"body": "The hidden cf_ts field carries the page-load timestamp. A submit under 1.5 seconds old is a bot and gets another fake sent."
 								},
 								{
 									"title": "Turnstile verify",
-									"body": "The widget's token goes to Cloudflare siteverify together with the visitor IP. A failed check returns cf_status=challenge."
+									"body": "When both keys are set, cf-turnstile-response goes to Cloudflare siteverify with the secret key and the visitor IP. Missing or rejected token: cf_status=challenge."
 								},
 								{
 									"title": "Rate limit",
-									"body": "A per-IP hourly cap, 20 submissions by default. Tripping it returns cf_status=rate_limited."
+									"body": "Counts stored submissions from the same IP in the last hour against the configured cap, 20 by default. Over it: cf_status=rate_limited."
 								},
 								{
 									"title": "Field validation",
-									"body": "Required fields, types and lengths are checked against the form definition. Only then is the row stored and the email sent."
+									"body": "Each field is checked against the form definition. Failures return cf_status=invalid with the bad keys echoed in cf_fields."
+								},
+								{
+									"title": "Store",
+									"body": "The row is written first - before email - so a mail outage never loses a message. That is why a broken mail config shows status saved, not sent."
+								},
+								{
+									"title": "Email",
+									"body": "The notification goes through the site's configured provider, and the row records the attempt. If the form has send confirmation on, the visitor gets an auto-reply too."
 								}
 							]
 						},
 						{
 							"_type": "widget_notice",
 							"_version": 1,
-							"_key": "w0016",
+							"_key": "x0016",
 							"kind": "info",
-							"title": "It fails open on purpose",
+							"title": "Two gates lie on purpose",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0018",
+									"_key": "x0018",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0017",
-											"text": "If Cloudflare siteverify is unreachable or the plugin has no HTTP access, the submission is accepted rather than rejected. A Turnstile outage never takes the form down; the tradeoff is that a broken verifier quietly disables the spam check, so a sudden spam spike usually means the keys stopped working.",
+											"_key": "x0017",
+											"text": "The honeypot and fill-time traps return a success-shaped redirect instead of an error. A scraper watching responses cannot tell which gate caught it, so it never learns what to fix. You can watch this happen yourself in the curl tests below.",
 											"marks": []
 										}
 									]
@@ -3197,17 +3220,112 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0019",
+							"_key": "x0019",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0021",
+									"_key": "x0021",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0020",
+											"_key": "x0020",
+											"text": "The two contracts",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0024",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0023",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0022",
+											"text": "Everything the route needs is in the posted form data. These are the real field names - the prefix matters, and getting it wrong is the first trap:",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_facts",
+							"_version": 1,
+							"_key": "x0025",
+							"title": "Posted fields",
+							"items": [
+								{
+									"label": "cf_slug",
+									"value": "The form slug to submit to. Plain \"slug\" is ignored and returns error"
+								},
+								{
+									"label": "cf_hp",
+									"value": "Honeypot. Must be empty; the input is hidden and never filled by humans"
+								},
+								{
+									"label": "cf_ts",
+									"value": "Page-load timestamp in ms; posts younger than 1.5 s are bots"
+								},
+								{
+									"label": "cf-turnstile-response",
+									"value": "The token Cloudflare's widget writes into the form"
+								},
+								{
+									"label": "cf_page",
+									"value": "Optional URL the submit came from, stored on the row"
+								},
+								{
+									"label": "your fields",
+									"value": "Whatever the form defines - name, email, subject, message here"
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0028",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0027",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0026",
+											"text": "The answer is never JSON. The route 303-redirects back to the referring page with cf_status in the query string, so a plain HTML form with no JavaScript still completes the loop - the browser just lands on a page that can read the status.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0029",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0031",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0030",
 											"text": "Set it up",
 											"marks": []
 										}
@@ -3218,7 +3336,7 @@
 						{
 							"_type": "widget_steps",
 							"_version": 1,
-							"_key": "w0022",
+							"_key": "x0032",
 							"title": "Five steps",
 							"items": [
 								{
@@ -3231,15 +3349,15 @@
 								},
 								{
 									"title": "Paste both keys and save",
-									"body": "The site key renders the widget; the secret key verifies tokens. Set only one and the plugin stays off; a half-configured pair is treated as unconfigured."
+									"body": "The site key renders the widget; the secret key verifies tokens. Set only one and the gate stays off: a half-configured pair is treated as unconfigured, not half-on."
 								},
 								{
-									"title": "Redeploy the site",
-									"body": "If your pages are cached, the cached HTML has no widget on it. Redeploy or purge the cache, otherwise visitors submit with no token and get bounced."
+									"title": "Redeploy or purge the cache",
+									"body": "If pages are cached, the cached HTML has no widget on it. Cached pages keep collecting challenge failures until the cache refreshes."
 								},
 								{
 									"title": "Test it",
-									"body": "Load the form page and look for the widget, then submit once yourself to confirm the happy path still works."
+									"body": "Load the form page, confirm the widget, submit once yourself for the happy path, then run the curl below for the bot path."
 								}
 							]
 						},
@@ -3250,27 +3368,38 @@
 							"caption": "The plugin settings screen: the Turnstile site key and secret key sit next to the built-in rate limit.",
 							"wide": true,
 							"image": {
-								"$media": {
-									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GYMPV36G88YVZ3Z818CRNA.png",
-									"alt": "The contact forms plugin settings page showing the Turnstile key fields"
+								"id": "01M4GYMQ3CYY7779MP2S4T45FA",
+								"alt": "The contact forms plugin settings page showing the Turnstile key fields",
+								"provider": "local",
+								"width": 2880,
+								"height": 1800,
+								"blurhash": "LHS?DV-;ay?b~qfQWBkCV@j@ayWB",
+								"dominantColor": "rgb(250,250,250)",
+								"filename": "screenshot-settings.png",
+								"mimeType": "image/png",
+								"meta": {
+									"storageKey": "01M4GYMPV36G88YVZ3Z818CRNA.png",
+									"caption": null,
+									"blurhash": "LHS?DV-;ay?b~qfQWBkCV@j@ayWB",
+									"dominantColor": "rgb(250,250,250)"
 								}
 							}
 						},
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0023",
+							"_key": "x0033",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0025",
+									"_key": "x0035",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0024",
-											"text": "Verify it from the outside",
+											"_key": "x0034",
+											"text": "Test it from the outside",
 											"marks": []
 										}
 									]
@@ -3280,18 +3409,18 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0028",
+							"_key": "x0038",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0027",
+									"_key": "x0037",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0026",
-											"text": "A POST with no token should never reach the inbox. From a terminal:",
+											"_key": "x0036",
+											"text": "These are real responses from this site's live endpoint, not a mock. A tokenless POST must be challenged:",
 											"marks": []
 										}
 									]
@@ -3301,25 +3430,69 @@
 						{
 							"_type": "widget_code",
 							"_version": 1,
-							"_key": "w0029",
+							"_key": "x0039",
 							"language": "bash",
-							"code": "curl -i -X POST https://your-site.com/_emdash/api/plugins/emdashhq-contact-forms/submit \\\n  -F \"slug=contact\" -F \"name=Bot\" -F \"email=bot@example.com\" -F \"message=hi\""
+							"code": "curl -i -X POST https://emdashhq.com/_emdash/api/plugins/emdashhq-contact-forms/submit \\\n  -F \"cf_slug=contact\" -F \"name=Bot\" -F \"email=bot@example.com\" \\\n  -F \"subject=test\" -F \"message=hi\""
+						},
+						{
+							"_type": "widget_code",
+							"_version": 1,
+							"_key": "x0040",
+							"language": "plaintext",
+							"filename": "what came back",
+							"code": "HTTP/2 303\nlocation: /?cf=contact&cf_status=challenge"
 						},
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0032",
+							"_key": "x0043",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0031",
+									"_key": "x0042",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0030",
-											"text": "You want a 303 redirect to ?cf_status=challenge. The submission is not stored and no email goes out. A real browser submit carries the cf-turnstile-response token and lands in the inbox instead.",
+											"_key": "x0041",
+											"text": "No row is written, no mail goes out. Now the trap I fell into writing this: my first test posted slug=contact instead of cf_slug=contact and got cf_status=error - the route read an empty slug and reported the form missing, which is honest but misleading when you typo the field name. If you see error instead of challenge, check the field names before the keys.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_code",
+							"_version": 1,
+							"_key": "x0044",
+							"language": "bash",
+							"code": "curl -si -X POST https://emdashhq.com/_emdash/api/plugins/emdashhq-contact-forms/submit \\\n  -F \"cf_slug=contact\" -F \"name=Bot\" -F \"email=bot@example.com\" \\\n  -F \"subject=test\" -F \"message=hi\" -F \"cf_hp=spammy\""
+						},
+						{
+							"_type": "widget_code",
+							"_version": 1,
+							"_key": "x0045",
+							"language": "plaintext",
+							"filename": "honeypot filled - fake success",
+							"code": "HTTP/2 303\nlocation: /?cf=contact&cf_status=sent"
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0048",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0047",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0046",
+											"text": "That sent is a lie in the good direction: the response says success, the database got nothing. The submissions inbox on this site held eight rows when I checked - all real, every one with an email status recorded.",
 											"marks": []
 										}
 									]
@@ -3329,17 +3502,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0033",
+							"_key": "x0049",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0035",
+									"_key": "x0051",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0034",
+											"_key": "x0050",
 											"text": "What the status codes mean",
 											"marks": []
 										}
@@ -3350,16 +3523,16 @@
 						{
 							"_type": "widget_facts",
 							"_version": 1,
-							"_key": "w0036",
+							"_key": "x0052",
 							"title": null,
 							"items": [
 								{
 									"label": "sent",
-									"value": "Stored and emailed (or a fake success fed to the honeypot and time traps)"
+									"value": "Stored and emailed - or a fake success fed to the honeypot and time traps"
 								},
 								{
 									"label": "saved",
-									"value": "Stored, but the notification email failed; check the email log"
+									"value": "Stored, but the notification email failed; the row keeps the error"
 								},
 								{
 									"label": "challenge",
@@ -3371,11 +3544,11 @@
 								},
 								{
 									"label": "invalid",
-									"value": "Fields failed validation; the bad fields echo back in cf_fields"
+									"value": "Fields failed validation; the bad keys echo back in cf_fields"
 								},
 								{
 									"label": "error",
-									"value": "Form slug not found or the form is disabled"
+									"value": "Form slug unknown or disabled - or too many posted fields"
 								}
 							]
 						},
@@ -3386,28 +3559,146 @@
 							"caption": "Submissions that pass land in the inbox with an email status for each one. Blocked posts never get a row.",
 							"wide": true,
 							"image": {
-								"$media": {
-									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GYMQR2ZFNXTGFCS3MKASEH.png",
-									"alt": "The submissions inbox listing stored form entries with status and email columns"
+								"id": "01M4GYMR692E1XS6KX3KMPV1NT",
+								"alt": "The submissions inbox listing stored form entries with status and email columns",
+								"provider": "local",
+								"width": 2880,
+								"height": 1800,
+								"blurhash": "LGS$ov?bay-;~qWBWCofofWBayfk",
+								"dominantColor": "rgb(249,249,249)",
+								"filename": "screenshot-submissions.png",
+								"mimeType": "image/png",
+								"meta": {
+									"storageKey": "01M4GYMQR2ZFNXTGFCS3MKASEH.png",
+									"caption": null,
+									"blurhash": "LGS$ov?bay-;~qWBWCofofWBayfk",
+									"dominantColor": "rgb(249,249,249)"
 								}
 							}
 						},
 						{
-							"_type": "widget_notice",
+							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0037",
-							"kind": "warning",
-							"title": "The cache trap we actually hit",
+							"_key": "x0053",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0039",
+									"_key": "x0055",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0054",
+											"text": "What a stored row contains",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0058",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0057",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0038",
+											"_key": "x0056",
+											"text": "Each passing submission records more than the answers - enough to debug delivery problems later without a second system:",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_checklist",
+							"_version": 1,
+							"_key": "x0059",
+							"title": null,
+							"items": [
+								{
+									"text": "The answers plus the field labels at submit time"
+								},
+								{
+									"text": "IP, user agent and country (from the edge request)"
+								},
+								{
+									"text": "The page URL the submit came from"
+								},
+								{
+									"text": "emailStatus and emailAttempts, so a provider outage is visible, not silent"
+								},
+								{
+									"text": "A new / read / flagged state you can triage in the inbox"
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0060",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0062",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0061",
+											"text": "The fail-open trade-off, honestly",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0065",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0064",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0063",
+											"text": "When Turnstile is configured but siteverify cannot be reached, the plugin accepts the submission. The reasoning: a Cloudflare outage should never take your contact form down with it. The cost: a silently broken verifier quietly turns the spam check off - you find out via a spam spike, not an error. If junk suddenly reappears, suspect the keys before the bots got smarter.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_notice",
+							"_version": 1,
+							"_key": "x0066",
+							"kind": "warning",
+							"title": "The cache trap we actually hit",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0068",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0067",
 											"text": "Keys were saved, but the page showed no widget. The deploy had warmed a widget-less copy of the contact page into the Workers cache and kept serving it. A redeploy fixed it. If the widget does not appear after saving, suspect the cache before the keys.",
 											"marks": []
 										}
@@ -3418,17 +3709,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0040",
+							"_key": "x0069",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0042",
+									"_key": "x0071",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0041",
+											"_key": "x0070",
 											"text": "Tuning it afterwards",
 											"marks": []
 										}
@@ -3439,17 +3730,17 @@
 						{
 							"_type": "widget_checklist",
 							"_version": 1,
-							"_key": "w0043",
+							"_key": "x0072",
 							"title": "Worth adjusting",
 							"items": [
 								{
-									"text": "Rate limit per IP per hour: 20 by default, accepts 1 to 1000"
+									"text": "Rate limit per IP per hour: 20 by default, accepts 1 to 1000; the count is over stored rows, so challenged posts do not eat the budget"
 								},
 								{
 									"text": "Keep submissions for (days): 0 keeps everything forever"
 								},
 								{
-									"text": "Confirmation email: each form can auto-reply to the visitor's email field"
+									"text": "Confirmation email: each form can auto-reply to the visitor's email field - the contact form here has it on"
 								},
 								{
 									"text": "Extra debug: plugin settings has a switch that turns on verbose submit logs"
@@ -3462,17 +3753,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0044",
+							"_key": "x0073",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0046",
+									"_key": "x0075",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0045",
+											"_key": "x0074",
 											"text": "Worth knowing",
 											"marks": []
 										}
@@ -3483,7 +3774,7 @@
 						{
 							"_type": "widget_facts",
 							"_version": 1,
-							"_key": "w0047",
+							"_key": "x0076",
 							"title": null,
 							"items": [
 								{
@@ -3507,16 +3798,16 @@
 						{
 							"_type": "widget_accordion",
 							"_version": 1,
-							"_key": "w0048",
+							"_key": "x0077",
 							"heading": "Common questions",
 							"items": [
 								{
 									"title": "Does it stop all spam?",
-									"body": "It stops automated posts and most scripted junk. A determined human can still pass a challenge. If flagged submissions keep slipping through, the plugin can quarantine them: stored as spam, never emailed."
+									"body": "It stops automated posts and most scripted junk. A determined human can still pass a challenge. Flagged submissions can be quarantined in the inbox: stored as spam, never emailed."
 								},
 								{
 									"title": "Does it work without JavaScript?",
-									"body": "No. The widget needs JavaScript in the browser. That is the point: bots posting the raw endpoint get challenged regardless."
+									"body": "The widget needs JavaScript in the browser. That is the point: bots posting the raw endpoint get challenged regardless."
 								},
 								{
 									"title": "What if Cloudflare is down?",
@@ -3524,7 +3815,7 @@
 								},
 								{
 									"title": "Where do real submissions go?",
-									"body": "Same places as before: the admin inbox under Plugins → Contact forms, and an email through the site's configured provider."
+									"body": "The admin inbox under Plugins → Contact forms, plus an email through the site's configured provider."
 								}
 							]
 						},
@@ -3535,16 +3826,27 @@
 							"caption": "The live form on this site: in managed mode the widget renders nothing until Cloudflare decides a visitor needs a challenge.",
 							"wide": true,
 							"image": {
-								"$media": {
-									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GXHQHE6FSB7WDWSCN65T8R.png",
-									"alt": "The public contact form rendered on the site"
+								"id": "01M4GXHQTRMXX9KCC0Y9E6P8H7",
+								"alt": "The public contact form rendered on the site",
+								"provider": "local",
+								"width": 2560,
+								"height": 1720,
+								"blurhash": "LlP?p:xuV[t7~poeWCof4oWAWCj]",
+								"dominantColor": "rgb(202,196,199)",
+								"filename": "contact-forms-public.png",
+								"mimeType": "image/png",
+								"meta": {
+									"storageKey": "01M4GXHQHE6FSB7WDWSCN65T8R.png",
+									"caption": null,
+									"blurhash": "LlP?p:xuV[t7~poeWCof4oWAWCj]",
+									"dominantColor": "rgb(202,196,199)"
 								}
 							}
 						},
 						{
 							"_type": "widget_button",
 							"_version": 1,
-							"_key": "w0049",
+							"_key": "x0078",
 							"label": "Turnstile documentation",
 							"url": "https://developers.cloudflare.com/turnstile/",
 							"icon": "arrow-up-right",
@@ -3555,7 +3857,7 @@
 						{
 							"_type": "widget_checklist",
 							"_version": 1,
-							"_key": "w0050",
+							"_key": "x0079",
 							"title": "Done means",
 							"items": [
 								{
@@ -3563,6 +3865,9 @@
 								},
 								{
 									"text": "A tokenless POST gets cf_status=challenge"
+								},
+								{
+									"text": "A filled honeypot gets a fake sent and stores nothing"
 								},
 								{
 									"text": "A real submit is stored and emailed"
@@ -3593,32 +3898,32 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0055",
+							"_key": "x0084",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0052",
+									"_key": "x0081",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0051",
-											"text": "Articles on this site needed more than paragraphs. Callouts for warnings, numbered steps for walkthroughs, code blocks for commands. The stock block editor ships a lean set on purpose, so I built the Content Widgets plugin: nineteen block types for the EmDash editor, usable in post bodies and on regular pages.",
+											"_key": "x0080",
+											"text": "Articles on this site needed more than paragraphs. Callouts for warnings, numbered steps for walkthroughs, code blocks for commands, a table of contents on long posts. The stock block editor ships a lean set on purpose, so I built the Content Widgets plugin: nineteen block types for the EmDash editor, usable in post bodies and on regular pages.",
 											"marks": []
 										}
 									]
 								},
 								{
 									"_type": "block",
-									"_key": "w0054",
+									"_key": "x0083",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0053",
-											"text": "Everything renders on the server. There is no client-side bundle to load, and every widget picks up the site's type scale and colors through CSS variables, so the blocks look like part of the theme rather than a bolt-on.",
+											"_key": "x0082",
+											"text": "The short version: install @bitdoze.com/emdashhq-widgets from the registry, allow the widget types on your blocks field, copy the renderers from the package's site/ folder into your project, and the editor's slash menu grows nineteen new entries. Everything renders on the server, picks up the site's type scale and colors through CSS variables, and ships no client-side bundle.",
 											"marks": []
 										}
 									]
@@ -3632,63 +3937,38 @@
 							"caption": "The catalog page the plugin adds under Plugins → Content Widgets: every block with a preview, a one-line description and its type name.",
 							"wide": true,
 							"image": {
-								"$media": {
-									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GSAXZ2X658YF704ZDTFDXK.png",
-									"alt": "The Content Widgets catalog in the EmDash admin"
+								"id": "01M4GSAY6HGKKQW0CCEBTP8H4B",
+								"alt": "The Content Widgets catalog in the EmDash admin",
+								"provider": "local",
+								"width": 2880,
+								"height": 1800,
+								"blurhash": "LCSPb4^+xt_M_4%KxaRkIUoeofRk",
+								"dominantColor": "rgb(247,247,249)",
+								"filename": "inline-widgets-catalog.png",
+								"mimeType": "image/png",
+								"meta": {
+									"storageKey": "01M4GSAXZ2X658YF704ZDTFDXK.png",
+									"caption": null,
+									"blurhash": "LCSPb4^+xt_M_4%KxaRkIUoeofRk",
+									"dominantColor": "rgb(247,247,249)"
 								}
 							}
 						},
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0056",
+							"_key": "x0085",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0058",
+									"_key": "x0087",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0057",
-											"text": "Install it",
-											"marks": []
-										}
-									]
-								}
-							]
-						},
-						{
-							"_type": "widget_tabs",
-							"_version": 1,
-							"_key": "w0059",
-							"items": [
-								{
-									"label": "From the registry",
-									"body": "Admin → Plugins → Browse → find Content Widgets → Install. The package is @bitdoze.com/emdashhq-widgets on plugins.emdashcms.com. This is the path for most sites: the registry handles versions and updates."
-								},
-								{
-									"label": "From source",
-									"body": "Clone the plugin into your site's plugins/ directory, register it under sandboxed: in astro.config.mjs, and add it to package.json as a file: dependency. Take this path when you want to edit the widgets themselves."
-								}
-							]
-						},
-						{
-							"_type": "widget_prose",
-							"_version": 1,
-							"_key": "w0060",
-							"body": [
-								{
-									"_type": "block",
-									"_key": "w0062",
-									"style": "h2",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "w0061",
-											"text": "Allow the block types",
+											"_key": "x0086",
+											"text": "What actually ships",
 											"marks": []
 										}
 									]
@@ -3698,132 +3978,18 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0065",
+							"_key": "x0090",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0064",
+									"_key": "x0089",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0063",
-											"text": "New block types do not appear in the editor until a blocks field allows them. Open the collection, edit the blocks field, and tick the widget types under allowed types. In a seed file it looks like this:",
-											"marks": []
-										}
-									]
-								}
-							]
-						},
-						{
-							"_type": "widget_code",
-							"_version": 1,
-							"_key": "w0066",
-							"language": "json",
-							"code": "{\n  \"slug\": \"body\",\n  \"type\": \"blocks\",\n  \"validation\": {\n    \"allowedTypes\": [\"widget_prose\", \"widget_notice\", \"widget_steps\", \"widget_code\"]\n  }\n}"
-						},
-						{
-							"_type": "widget_notice",
-							"_version": 1,
-							"_key": "w0067",
-							"kind": "info",
-							"title": "About the site/ folder",
-							"body": [
-								{
-									"_type": "block",
-									"_key": "w0069",
-									"style": "normal",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "w0068",
-											"text": "Sandboxed plugins cannot register Astro components into a site's render pipeline, so the package ships its renderers in site/. Copy site/components into your project and map them with defineBlockComponents(); the README walks through it in four steps.",
-											"marks": []
-										}
-									]
-								}
-							]
-						},
-						{
-							"_type": "widget_prose",
-							"_version": 1,
-							"_key": "w0072",
-							"body": [
-								{
-									"_type": "block",
-									"_key": "w0071",
-									"style": "normal",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "w0070",
-											"text": "Two ways to render them. Spread the shipped component map into your existing block renderer, or drop the standalone WidgetBlocks component on a widget-only field like a post body:",
-											"marks": []
-										}
-									]
-								}
-							]
-						},
-						{
-							"_type": "widget_code",
-							"_version": 1,
-							"_key": "w0073",
-							"language": "typescript",
-							"filename": "any Astro page",
-							"code": "import { widgetComponents } from \"./widgets/widget-components\";\nimport WidgetBlocks from \"./widgets/WidgetBlocks.astro\";\n\n// path 1: merge into the page's block map\nconst blockComponents = defineBlockComponents({\n  ...widgetComponents,\n});\n\n// path 2: a widget-only field, like a post body\n<WidgetBlocks value={post.data.body} />"
-						},
-						{
-							"_type": "widget_image",
-							"_version": 1,
-							"_key": "fig005",
-							"caption": "Once the types are allowed, they show up in the block picker alongside the regular blocks.",
-							"wide": true,
-							"image": {
-								"$media": {
-									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GSAYT24GVJJKM4P0A6HEMX.png",
-									"alt": "A widget block picked from the EmDash post editor"
-								}
-							}
-						},
-						{
-							"_type": "widget_prose",
-							"_version": 1,
-							"_key": "w0074",
-							"body": [
-								{
-									"_type": "block",
-									"_key": "w0076",
-									"style": "h2",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "w0075",
-											"text": "What each group is for",
-											"marks": []
-										}
-									]
-								}
-							]
-						},
-						{
-							"_type": "widget_prose",
-							"_version": 1,
-							"_key": "w0079",
-							"body": [
-								{
-									"_type": "block",
-									"_key": "w0078",
-									"style": "normal",
-									"markDefs": [],
-									"children": [
-										{
-											"_type": "span",
-											"_key": "w0077",
-											"text": "Nineteen blocks is a lot of names. Grouped by job:",
+											"_key": "x0088",
+											"text": "Nineteen blocks is a lot of names. Grouped by the job they do:",
 											"marks": []
 										}
 									]
@@ -3833,7 +3999,7 @@
 						{
 							"_type": "widget_checklist",
 							"_version": 1,
-							"_key": "w0080",
+							"_key": "x0091",
 							"title": "Writing and structure",
 							"items": [
 								{
@@ -3856,7 +4022,7 @@
 						{
 							"_type": "widget_checklist",
 							"_version": 1,
-							"_key": "w0081",
+							"_key": "x0092",
 							"title": "Media and embeds",
 							"items": [
 								{
@@ -3876,7 +4042,7 @@
 						{
 							"_type": "widget_checklist",
 							"_version": 1,
-							"_key": "w0082",
+							"_key": "x0093",
 							"title": "Reference and calls to action",
 							"items": [
 								{
@@ -3892,7 +4058,7 @@
 									"text": "Facts: a label/value fact sheet for specs and pricing"
 								},
 								{
-									"text": "Product: a review box with rating and pros/cons"
+									"text": "Product: a review box with rating, pros/cons and an affiliate disclosure line"
 								},
 								{
 									"text": "Table of contents: built from the post's own headings"
@@ -3908,17 +4074,341 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0083",
+							"_key": "x0094",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0085",
+									"_key": "x0096",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0084",
+											"_key": "x0095",
+											"text": "What the editor actually stores",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0099",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0098",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0097",
+											"text": "This is a real notice block lifted from the demo post's stored body - the whole record, nothing trimmed:",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_code",
+							"_version": 1,
+							"_key": "x0100",
+							"language": "json",
+							"filename": "a stored widget block",
+							"code": "{\n  \"_type\": \"widget_notice\",\n  \"_version\": 1,\n  \"_key\": \"meywrdak\",\n  \"kind\": \"info\",\n  \"title\": \"Info notice\",\n  \"body\": [\n    {\n      \"_type\": \"block\",\n      \"style\": \"normal\",\n      \"children\": [\n        { \"_type\": \"span\", \"text\": \"A neutral note...\", \"marks\": [] }\n      ]\n    }\n  ]\n}"
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0103",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0102",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0101",
+											"text": "Three details matter. The _type is the contract between editor and renderer; _version versions the shape so a plugin update can migrate old blocks; and _key is immutable - the API rejects an update that reuses a key with a different type, which is worth knowing the first time you rewrite a body through the REST API. Rich text fields like body carry real Portable Text, so spans, marks and links survive intact.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0104",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0106",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0105",
+											"text": "Install it",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_tabs",
+							"_version": 1,
+							"_key": "x0107",
+							"items": [
+								{
+									"label": "From the registry",
+									"body": "Admin → Plugins → Browse → find Content Widgets → Install. The package is @bitdoze.com/emdashhq-widgets on plugins.emdashcms.com. This is the path for most sites: the registry handles versions and updates."
+								},
+								{
+									"label": "From source",
+									"body": "Clone the plugin into your site's plugins/ directory, register it under sandboxed: in astro.config.mjs, and add it to package.json as a file: dependency. Take this path when you want to edit the widgets themselves."
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0108",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0110",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0109",
+											"text": "Allow the block types",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0113",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0112",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0111",
+											"text": "New block types do not appear in the editor until a blocks field allows them. Open the collection, edit the blocks field, and tick the widget types under allowed types. In a seed file it looks like this:",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_code",
+							"_version": 1,
+							"_key": "x0114",
+							"language": "json",
+							"code": "{\n  \"slug\": \"body\",\n  \"type\": \"blocks\",\n  \"validation\": {\n    \"allowedTypes\": [\"widget_prose\", \"widget_notice\", \"widget_steps\", \"widget_code\"]\n  }\n}"
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0115",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0117",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0116",
+											"text": "Wire the renderers",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_notice",
+							"_version": 1,
+							"_key": "x0118",
+							"kind": "info",
+							"title": "Why a site/ folder exists",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0120",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0119",
+											"text": "Sandboxed plugins run in a Worker isolate and cannot register Astro components into a site's render pipeline. So the package ships its renderers as plain Astro files in site/ - you copy them into your project and they become your components, free of the sandbox. It is the distribution format, not a workaround.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0123",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0122",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0121",
+											"text": "Two ways to render them. Spread the shipped component map into your existing block renderer, or drop the standalone WidgetBlocks component on a widget-only field like a post body:",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_code",
+							"_version": 1,
+							"_key": "x0124",
+							"language": "typescript",
+							"filename": "any Astro page",
+							"code": "import { widgetComponents } from \"./widgets/widget-components\";\nimport WidgetBlocks from \"./widgets/WidgetBlocks.astro\";\n\n// path 1: merge into the page's block map\nconst blockComponents = defineBlockComponents({\n  ...widgetComponents,\n});\n\n// path 2: a widget-only field, like a post body\n<WidgetBlocks value={post.data.body} />"
+						},
+						{
+							"_type": "widget_image",
+							"_version": 1,
+							"_key": "fig005",
+							"caption": "Once the types are allowed, they show up in the block picker alongside the regular blocks.",
+							"wide": true,
+							"image": {
+								"id": "01M4GSAZ0BR1PRS4SRC5A0FVH8",
+								"alt": "A widget block picked from the EmDash post editor",
+								"provider": "local",
+								"width": 2880,
+								"height": 1800,
+								"blurhash": "LIS$ov-;WC-;~qocRkoeIVofWCjs",
+								"dominantColor": "rgb(248,248,248)",
+								"filename": "inline-widgets-editor.png",
+								"mimeType": "image/png",
+								"meta": {
+									"storageKey": "01M4GSAYT24GVJJKM4P0A6HEMX.png",
+									"caption": null,
+									"blurhash": "LIS$ov-;WC-;~qocRkoeIVofWCjs",
+									"dominantColor": "rgb(248,248,248)"
+								}
+							}
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0125",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0127",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0126",
+											"text": "Anatomy of one widget",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0130",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0129",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0128",
+											"text": "Every renderer is the same small shape - props carry the stored block value, markup is plain HTML, and styling reads theme tokens instead of hardcoding colors. Skinned down to its skeleton, a widget looks like this:",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_code",
+							"_version": 1,
+							"_key": "x0131",
+							"language": "html",
+							"filename": "site/components/WidgetNotice.astro, simplified",
+							"code": "---\nconst { value } = Astro.props;\n---\n\n<aside class={`wgt-notice wgt-notice-${value.kind}`}>\n  {value.title && <p class=\"wgt-notice-title\">{value.title}</p>}\n  <PortableText value={value.body} />\n</aside>\n\n<style>\n  .wgt-notice {\n    border-left: 3px solid var(--color-brand);\n    background: var(--color-surface);\n    padding: var(--spacing-md);\n  }\n</style>"
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0134",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0133",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0132",
+											"text": "The wgt- class prefix keeps widget CSS from colliding with the theme, and var() tokens mean the same file renders correctly in a cream-paper theme or an ink-dark one. Copy a component, change the fields, and you have a custom widget that stores Portable Text like the built-ins.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0135",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0137",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0136",
 											"text": "Pages get them too",
 											"marks": []
 										}
@@ -3929,17 +4419,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0088",
+							"_key": "x0140",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0087",
+									"_key": "x0139",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0086",
+											"_key": "x0138",
 											"text": "Nothing here is post-specific. The contact page's form block and this site's marketing pages use the same mechanism: any blocks field on any collection can allow the widget types, and the same WidgetBlocks component renders them. Write the field once, use the widgets everywhere.",
 											"marks": []
 										}
@@ -3950,17 +4440,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0089",
+							"_key": "x0141",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0091",
+									"_key": "x0143",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0090",
+											"_key": "x0142",
 											"text": "See it working",
 											"marks": []
 										}
@@ -3971,18 +4461,18 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0094",
+							"_key": "x0146",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0093",
+									"_key": "x0145",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0092",
-											"text": "Every block on the list is rendering in the demo post linked below, the same one you can open in this site's editor to inspect how it was put together.",
+											"_key": "x0144",
+											"text": "Every block on the list is rendering in the demo post linked below, the same one you can open in this site's editor to inspect how it was put together - including the affiliate product card, which got a layout fix and an affiliate-card restyle in 1.0.3.",
 											"marks": []
 										}
 									]
@@ -3992,7 +4482,7 @@
 						{
 							"_type": "widget_cards",
 							"_version": 1,
-							"_key": "w0095",
+							"_key": "x0147",
 							"title": null,
 							"items": [
 								{
@@ -4018,7 +4508,7 @@
 						{
 							"_type": "widget_button",
 							"_version": 1,
-							"_key": "w0096",
+							"_key": "x0148",
 							"label": "Open the widget gallery",
 							"url": "/blog/widget-gallery/",
 							"icon": "book",
@@ -4029,12 +4519,12 @@
 						{
 							"_type": "widget_facts",
 							"_version": 1,
-							"_key": "w0097",
+							"_key": "x0149",
 							"title": null,
 							"items": [
 								{
 									"label": "Version",
-									"value": "1.0.2"
+									"value": "1.0.3"
 								},
 								{
 									"label": "License",
@@ -4071,32 +4561,32 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0102",
+							"_key": "x0154",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0099",
+									"_key": "x0151",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0098",
-											"text": "This site has a blog now. Not a separate app: a posts collection, one Astro route, and a block that lists articles on the /blog page. Here is the anatomy of it, so you can build the same thing, or take it apart to see how EmDash pieces fit together.",
+											"_key": "x0150",
+											"text": "This site has a blog now. Not a separate app: a posts collection, one Astro route, and a block that lists articles on the /blog page. Here is the anatomy of it - real code, not pseudocode - so you can build the same thing, or take it apart to see how EmDash pieces fit together.",
 											"marks": []
 										}
 									]
 								},
 								{
 									"_type": "block",
-									"_key": "w0101",
+									"_key": "x0153",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0100",
-											"text": "It took an afternoon. Most of that went into deciding what a post is; the code is the easy part once the schema is honest.",
+											"_key": "x0152",
+											"text": "The short version: entries in a posts collection become routable via a urlPattern, one dynamic route renders each slug, a hub block lists them on a page, and cache tags make publish invalidate exactly the pages that show the post. Everything below is the actual implementation on this site.",
 											"marks": []
 										}
 									]
@@ -4106,7 +4596,7 @@
 						{
 							"_type": "widget_facts",
 							"_version": 1,
-							"_key": "w0103",
+							"_key": "x0155",
 							"title": null,
 							"items": [
 								{
@@ -4138,26 +4628,37 @@
 							"caption": "The whole blog in three pieces: the posts collection holds the data, one route renders every slug, and the body blocks become the article.",
 							"wide": true,
 							"image": {
-								"$media": {
-									"url": "https://emdashhq.com/_emdash/api/media/file/01M4GSAZKXDRT6XKR4VY8EQXSM.jpg",
-									"alt": "The blog pipeline: posts collection, one route, the rendered article"
+								"id": "01M4GSAZWCQ40W4306SDHYS71D",
+								"alt": "The blog pipeline: posts collection, one route, the rendered article",
+								"provider": "local",
+								"width": 2752,
+								"height": 1536,
+								"blurhash": "LGRo?E~pWB?H~pkBazoL?aIUofkC",
+								"dominantColor": "rgb(239,232,228)",
+								"filename": "inline-blog-pipeline.jpg",
+								"mimeType": "image/jpeg",
+								"meta": {
+									"storageKey": "01M4GSAZKXDRT6XKR4VY8EQXSM.jpg",
+									"caption": null,
+									"blurhash": "LGRo?E~pWB?H~pkBazoL?aIUofkC",
+									"dominantColor": "rgb(239,232,228)"
 								}
 							}
 						},
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0104",
+							"_key": "x0156",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0106",
+									"_key": "x0158",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0105",
+											"_key": "x0157",
 											"text": "The collection",
 											"marks": []
 										}
@@ -4168,17 +4669,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0109",
+							"_key": "x0161",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0108",
+									"_key": "x0160",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0107",
+											"_key": "x0159",
 											"text": "The posts collection is regular EmDash schema. The interesting bits are the urlPattern, which makes entries routable and lands them in the sitemap, and the body field, a blocks field where all the widgets live.",
 											"marks": []
 										}
@@ -4189,7 +4690,7 @@
 						{
 							"_type": "widget_code",
 							"_version": 1,
-							"_key": "w0110",
+							"_key": "x0162",
 							"language": "json",
 							"filename": "seed.json",
 							"code": "{\n  \"slug\": \"posts\",\n  \"urlPattern\": \"/blog/{slug}\",\n  \"supports\": [\"drafts\", \"revisions\", \"seo\", \"search\"],\n  \"fields\": [\n    { \"slug\": \"title\", \"type\": \"string\", \"required\": true },\n    { \"slug\": \"excerpt\", \"type\": \"text\" },\n    { \"slug\": \"cover\", \"type\": \"image\" },\n    { \"slug\": \"body\", \"type\": \"blocks\" },\n    { \"slug\": \"featured\", \"type\": \"boolean\" }\n  ]\n}"
@@ -4197,17 +4698,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0113",
+							"_key": "x0165",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0112",
+									"_key": "x0164",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0111",
+											"_key": "x0163",
 											"text": "Two fields carry the listing pages: excerpt is the card text and meta description fallback, cover is the card image and og:image. Skip them and every surface downstream looks unfinished.",
 											"marks": []
 										}
@@ -4218,18 +4719,18 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0114",
+							"_key": "x0166",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0116",
+									"_key": "x0168",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0115",
-											"text": "The route",
+											"_key": "x0167",
+											"text": "The route, annotated",
 											"marks": []
 										}
 									]
@@ -4239,18 +4740,18 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0119",
+							"_key": "x0171",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0118",
+									"_key": "x0170",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0117",
-											"text": "One file renders every post. It looks the entry up by slug, rewrites to /404 when it is missing, and hands the body blocks to the widget renderer:",
+											"_key": "x0169",
+											"text": "One file renders every post. This is its real core - the redirects, the lookup, the cache tag, and the SEO resolution:",
 											"marks": []
 										}
 									]
@@ -4260,26 +4761,26 @@
 						{
 							"_type": "widget_code",
 							"_version": 1,
-							"_key": "w0120",
+							"_key": "x0172",
 							"language": "typescript",
 							"filename": "src/pages/blog/[slug].astro",
-							"code": "const { entry: post, error, cacheHint } =\n  await getEmDashEntry(\"posts\", Astro.params.slug);\nif (!post) return Astro.rewrite(\"/404\");\nif (Astro.cache.enabled) Astro.cache.set(cacheHint);\n\nconst seo = getSeoMeta(post, {\n  siteUrl: Astro.url.origin,\n  path: `/blog/${post.id}/`,\n});\n// <WidgetBlocks value={post.data.body} />"
+							"code": "const slug = Astro.params.slug;\nif (!slug) return Astro.redirect(`/blog/${Astro.url.search}`, 301);\n// canonical form is slash-terminated; anything else 301s there\nif (!Astro.url.pathname.endsWith(\"/\"))\n  return Astro.redirect(`${Astro.url.pathname}/${Astro.url.search}`, 301);\n\nconst [result] = await Promise.all([\n  getEmDashEntry(\"posts\", slug), getSiteChrome(Astro),\n]);\nif (result.error) { Astro.cache.set(false); return unavailableResponse(); }\nconst post = result.entry;\nif (Astro.cache.enabled) Astro.cache.set(result.cacheHint);\nif (!post) return Astro.rewrite(\"/404\");"
 						},
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0123",
+							"_key": "x0175",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0122",
+									"_key": "x0174",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0121",
-											"text": "getSeoMeta resolves the SEO tab on each post (meta title, description, og image) and falls back to the title and excerpt when the fields are empty. Canonical and robots come along for free.",
+											"_key": "x0173",
+											"text": "Four things worth stealing. The early 301s normalize the URL before any data work happens. The entry read runs in parallel with the site chrome read - one round trip, not two. A failed query sets no cache and returns a deliberately uncached 503 rather than a poisoned 500. And a missing post rewrites to the 404 page instead of rendering an empty shell.",
 											"marks": []
 										}
 									]
@@ -4289,18 +4790,18 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0126",
+							"_key": "x0178",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0125",
+									"_key": "x0177",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0124",
-											"text": "The cacheHint line matters more than it looks. Passing it to Astro.cache tags the response, so publishing a post invalidates exactly the cached pages that show it: the article itself, /blog, and the homepage section. Skip it and edits take a cache lifetime to appear.",
+											"_key": "x0176",
+											"text": "The reading time on the post header is also computed, not stored: the route filters body blocks down to widget_prose, runs extractPlainText over their Portable Text, and divides the word count by 200. Every article's minutes stay honest automatically.",
 											"marks": []
 										}
 									]
@@ -4310,17 +4811,101 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0127",
+							"_key": "x0179",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0129",
+									"_key": "x0181",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0128",
+											"_key": "x0180",
+											"text": "What the head gets",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0184",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0183",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0182",
+											"text": "getSeoMeta resolves the SEO tab on each post - meta title, description, og image - and falls back to the title and excerpt when the fields are empty. Canonical and robots come along for free, and the cover doubles as og:image. Fill the SEO tab once and every surface agrees.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0185",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0187",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0186",
+											"text": "Why cacheHint matters",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0190",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0189",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0188",
+											"text": "Passing the query's cacheHint to Astro.cache tags the response with the entries it read. Publishing a post then invalidates exactly the cached pages that show it: the article, /blog, and the homepage section. Skip the tag and edits wait out the cache lifetime. The same trick runs site-wide - the middleware tags public pages with site-scripts so changing analytics settings busts every page at once.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0191",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0193",
+									"style": "h2",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0192",
 											"text": "The hub page",
 											"marks": []
 										}
@@ -4331,17 +4916,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0132",
+							"_key": "x0196",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0131",
+									"_key": "x0195",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0130",
+											"_key": "x0194",
 											"text": "/blog itself is an ordinary page with a site_posts block on it. The block queries the posts collection, orders by published date, and renders the newest article as a lead card with the rest in a grid. The page is content, not code: editors can move it, rename it and add blocks around it without touching the repo.",
 											"marks": []
 										}
@@ -4352,17 +4937,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0135",
+							"_key": "x0199",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0134",
+									"_key": "x0198",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0133",
+											"_key": "x0197",
 											"text": "The same block with a limit of three is the \"Latest from the blog\" section on the homepage. One component, two placements, no duplicated markup.",
 											"marks": []
 										}
@@ -4373,18 +4958,18 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0136",
+							"_key": "x0200",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0138",
+									"_key": "x0202",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0137",
-											"text": "The feed",
+											"_key": "x0201",
+											"text": "The feed, annotated",
 											"marks": []
 										}
 									]
@@ -4394,18 +4979,47 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0141",
+							"_key": "x0205",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0140",
+									"_key": "x0204",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0139",
-											"text": "rss.xml.ts joins the posts collection with tutorials, videos and resources into one feed, newest first. Posts link to their /blog/ URLs; the hub collections link out to their real destinations (bitdoze.com, YouTube, npm). One line of plumbing: each collection passes a linkField, and posts get the special case of an internal path.",
+											"_key": "x0203",
+											"text": "rss.xml.ts builds one feed out of four collections. The whole trick is a small table - each collection declares which field holds its outbound link:",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_code",
+							"_version": 1,
+							"_key": "x0206",
+							"language": "typescript",
+							"filename": "src/pages/rss.xml.ts",
+							"code": "const collections = [\n  { slug: \"posts\",     linkField: \"\",            tag: \"Post\" },\n  { slug: \"tutorials\", linkField: \"url\",         tag: \"Tutorial\" },\n  { slug: \"videos\",    linkField: \"youtube_url\", tag: \"Video\" },\n  { slug: \"resources\", linkField: \"url\",         tag: \"Resource\" },\n];\n// posts are own content: link = `/blog/${entry.id}/`\n// hub entries: link = sanitizeHref(data[linkField])"
+						},
+						{
+							"_type": "widget_prose",
+							"_version": 1,
+							"_key": "x0209",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0208",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0207",
+											"text": "Tutorials link out to bitdoze.com, videos to YouTube, resources to npm or the registry - and posts get the internal /blog/ path as the special case. Each collection read also passes its own cacheHint, so publishing anything refreshes the feed too.",
 											"marks": []
 										}
 									]
@@ -4415,17 +5029,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0142",
+							"_key": "x0210",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0144",
+									"_key": "x0212",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0143",
+											"_key": "x0211",
 											"text": "Drafts and publishing",
 											"marks": []
 										}
@@ -4436,18 +5050,18 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0147",
+							"_key": "x0215",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0146",
+									"_key": "x0214",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0145",
-											"text": "Saving a post writes a draft revision; the live page only changes when you hit publish. That is why a saved-but-unpublished edit can look lost on the site while being perfectly visible in the admin. The SEO tab sits on the same editor screen, so meta title and description are part of the publish checklist rather than an afterthought.",
+											"_key": "x0213",
+											"text": "Saving a post writes a draft revision; the live page only changes when you hit publish. That is why a saved-but-unpublished edit can look lost on the site while being perfectly visible in the admin - and why the REST API answers a PUT with a new revision id rather than a changed page. The SEO tab sits on the same editor screen, so meta title and description are part of the publish checklist rather than an afterthought.",
 											"marks": []
 										}
 									]
@@ -4457,24 +5071,24 @@
 						{
 							"_type": "widget_divider",
 							"_version": 1,
-							"_key": "w0148",
+							"_key": "x0216",
 							"style": "line"
 						},
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0149",
+							"_key": "x0217",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0151",
+									"_key": "x0219",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0150",
-											"text": "One trap worth knowing",
+											"_key": "x0218",
+											"text": "Two traps worth knowing",
 											"marks": []
 										}
 									]
@@ -4484,20 +5098,43 @@
 						{
 							"_type": "widget_notice",
 							"_version": 1,
-							"_key": "w0152",
+							"_key": "x0220",
 							"kind": "warning",
 							"title": "Leave trailingSlash alone",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0154",
+									"_key": "x0222",
 									"style": "normal",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0153",
+											"_key": "x0221",
 											"text": "Setting Astro's trailingSlash to \"always\" 404s every /_emdash/api/ route without a trailing slash; it briefly broke the contact form on this site. The sitemap emits slashless post URLs that 301 to the canonical form. That redirect is expected and harmless: do not try to fix it with trailingSlash.",
+											"marks": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"_type": "widget_notice",
+							"_version": 1,
+							"_key": "x0223",
+							"kind": "info",
+							"title": "Block keys are immutable",
+							"body": [
+								{
+									"_type": "block",
+									"_key": "x0225",
+									"style": "normal",
+									"markDefs": [],
+									"children": [
+										{
+											"_type": "span",
+											"_key": "x0224",
+											"text": "Rewriting a post body through the API fails if a reused _key changes _type between revisions. Fresh keys per rewrite - the content update script rotates a key prefix for exactly this reason.",
 											"marks": []
 										}
 									]
@@ -4507,17 +5144,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0155",
+							"_key": "x0226",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0157",
+									"_key": "x0228",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0156",
+											"_key": "x0227",
 											"text": "Ship list",
 											"marks": []
 										}
@@ -4528,7 +5165,7 @@
 						{
 							"_type": "widget_checklist",
 							"_version": 1,
-							"_key": "w0158",
+							"_key": "x0229",
 							"title": "If you are building your own",
 							"items": [
 								{
@@ -4538,7 +5175,10 @@
 									"text": "urlPattern set to /blog/{slug}"
 								},
 								{
-									"text": "A route that renders entry body blocks"
+									"text": "A route that redirects non-canonical URLs, then renders body blocks"
+								},
+								{
+									"text": "cacheHint passed to Astro.cache so publish busts the right pages"
 								},
 								{
 									"text": "A hub page with a site_posts block"
@@ -4560,17 +5200,17 @@
 						{
 							"_type": "widget_prose",
 							"_version": 1,
-							"_key": "w0159",
+							"_key": "x0230",
 							"body": [
 								{
 									"_type": "block",
-									"_key": "w0161",
+									"_key": "x0232",
 									"style": "h2",
 									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
-											"_key": "w0160",
+											"_key": "x0231",
 											"text": "Read next",
 											"marks": []
 										}
@@ -4581,7 +5221,7 @@
 						{
 							"_type": "widget_cards",
 							"_version": 1,
-							"_key": "w0162",
+							"_key": "x0233",
 							"title": null,
 							"items": [
 								{
@@ -4607,7 +5247,7 @@
 						{
 							"_type": "widget_button",
 							"_version": 1,
-							"_key": "w0163",
+							"_key": "x0234",
 							"label": "Browse the blog",
 							"url": "/blog/",
 							"icon": "arrow-right",
@@ -4963,9 +5603,20 @@
 							"_version": 1,
 							"_key": "zrfdufhp",
 							"image": {
-								"$media": {
-									"url": "https://emdashhq.com/_emdash/api/media/file/01M488WSNT8JB7CAFXN0DR1A01.png",
-									"alt": "The EmDash cover card"
+								"id": "01M488WSVA5M4CWST7P3GTR8X1",
+								"provider": "local",
+								"filename": "og-default.png",
+								"mimeType": "image/png",
+								"width": 1200,
+								"height": 630,
+								"blurhash": "LFRyc|NLe;~p~qV[s:of~p?aM|IB",
+								"dominantColor": "rgb(233,226,223)",
+								"alt": "The EmDash cover card",
+								"meta": {
+									"storageKey": "01M488WSNT8JB7CAFXN0DR1A01.png",
+									"caption": null,
+									"blurhash": "LFRyc|NLe;~p~qV[s:of~p?aM|IB",
+									"dominantColor": "rgb(233,226,223)"
 								}
 							},
 							"caption": "An image field renders through the EmDash media pipeline — srcset, blurhash, all of it.",
@@ -5027,12 +5678,6 @@
 							"_key": "8832qie7",
 							"name": "EmDash CMS",
 							"rating": 5,
-							"image": {
-								"$media": {
-									"url": "https://emdashhq.com/_emdash/api/media/file/01M4HJBSR4WAVSB7H9FF0NQRN4.png",
-									"alt": "EmDash CMS software box"
-								}
-							},
 							"description": "The flat-file-feeling CMS that is actually a proper database-backed system — schema in the admin, content as typed entries, everything server-rendered.",
 							"pros": [
 								{
@@ -5055,7 +5700,24 @@
 							],
 							"price": "Free",
 							"url": "https://emdashcms.com",
-							"cta_label": "Get EmDash"
+							"cta_label": "Get EmDash",
+							"image": {
+								"id": "01M4HJBT1YND2DFETVY615KYH0",
+								"provider": "local",
+								"filename": "emdash-product-box.png",
+								"mimeType": "image/png",
+								"width": 1024,
+								"height": 1024,
+								"alt": "EmDash CMS software box",
+								"meta": {
+									"storageKey": "01M4HJBSR4WAVSB7H9FF0NQRN4.png",
+									"caption": null,
+									"blurhash": "LTP~}^-;xZ%L~qayM{ofaeWBozj@",
+									"dominantColor": "rgb(221,209,190)"
+								},
+								"blurhash": "LTP~}^-;xZ%L~qayM{ofaeWBozj@",
+								"dominantColor": "rgb(221,209,190)"
+							}
 						},
 						{
 							"_type": "widget_cards",
@@ -5124,11 +5786,13 @@
 									"_type": "block",
 									"_key": "bq2xoxiy",
 									"style": "h2",
+									"markDefs": [],
 									"children": [
 										{
 											"_type": "span",
 											"_key": "cdngg0yt",
-											"text": "And the page around it"
+											"text": "And the page around it",
+											"marks": []
 										}
 									]
 								}

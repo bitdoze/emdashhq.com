@@ -255,6 +255,20 @@ a[target="_blank"]:not(.card-link):not(.video-facade):not(.contact-card):not(.he
 }
 
 /*
+ * Article widgets placed on pages: the wgt_* block components carry no
+ * container of their own (they are built for the post body), so a
+ * top-level widget sibling of .section gets the same inset and rhythm
+ * as the marketing sections around it.
+ */
+[class^="wgt-"]:has(~ .section),
+.section ~ [class^="wgt-"] {
+	max-width: var(--wide-width);
+	margin-block: var(--spacing-4xl);
+	margin-inline: auto;
+	padding-inline: var(--spacing-lg);
+}
+
+/*
  * Marker swash: the pink highlighter from the covers. Wrap any phrase
  * in .hl and the marker slides behind it, a touch crooked.
  */

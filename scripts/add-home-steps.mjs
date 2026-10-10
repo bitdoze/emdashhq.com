@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /*
  * Builds the "start here" section on the home page, right after the hero:
- * numbered steps, a copy-paste quickstart, the deploy video, a guide card
- * for every step, a cost note, and CTAs into both plugins and the catalog.
- * GET-modify-PUT; replaces the section in place when it already exists
- * (anchored by the steps title, consuming the contiguous widget_* run).
+ * numbered steps plus a guide card for every step. Simple on purpose -
+ * no duplicated CTAs. GET-modify-PUT; replaces the section in place when
+ * it already exists (anchored by the steps title, consuming the
+ * contiguous widget_* run).
  *
  * Prod: node scripts/add-home-steps.mjs --url https://emdashhq.com --token <token>
  */
@@ -45,17 +45,7 @@ const uid = () => `s${Date.now().toString(36)}${Math.random().toString(36).slice
 
 const TITLE = "New to EmDash? Zero to deployed in an afternoon";
 const CARDS_TITLE = "A guide for every step";
-const REG_CF = "https://plugins.emdashcms.com/plugins/@bitdoze.com/emdashhq-contact-forms";
-const REG_WGT = "https://plugins.emdashcms.com/plugins/@bitdoze.com/emdashhq-widgets";
 const UTM = "?utm_source=emdashhq&utm_medium=start_section&utm_campaign=getting-started";
-
-const ptBlock = (text, style = "normal") => ({
-	_type: "block",
-	_key: uid(),
-	style,
-	markDefs: [],
-	children: [{ _type: "span", _key: uid(), text, marks: [] }],
-});
 
 const SECTION = [
 	{
@@ -87,28 +77,6 @@ const SECTION = [
 		],
 	},
 	{
-		_type: "widget_prose",
-		_version: 1,
-		_key: uid(),
-		body: [ptBlock("The copy-paste version", "h3")],
-	},
-	{
-		_type: "widget_code",
-		_version: 1,
-		_key: uid(),
-		language: "bash",
-		filename: "quickstart.sh",
-		code: "npm create emdash@latest my-site\ncd my-site\nnpm run dev      # admin at http://localhost:4321/_emdash/admin\nnpm run deploy   # build -> migrate check -> upload -> cache warm",
-	},
-	{
-		_type: "widget_youtube",
-		_version: 1,
-		_key: uid(),
-		url: "https://www.youtube.com/watch?v=EbVsG5feCH8",
-		title: "Deploy EmDash on Cloudflare Workers for FREE (Step-by-Step)",
-		caption: "Prefer to watch? The free-tier deploy, filmed start to finish.",
-	},
-	{
 		_type: "widget_cards",
 		_version: 1,
 		_key: uid(),
@@ -123,53 +91,6 @@ const SECTION = [
 			{ icon: "mail", title: "Contact forms end to end", url: "/blog/emdash-contact-forms/", description: "Step 5's first plugin: forms, inbox, email, anti-spam" },
 			{ icon: "star", title: "Writing with Content Widgets", url: "/blog/writing-with-emdash-widgets/", description: "Step 5's second plugin: the blocks this section is built from" },
 		],
-	},
-	{
-		_type: "widget_notice",
-		_version: 1,
-		_key: uid(),
-		kind: "info",
-		title: "What it costs",
-		body: [ptBlock("Everything here is free except one line item: Cloudflare's Workers Paid plan at $5 a month, and you need it only for sandboxed registry plugins. The CMS, the deploys and both plugins cost nothing.")],
-	},
-	{
-		_type: "widget_button",
-		_version: 1,
-		_key: uid(),
-		label: "Start the tutorial",
-		url: `https://www.bitdoze.com/emdash-cms-tutorial/${UTM}`,
-		icon: "rocket",
-		variant: "solid",
-		new_tab: true,
-	},
-	{
-		_type: "widget_button",
-		_version: 1,
-		_key: uid(),
-		label: "Contact Forms plugin",
-		url: REG_CF,
-		icon: "mail",
-		variant: "outline",
-		new_tab: true,
-	},
-	{
-		_type: "widget_button",
-		_version: 1,
-		_key: uid(),
-		label: "Content Widgets plugin",
-		url: REG_WGT,
-		icon: "star",
-		variant: "outline",
-		new_tab: true,
-	},
-	{
-		_type: "widget_button",
-		_version: 1,
-		_key: uid(),
-		label: "Browse all plugins",
-		url: "/plugins/",
-		icon: "arrow-right",
-		variant: "outline",
 	},
 ];
 

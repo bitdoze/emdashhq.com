@@ -29,7 +29,9 @@ const FETCH_TIMEOUT_MS = 8_000;
 /** A never-refreshed read waits this long, then renders with what it has. */
 const FIRST_RENDER_MS = 3_000;
 const NPM_DOWNLOADS_URL = "https://api.npmjs.org/downloads/point/last-month/emdash";
-const PLUGIN_REGISTRY_URL = "https://plugins.emdashcms.com/";
+const PLUGIN_REGISTRY_URL =
+	"https://registry.emdashcms.com/xrpc/com.emdashcms.experimental.aggregator.searchPackages";
+const PLUGIN_REGISTRY_MAX_PAGES = 10;
 const BUILTWITH_URL = "https://trends.builtwith.com/cms/EmDash-CMS";
 
 const DEFAULT_STATS: Array<Omit<SiteStat, "updatedAt" | "prevAt" | "weekDelta">> = [
@@ -88,15 +90,29 @@ async function ensureTable(db: D1Like) {
 	if (writes.length) await db.batch(writes);
 }
 
+/*
+ * The public registry site caps listings at the first hundred plugins, so
+ * counting /plugins/ links on its homepage undercounts. Page through the
+ * aggregator's searchPackages feed instead — one shared deadline across the
+ * page loop, capped so a cursor loop can't run away.
+ */
 async function countRegistryPlugins(): Promise<number | null> {
-	const res = await fetch(PLUGIN_REGISTRY_URL, {
-		headers: { Accept: "text/html" },
-		signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-	});
-	if (!res.ok) return null;
-	const html = await res.text();
-	const n = new Set(html.match(/href="\/plugins\/@[^"]+"/g) ?? []).size;
-	return n > 0 ? n : null;
+	const signal = AbortSignal.timeout(FETCH_TIMEOUT_MS);
+	let cursor = "";
+	let total = 0;
+	for (let page = 0; page < PLUGIN_REGISTRY_MAX_PAGES; page++) {
+		const url = cursor
+			? `${PLUGIN_REGISTRY_URL}?limit=100&cursor=${encodeURIComponent(cursor)}`
+			: `${PLUGIN_REGISTRY_URL}?limit=100`;
+		const res = await fetch(url, { headers: { Accept: "application/json" }, signal });
+		if (!res.ok) return null;
+		const body = (await res.json()) as { packages?: unknown[]; cursor?: string };
+		if (!Array.isArray(body.packages)) return null;
+		total += body.packages.length;
+		if (!body.cursor || body.packages.length === 0) return total > 0 ? total : null;
+		cursor = body.cursor;
+	}
+	return total > 0 ? total : null;
 }
 
 async function fetchNpmDownloads(): Promise<number | null> {

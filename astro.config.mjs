@@ -9,6 +9,7 @@ import emdash from "emdash/astro";
 import contactFormsPlugin from "emdashhq-contact-forms";
 import siteScriptsPlugin from "emdashhq-site-scripts";
 import widgetsPlugin from "emdashhq-widgets";
+import { fileURLToPath } from "node:url";
 
 export default defineConfig({
 	output: "server",
@@ -118,6 +119,16 @@ export default defineConfig({
 				// page:fragments is trusted-only: sandboxed plugins never get
 				// the hook, so this runs in-process like any native plugin.
 				siteScriptsPlugin,
+				// Site-defined native plugin: private routes + MCP tools that
+				// read, refresh, and update the site_stats strip counters.
+				// Native format: the integration imports { createPlugin } from
+				// the entrypoint at build time — it can't be sandboxed.
+				{
+					id: "emdashhq-site-stats",
+					version: "1.0.0",
+					format: "native",
+					entrypoint: fileURLToPath(new URL("./src/plugins/site-stats.ts", import.meta.url)),
+				},
 			],
 			// Sandboxed plugins run in a Worker Loader isolate (the same
 			// format the plugin registry distributes). Contact-forms mail
